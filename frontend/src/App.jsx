@@ -3,6 +3,8 @@ import Home from "./pages/Home";
 import Citas from "./pages/Citas";
 import Layout from "./components/Layout"; // Importa el Layout
 import Pacientes from "./pages/Pacientes";
+import Login from "./pages/Login"; // Importa el componente Login
+import PrivateRoute from "./components/PrivateRoute"; // Importa el componente PrivateRoute
 
 function App() {
   console.log("App component is rendering");
@@ -10,13 +12,36 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* Rutas que incluyen Navbar */}
+        {/* Ruta de Login (sin Layout) */}
+        <Route path="/login" element={<Login />} />
+
+        {/* Rutas protegidas que incluyen Navbar */}
         <Route element={<Layout />}>
-          <Route path="/" element={<Home />} />
-          <Route path="/citas" element={<Citas />} />
-          <Route path="/pacientes" element={<Pacientes />} />
+          <Route
+            path="/"
+            element={
+              <PrivateRoute>
+                <Home />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/citas"
+            element={
+              <PrivateRoute>
+                <Citas />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/pacientes"
+            element={
+              <PrivateRoute>
+                <Pacientes />
+              </PrivateRoute>
+            }
+          />
         </Route>
-        {/* Aquí podrías agregar un <Route path="/login" element={<Login />} /> sin Navbar */}
       </Routes>
     </Router>
   );

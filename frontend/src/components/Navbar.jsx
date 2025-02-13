@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Menu, X } from "lucide-react"; // Importar iconos
+import { Menu, X, User, Calendar, Stethoscope, Activity } from "lucide-react";
 
 export default function Navbar({ open, setOpen }) {
   return (
@@ -13,12 +13,19 @@ export default function Navbar({ open, setOpen }) {
       <div className={`sidebar ${open ? "open" : ""}`}>
         <h1>Dispensario Médico</h1>
         <nav>
-          <Link to="/" onClick={() => setOpen(false)}>Inicio</Link>
-          <Link to="/citas" onClick={() => setOpen(false)}>Citas</Link>
-          <Link to="/pacientes" onClick={() => setOpen(false)}>Ingreso Pacientes</Link>
-          
+          <Link to="/" onClick={() => setOpen(false)}>
+            <User size={18} /> Inicio
+          </Link>
+          <Link to="/citas" onClick={() => setOpen(false)}>
+            <Calendar size={18} /> Citas
+          </Link>
+          <Link to="/pacientes" onClick={() => setOpen(false)}>
+            <Stethoscope size={18} /> Ingreso Pacientes
+          </Link>
           <div>
-            <button className="submenu-btn">Atención Médica</button>
+            <button className="submenu-btn">
+              <Activity size={18} /> Atención Médica
+            </button>
             <div className="submenu">
               <Link to="/odontologia" onClick={() => setOpen(false)}>Odontología</Link>
               <Link to="/fisioterapia" onClick={() => setOpen(false)}>Fisioterapia</Link>

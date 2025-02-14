@@ -20,7 +20,7 @@ export default function Login() {
       localStorage.setItem("token", data.msg.token);
 
       // Redirigir al Home después del login exitoso
-      navigate("/");
+      navigate("/home");
     } catch (error) {
       console.error("Error durante el login:", error);
       alert("Credenciales incorrectas. Inténtalo de nuevo.");

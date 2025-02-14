@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Home from "./pages/Home";
 import Citas from "./pages/Citas";
 import Layout from "./components/Layout"; // Importa el Layout
@@ -18,7 +18,7 @@ function App() {
         {/* Rutas protegidas que incluyen Navbar */}
         <Route element={<Layout />}>
           <Route
-            path="/"
+            path="/home"
             element={
               <PrivateRoute>
                 <Home />
@@ -42,6 +42,9 @@ function App() {
             }
           />
         </Route>
+
+        {/* Redirigir a /login si la ruta no coincide */}
+        <Route path="*" element={<Navigate to="/login" />} />
       </Routes>
     </Router>
   );

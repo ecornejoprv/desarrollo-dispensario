@@ -1,0 +1,55 @@
+/* Estilos para el contenedor de pacientes */
+.pacientes-container {
+    padding: 20px;
+  }
+  
+  /* Estilos para la tabla */
+  .pacientes-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+  }
+  
+  .pacientes-table th,
+  .pacientes-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+  }
+  
+  .pacientes-table th {
+    background-color: #f2f2f2;
+  }
+  
+  /* Estilos para el formulario */
+  .paciente-form {
+    margin-bottom: 20px;
+  }
+  
+  .paciente-form div {
+    margin-bottom: 10px;
+  }
+  
+  .paciente-form label {
+    display: block;
+    margin-bottom: 5px;
+  }
+  
+  .paciente-form input,
+  .paciente-form select {
+    width: 100%;
+    padding: 8px;
+    box-sizing: border-box;
+  }
+  
+  .paciente-form button {
+    padding: 10px 20px;
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .paciente-form button:hover {
+    background-color: #45a049;
+  }

@@ -1,10 +1,11 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Home from "./pages/Home";
 import Citas from "./pages/Citas";
-import Layout from "./components/Layout"; // Importa el Layout
+import Layout from "./components/Layout";
 import Pacientes from "./pages/Pacientes";
-import Login from "./pages/Login"; // Importa el componente Login
-import PrivateRoute from "./components/PrivateRoute"; // Importa el componente PrivateRoute
+import Login from "./pages/Login";
+import PrivateRoute from "./components/PrivateRoute";
+import Odontologia from "./pages/Odontologia"; // Importa la página de Odontología
 
 function App() {
   console.log("App component is rendering");
@@ -38,6 +39,15 @@ function App() {
             element={
               <PrivateRoute>
                 <Pacientes />
+              </PrivateRoute>
+            }
+          />
+          {/* Nueva ruta para Odontología */}
+          <Route
+            path="/odontologia"
+            element={
+              <PrivateRoute>
+                <Odontologia />
               </PrivateRoute>
             }
           />

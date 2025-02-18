@@ -13,7 +13,7 @@ export default function Navbar({ open, setOpen }) {
       <div className={`sidebar ${open ? "open" : ""}`}>
         <h1>Dispensario Médico</h1>
         <nav>
-          <Link to="/" onClick={() => setOpen(false)}>
+          <Link to="/Home" onClick={() => setOpen(false)}>
             <User size={18} /> Inicio
           </Link>
           <Link to="/citas" onClick={() => setOpen(false)}>

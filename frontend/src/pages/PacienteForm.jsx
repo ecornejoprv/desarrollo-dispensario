@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 
 export default function PacienteForm({ guardarPaciente, pacienteEditando }) {
+  // Estado inicial del formulario
   const [formData, setFormData] = useState({
     pacie_nom_pacie: "",
     pacie_ape_pacie: "",
@@ -44,6 +45,7 @@ export default function PacienteForm({ guardarPaciente, pacienteEditando }) {
     <form onSubmit={handleSubmit} className="paciente-form">
       <h2>{pacienteEditando ? "Editar Paciente" : "Agregar Paciente"}</h2>
 
+      {/* Campos del formulario */}
       <div>
         <label>Nombre:</label>
         <input

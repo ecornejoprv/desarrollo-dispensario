@@ -62,6 +62,12 @@ export default function Pacientes() {
   return (
     <div className="pacientes-container">
       <h1>Gestión de Pacientes</h1>
+      {/* Botón para crear un nuevo paciente */}
+      <div className="button-container">
+          <button onClick={() => setPacienteEditando(null)} className="nuevo-paciente-button">
+            + Nuevo Paciente
+          </button>
+        </div>
 
       {/* Campo de búsqueda */}
       <div className="search-container">

@@ -39,6 +39,19 @@ export default function PacienteForm({ guardarPaciente, pacienteEditando }) {
 
   const [errores, setErrores] = useState({});
 
+   // Convertir de DD/MM/YYYY a YYYY-MM-DD
+   const formatDateToInput = (dateString) => {
+    if (!dateString) return "";
+    const [day, month, year] = dateString.split("/");
+    return `${year}-${month}-${day}`;
+  };
+
+  // Convertir de YYYY-MM-DD a DD/MM/YYYY
+  const formatDateToDisplay = (dateString) => {
+    if (!dateString) return "";
+    const [year, month, day] = dateString.split("-");
+    return `${day}/${month}/${year}`;
+  };
   // Estados para los datos de las tablas relacionadas
   const [zonas, setZonas] = useState([]);
   const [sexos, setSexos] = useState([]);
@@ -131,11 +144,25 @@ export default function PacienteForm({ guardarPaciente, pacienteEditando }) {
   // Manejar cambios en los campos del formulario
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData({
-      ...formData,
-      [name]: type === "checkbox" ? checked : value,
-    });
-    setErrores({ ...errores, [name]: "" }); // Limpiar errores al escribir
+  
+    if (name === "pacie_fec_nac") {
+      // Convertir de YYYY-MM-DD a DD/MM/YYYY si el input es tipo date
+      const [year, month, day] = value.split("-");
+      const fechaFormateada = `${day}/${month}/${year}`;
+  
+      setFormData({
+        ...formData,
+        [name]: fechaFormateada,
+      });
+    } else {
+      setFormData({
+        ...formData,
+        [name]: type === "checkbox" ? checked : value,
+      });
+    }
+  
+    // Limpiar errores al escribir
+    setErrores({ ...errores, [name]: "" });
   };
 
   // Validar el formulario antes de enviar
@@ -218,15 +245,31 @@ export default function PacienteForm({ guardarPaciente, pacienteEditando }) {
 
           {/* Fecha de Nacimiento */}
           <div className="form-group">
-            <label>Fecha de Nacimiento:</label>
-            <input
-              type="date"
-              name="pacie_fec_nac"
-              value={formData.pacie_fec_nac}
-              onChange={handleChange}
-            />
-            {errores.pacie_fec_nac && <span className="error">{errores.pacie_fec_nac}</span>}
+          <label>Fecha de Nacimiento:</label>
+          <input
+            type="date"
+            name="pacie_fec_nac"
+            value={
+              formData.pacie_fec_nac
+                ? new Date(formData.pacie_fec_nac.split("/").reverse().join("-"))
+                    .toISOString()
+                    .split("T")[0]
+                : ""
+            }
+            onChange={handleChange}
+          />
+          {errores.pacie_fec_nac && <span className="error">{errores.pacie_fec_nac}</span>}
           </div>
+      {/* <div className="form-group">
+        <label>Fecha de Nacimiento:</label>
+        <input
+          type="text"
+          value={formatDateToDisplay(formData.pacie_fec_nac)} // Mostrar en DD/MM/YYYY
+          readOnly // Hacer el campo de solo lectura
+        />
+      </div> */}
+
+
            {/* Campo de Zona */}
           <div className="form-group">
             <label>Zona:</label>

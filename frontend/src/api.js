@@ -16,4 +16,18 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+
+export const logout = async () => {
+  try {
+    await api.post("/api/v1/users/logout"); // Llama a la ruta de logout en el backend
+  } catch (error) {
+    console.error("Error during logout:", error);
+  } finally {
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    localStorage.removeItem("username");
+    window.location.href = "/login"; // Redirigir al usuario a la página de login
+  }
+};
+
 export default api;

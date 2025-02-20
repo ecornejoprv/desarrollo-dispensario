@@ -81,13 +81,13 @@ const login = async (req, res) => {
         const token = jwt.sign({ username: user.usua_nom_usua, role_id: user.role_id }, 
             process.env.JWT_SECRET,
             {
-                expiresIn: "1h"
+                expiresIn: "10s"
             }
         )
 
         return res.json({ 
             ok: true, 
-            msg: {token, role_id: user.role_id}       
+            msg: {token, role_id: user.role_id, username: user.usua_nom_usua}       
         })
 
     } catch (error) {
@@ -98,6 +98,17 @@ const login = async (req, res) => {
         })
     }
 }
+
+const logout = async (req, res) => {
+    try {
+      // Aquí puedes invalidar el token si es necesario
+      // Por ejemplo, almacenar el token en una lista negra (blacklist)
+      return res.status(200).json({ ok: true, msg: "Logged out successfully" });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ ok: false, msg: "Internal server error" });
+    }
+  };
 
 const profile = async (req, res) => {
     try {

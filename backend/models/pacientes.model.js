@@ -232,3 +232,57 @@ export const deletePaciente = async (id) => {
   );
   return rows[0];
 };
+
+// Obtener todas las zonas
+export const getAllZonas = async () => {
+  const { rows } = await db.query("SELECT zona_cod_zona, zona_nom_zona FROM dispensario.dmzona  ");
+  return rows;
+};
+
+// Obtener todos los sexos
+export const getAllSexos = async () => {
+  const { rows } = await db.query("SELECT dmsexo_cod_sexo, dmsexo_nom_sexo FROM dispensario.dmsexo  ");
+  return rows;
+};
+
+// Obtener todos los estados civiles
+export const getAllEstadosCiviles = async () => {
+  const { rows } = await db.query("SELECT estci_cod_estc, estci_nom_estc FROM dispensario.dmestci");
+  return rows;
+};
+
+// Obtener todas las religiones
+export const getAllReligiones = async () => {
+  const { rows } = await db.query("SELECT relig_cod_relig, relig_nom_relig FROM dispensario.dmrelig");
+  return rows;
+};
+
+// Obtener todos los países
+export const getAllPaises = async () => {
+  const { rows } = await db.query("SELECT pais_cod_pais, pais_nom_pais FROM dispensario.dmpais");
+  return rows;
+};
+
+// Obtener todas las etnias
+export const getAllEtnias = async () => {
+  const { rows } = await db.query("SELECT etnia_cod_etnia, etnia_nom_etnia FROM dispensario.dmetnia");
+  return rows;
+};
+
+// Obtener todas las orientaciones sexuales
+export const getAllOrientacionesSexuales = async () => {
+  const { rows } = await db.query("SELECT dmosex_cod_osex, dmosex_nom_osex FROM dispensario.dmosex");
+  return rows;
+};
+
+// Obtener todos los géneros
+export const getAllGeneros = async () => {
+  const { rows } = await db.query("SELECT idgen_cod_idgen, idgen_nom_idgen FROM dispensario.dmidgen");
+  return rows;
+};
+
+// Obtener todas las lateralidades
+export const getAllLateralidades = async () => {
+  const { rows } = await db.query("SELECT later_cod_later, later_nom_later FROM dispensario.dmlater");
+  return rows;
+};

@@ -4,6 +4,15 @@ import {
     createPaciente,
     updatePaciente,
     deletePaciente,
+    getAllZonas,
+  getAllSexos,
+  getAllEstadosCiviles,
+  getAllReligiones,
+  getAllPaises,
+  getAllEtnias,
+  getAllOrientacionesSexuales,
+  getAllGeneros,
+  getAllLateralidades,
   } from "../models/pacientes.model.js";
   
   // Obtener todos los pacientes
@@ -73,5 +82,94 @@ import {
       res.status(200).json(pacienteEliminado);
     } catch (error) {
       res.status(500).json({ message: "Error al eliminar el paciente", error });
+    }
+  };
+  // Obtener todas las zonas
+export const obtenerZonas = async (req, res) => {
+    try {
+      const zonas = await getAllZonas();
+      res.status(200).json(zonas);
+    } catch (error) {
+      res.status(500).json({ message: "Error al obtener las zonas", error });
+    }
+  };
+  
+  // Obtener todos los sexos
+  export const obtenerSexos = async (req, res) => {
+    try {
+      const sexos = await getAllSexos();
+      res.status(200).json(sexos);
+    } catch (error) {
+      res.status(500).json({ message: "Error al obtener los sexos", error });
+    }
+  };
+  
+  // Obtener todos los estados civiles
+  export const obtenerEstadosCiviles = async (req, res) => {
+    try {
+      const estadosCiviles = await getAllEstadosCiviles();
+      res.status(200).json(estadosCiviles);
+    } catch (error) {
+      res.status(500).json({ message: "Error al obtener los estados civiles", error });
+    }
+  };
+  
+  // Obtener todas las religiones
+  export const obtenerReligiones = async (req, res) => {
+    try {
+      const religiones = await getAllReligiones();
+      res.status(200).json(religiones);
+    } catch (error) {
+      res.status(500).json({ message: "Error al obtener las religiones", error });
+    }
+  };
+  
+  // Obtener todos los países
+  export const obtenerPaises = async (req, res) => {
+    try {
+      const paises = await getAllPaises();
+      res.status(200).json(paises);
+    } catch (error) {
+      res.status(500).json({ message: "Error al obtener los países", error });
+    }
+  };
+  
+  // Obtener todas las etnias
+  export const obtenerEtnias = async (req, res) => {
+    try {
+      const etnias = await getAllEtnias();
+      res.status(200).json(etnias);
+    } catch (error) {
+      res.status(500).json({ message: "Error al obtener las etnias", error });
+    }
+  };
+  
+  // Obtener todas las orientaciones sexuales
+  export const obtenerOrientacionesSexuales = async (req, res) => {
+    try {
+      const orientacionesSexuales = await getAllOrientacionesSexuales();
+      res.status(200).json(orientacionesSexuales);
+    } catch (error) {
+      res.status(500).json({ message: "Error al obtener las orientaciones sexuales", error });
+    }
+  };
+  
+  // Obtener todos los géneros
+  export const obtenerGeneros = async (req, res) => {
+    try {
+      const generos = await getAllGeneros();
+      res.status(200).json(generos);
+    } catch (error) {
+      res.status(500).json({ message: "Error al obtener los géneros", error });
+    }
+  };
+  
+  // Obtener todas las lateralidades
+  export const obtenerLateralidades = async (req, res) => {
+    try {
+      const lateralidades = await getAllLateralidades();
+      res.status(200).json(lateralidades);
+    } catch (error) {
+      res.status(500).json({ message: "Error al obtener las lateralidades", error });
     }
   };

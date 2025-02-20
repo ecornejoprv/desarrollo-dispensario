@@ -10,6 +10,7 @@ app.use(express.json());
 // Rutas
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1", pacientesRoutes); // Usar las rutas de pacientes
+app.use("/api", pacientesRoutes); // Prefijo /api para todas las rutas
 
 app.listen(5000, () => {
   console.log("Backend running on http://localhost:5000");

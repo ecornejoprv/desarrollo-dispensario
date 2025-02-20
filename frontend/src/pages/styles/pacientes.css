@@ -53,3 +53,36 @@
   .paciente-form button:hover {
     background-color: #45a049;
   }
+  /* Estilos para el campo de búsqueda */
+.search-container {
+  margin-bottom: 20px;
+}
+
+.search-container input {
+  padding: 8px;
+  width: 300px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+/* Estilos para la paginación */
+.pagination-container {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+.pagination-container button {
+  padding: 8px 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #f9f9f9;
+  cursor: pointer;
+}
+
+.pagination-container button:disabled {
+  background-color: #e0e0e0;
+  cursor: not-allowed;
+}

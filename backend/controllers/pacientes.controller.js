@@ -9,8 +9,16 @@ import {
   // Obtener todos los pacientes
   export const obtenerPacientes = async (req, res) => {
     try {
-      const pacientes = await getAllPacientes();
-      res.status(200).json(pacientes);
+      const { search = "", page = 1, limit = 10 } = req.query; // Obtener parámetros de la consulta
+      const { pacientes, total } = await getAllPacientes(search, parseInt(page), parseInt(limit));
+  
+      res.status(200).json({
+        pacientes,
+        total,
+        page: parseInt(page),
+        limit: parseInt(limit),
+        totalPages: Math.ceil(total / limit), // Calcular el total de páginas
+      });
     } catch (error) {
       res.status(500).json({ message: "Error al obtener los pacientes", error });
     }

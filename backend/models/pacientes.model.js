@@ -233,6 +233,11 @@ export const deletePaciente = async (id) => {
   return rows[0];
 };
 
+// Obtener todos los tipos de pacientes 
+export const getAllTiposPacientes = async () => {
+  const { rows } = await db.query("SELECT tipa_cod_tipa, tipa_nom_tipa, tipa_char_tipa FROM dispensario.dmtipa  ");
+  return rows;
+};
 // Obtener todas las zonas
 export const getAllZonas = async () => {
   const { rows } = await db.query("SELECT zona_cod_zona, zona_nom_zona FROM dispensario.dmzona  ");
@@ -241,7 +246,7 @@ export const getAllZonas = async () => {
 
 // Obtener todos los sexos
 export const getAllSexos = async () => {
-  const { rows } = await db.query("SELECT dmsexo_cod_sexo, dmsexo_nom_sexo FROM dispensario.dmsexo  ");
+  const { rows } = await db.query("SELECT sexo_cod_sexo, sexo_nom_sexo FROM dispensario.dmsexo  ");
   return rows;
 };
 

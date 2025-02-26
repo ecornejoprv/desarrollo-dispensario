@@ -4,6 +4,7 @@ import {
     createPaciente,
     updatePaciente,
     deletePaciente,
+    getAllTiposPacientes,
     getAllZonas,
   getAllSexos,
   getAllEstadosCiviles,
@@ -84,6 +85,17 @@ import {
       res.status(500).json({ message: "Error al eliminar el paciente", error });
     }
   };
+
+//Obtener todos los tipos de pacientes 
+export const obtenerTiposPaciente = async (req, res) => {
+  try {
+    const tiposPacientes = await getAllTiposPacientes();
+    res.status(200).json(tiposPacientes);
+  } catch (error) {
+    res.status(500).json({ message: "Error al obtener los tipos de pacientes", error });
+  }
+};
+
   // Obtener todas las zonas
 export const obtenerZonas = async (req, res) => {
     try {

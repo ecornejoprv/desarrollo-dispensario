@@ -5,6 +5,7 @@ import {
   crearPaciente,
   actualizarPaciente,
   eliminarPaciente,
+  obtenerTiposPaciente,
   obtenerZonas,
   obtenerSexos,
   obtenerEstadosCiviles,
@@ -24,6 +25,7 @@ router.get("/pacientes/:id", obtenerPaciente);
 router.post("/pacientes", crearPaciente);
 router.put("/pacientes/:id", actualizarPaciente);
 router.delete("/pacientes/:id", eliminarPaciente);
+router.get("/tipos-pacientes", obtenerTiposPaciente);
 router.get("/zonas", obtenerZonas);
 router.get("/sexos", obtenerSexos);
 router.get("/estados-civiles", obtenerEstadosCiviles);

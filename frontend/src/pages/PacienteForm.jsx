@@ -53,6 +53,7 @@ export default function PacienteForm({ guardarPaciente, pacienteEditando }) {
     return `${day}/${month}/${year}`;
   };
   // Estados para los datos de las tablas relacionadas
+  const [tiposPacientes, settiposPacientes] = useState([]);
   const [zonas, setZonas] = useState([]);
   const [sexos, setSexos] = useState([]);
   const [estadosCiviles, setEstadosCiviles] = useState([]);
@@ -67,6 +68,9 @@ export default function PacienteForm({ guardarPaciente, pacienteEditando }) {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const responsetiposPacientes = await axios.get("/api/tipos-pacientes");
+        settiposPacientes(responsetiposPacientes.data);
+
         const responseZonas = await axios.get("/api/zonas");
         setZonas(responseZonas.data);
 
@@ -242,7 +246,22 @@ export default function PacienteForm({ guardarPaciente, pacienteEditando }) {
             />
             {errores.pacie_ape_pacie && <span className="error">{errores.pacie_ape_pacie}</span>}
           </div>
-
+           {/* Tipo Paciente */}
+           <div className="form-group">
+            <label>Tipo Paciente:</label>
+            <select
+              name="pacie_tip_pacie"
+              value={formData.pacie_tip_pacie}
+              onChange={handleChange}
+            >
+              <option value="">Seleccione un tipo</option>
+              {tiposPacientes.map((tiposPacientes) => (
+                <option key={tiposPacientes.tipa_cod_tipa} value={tiposPacientes.tipa_cod_tipa}>
+                  {tiposPacientes.tipa_nom_tipa}
+                </option>
+              ))}
+            </select>
+      </div>
           {/* Fecha de Nacimiento */}
           <div className="form-group">
           <label>Fecha de Nacimiento:</label>
@@ -297,8 +316,8 @@ export default function PacienteForm({ guardarPaciente, pacienteEditando }) {
             >
               <option value="">Seleccione un sexo</option>
               {sexos.map((sexo) => (
-                <option key={sexo.dmsexo_cod_sexo} value={sexo.dmsexo_cod_sexo}>
-                  {sexo.dmsexo_nom_sexo}
+                <option key={sexo.dexo_cod_sexo} value={sexo.sexo_cod_sexo}>
+                  {sexo.sexo_nom_sexo}
                 </option>
               ))}
             </select>

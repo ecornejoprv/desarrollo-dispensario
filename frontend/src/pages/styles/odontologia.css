@@ -1,0 +1,86 @@
+.odontologia-container {
+    text-align: center;
+    font-family: Arial, sans-serif;
+    margin: 20px;
+  }
+  
+  .dentadura {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+  }
+  
+  /* Nueva estructura para los dientes superiores e inferiores */
+  .dientes-superiores,
+  .dientes-inferiores {
+    display: grid;
+    grid-template-columns: repeat(8, 40px);
+    justify-content: center;
+    gap: 8px;
+    position: relative;
+  }
+  
+  /* Simulación de un arco para los dientes superiores */
+  .dientes-superiores {
+    transform: translateY(10px);
+  }
+  
+  /* Simulación de un arco invertido para los dientes inferiores */
+  .dientes-inferiores {
+    transform: translateY(-10px);
+  }
+  
+  /* Diseño del diente */
+  .diente {
+    width: 38px;
+    height: 50px;
+    border-radius: 50% 50% 20% 20%; /* Hace que el diente se vea más realista */
+    background-color: #fff;
+    border: 2px solid gray;
+    text-align: center;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .diente:hover {
+    background-color: #ddd;
+  }
+  
+  .diente.seleccionado {
+    background-color: #4caf50;
+    color: white;
+    border: 2px solid darkgreen;
+  }
+  
+  /* Diagnósticos */
+  .diagnostico {
+    margin: 10px 0;
+  }
+  
+  .diagnostico input {
+    padding: 5px;
+    width: 250px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  
+  .submit-button {
+    background-color: #28a745;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    border-radius: 5px;
+  }
+  
+  .submit-button:hover {
+    background-color: #218838;
+  }
+  

@@ -1,14 +1,16 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Home from "./pages/Home";
 import Citas from "./pages/Citas";
-import Layout from "./components/Layout"; // Importa el Layout
+import Layout from "./components/Layout";
 import Pacientes from "./pages/Pacientes";
-import Login from "./pages/Login"; // Importa el componente Login
-import PrivateRoute from "./components/PrivateRoute"; // Importa el componente PrivateRoute
+import Login from "./pages/Login";
+import PrivateRoute from "./components/PrivateRoute";
+import Odontologia from "./pages/Odontologia";
+import Fisioterapia from "./pages/Fisioterapia";
+import Enfermeria from "./pages/Enfermeria";
+import MedicinaGeneral from "./pages/MedicinaGeneral";
 
 function App() {
-  console.log("App component is rendering");
-
   return (
     <Router>
       <Routes>
@@ -38,6 +40,38 @@ function App() {
             element={
               <PrivateRoute>
                 <Pacientes />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/odontologia"
+            element={
+              <PrivateRoute requiredRoles={["1", "3"]}>
+                <Odontologia />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/fisioterapia"
+            element={
+              <PrivateRoute requiredRoles={["1", "4"]}>
+                <Fisioterapia />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/enfermeria"
+            element={
+              <PrivateRoute requiredRoles={["1", "5"]}>
+                <Enfermeria />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/medicina-general"
+            element={
+              <PrivateRoute requiredRoles={["1", "2"]}>
+                <MedicinaGeneral />
               </PrivateRoute>
             }
           />

@@ -1,0 +1,36 @@
+.logout-button {
+    background: #007BFF; /* Azul moderno */
+    border: none;
+    color: white; /* Texto blanco para mejor contraste */
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px; /* Ajuste de padding para mejor apariencia */
+    width: 100%;
+    text-align: left;
+    border-radius: 5px; /* Bordes redondeados para un look moderno */
+    transition: background 0.3s ease; /* Transición suave para el hover */
+}
+
+.logout-button:hover {
+    background: #0056b3; /* Azul más oscuro al pasar el cursor */
+}
+
+  .user-info {
+    padding: 10px;
+    margin-bottom: 10px;
+    background-color: rgba(0, 123, 255, 0.1); /* Azul claro con transparencia */
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #007BFF; /* Texto azul para mejor contraste */
+    font-weight: bold; /* Texto en negrita para resaltar */
+    transition: background 0.3s ease, color 0.3s ease; /* Transición suave para el hover */
+}
+
+.user-info:hover {
+    background-color: rgba(0, 123, 255, 0.2); /* Azul más oscuro al pasar el cursor */
+    color: #0056b3; /* Texto azul más oscuro al pasar el cursor */
+}

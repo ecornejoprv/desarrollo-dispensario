@@ -1,10 +1,9 @@
-import React, { useState } from "react";
+import { useState, useEffect } from "react"; // Solo importa lo que necesitas
 import api from "../api"; // Importar la instancia de Axios
 import { useNavigate } from "react-router-dom";
 import { Container, TextField, Button, Typography, Box, InputAdornment, IconButton } from "@mui/material";
-import { AccountCircle, Lock, Input, Visibility, VisibilityOff, ControlCameraSharp } from "@mui/icons-material";
+import { AccountCircle, Lock, Input, Visibility, VisibilityOff } from "@mui/icons-material";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
-import { useEffect } from "react";
 
 const theme = createTheme({
   palette: {
@@ -60,7 +59,7 @@ export default function Login() {
         } else {
             setError(data.msg || "Error during login.");
         }
-    } catch (error) {
+    } catch {
         setError("Invalid credentials. Please try again.");
     }
 };

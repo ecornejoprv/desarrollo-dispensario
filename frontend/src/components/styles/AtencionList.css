@@ -1,0 +1,55 @@
+.atencion-list {
+  margin-top: 20px;
+  overflow-x: auto; /* Permite scroll horizontal solo si es necesario */
+}
+
+.tabla-atenciones {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed; /* Fija el ancho de las columnas */
+}
+
+.tabla-atenciones th, .tabla-atenciones td {
+  padding: 10px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.tabla-atenciones th {
+  background-color: #f4f4f4;
+}
+
+.tabla-atenciones .atencion-row:hover {
+  background-color: #f9f9f9;
+  cursor: pointer;
+}
+
+/* Ajustar el ancho de las columnas */
+.tabla-atenciones th:nth-child(1), .tabla-atenciones td:nth-child(1) {
+  width: 15%; /* Fecha ocupa el 15% del ancho */
+}
+
+.tabla-atenciones th:nth-child(2), .tabla-atenciones td:nth-child(2) {
+  width: 65%; /* Motivo ocupa el 65% del ancho */
+}
+
+.tabla-atenciones th:nth-child(3), .tabla-atenciones td:nth-child(3) {
+  width: 20%; /* Especialidad ocupa el 20% del ancho */
+}
+
+/* Estilos para el motivo truncado y expandido */
+.motivo-truncado {
+  cursor: pointer; /* Cambiar el cursor al pasar sobre el motivo */
+  white-space: nowrap; /* Evitar que el texto se divida en varias líneas */
+  overflow: hidden; /* Ocultar el contenido que se desborda */
+  text-overflow: ellipsis; /* Mostrar "..." si el texto es demasiado largo */
+}
+
+.motivo-expandido {
+  white-space: normal; /* Permite que el texto se divida en varias líneas */
+  overflow: visible; /* Muestra todo el contenido */
+  text-overflow: clip; /* No muestra "..." */
+}
+.motivo-truncado, .motivo-expandido {
+  cursor: pointer; /* Cambiar el cursor al pasar sobre el motivo */
+}

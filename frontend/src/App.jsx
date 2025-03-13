@@ -10,7 +10,7 @@ import Fisioterapia from "./pages/Fisioterapia";
 import Enfermeria from "./pages/Enfermeria";
 import MedicinaGeneral from "./pages/MedicinaGeneral";
 import Atencita from "./pages/Atencita";
-
+import HistoriaClinica from "./pages/HistoriaClinica";
 
 function App() {
   return (
@@ -42,6 +42,14 @@ function App() {
             element={
               <PrivateRoute>
                 <Pacientes />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/historia-clinica"
+            element={
+              <PrivateRoute>
+                <HistoriaClinica />
               </PrivateRoute>
             }
           />

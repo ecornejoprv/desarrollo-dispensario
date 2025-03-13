@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Menu, X, User, Calendar, Stethoscope, Activity, LogOut } from "lucide-react";
 import { logout } from "../api"; // Ajusta la ruta según tu estructura
 import "./styles/Navbar.css";
+import PropTypes from 'prop-types';
 
 export default function Navbar({ open, setOpen }) {
   const role = localStorage.getItem("role");
@@ -35,7 +36,9 @@ export default function Navbar({ open, setOpen }) {
           <Link to="/pacientes" onClick={() => setOpen(false)}>
             <Stethoscope size={18} /> Ingreso Pacientes
           </Link>
-
+          <Link to="/historia-clinica" onClick={() => setOpen(false)}>
+            <Stethoscope size={18} /> Historia Clinica
+          </Link>
           {/* Enlaces específicos basados en el rol */}
           {(role == 1 || role == 2 || role == 3 || role == 4 || role == 5) && (
             <div>
@@ -67,4 +70,9 @@ export default function Navbar({ open, setOpen }) {
       </div>
     </>
   );
+  
 }
+Navbar.propTypes = {
+  open: PropTypes.bool.isRequired,
+  setOpen: PropTypes.func.isRequired,
+};

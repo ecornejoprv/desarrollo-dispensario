@@ -113,3 +113,46 @@
   background-color: #e0e0e0;
   cursor: not-allowed;
 }
+/* Agrega estos estilos en tu archivo citas.css */
+.pacientes-list {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+  border: 1px solid #ccc;
+  max-height: 150px;
+  overflow-y: auto;
+  position: absolute;
+  background-color: white;
+  z-index: 1000;
+  width: 100%;
+}
+
+.pacientes-list li {
+  padding: 8px;
+  cursor: pointer;
+}
+
+.pacientes-list li:hover {
+  background-color: #f0f0f0;
+}
+.pagination-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.pagination-controls button {
+  padding: 5px 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.pagination-controls button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}

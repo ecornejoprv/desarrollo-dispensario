@@ -50,7 +50,7 @@ export default function Navbar({ open, setOpen }) {
                   <Link to="/fisioterapia" onClick={() => setOpen(false)}>Fisioterapia</Link>
                 )}
                 {(role == 1 || role == 5) && (
-                  <Link to="/enfermeria" onClick={() => setOpen(false)}>Enfermería</Link>
+                  <Link to="/atencita" onClick={() => setOpen(false)}>Enfermería</Link>
                 )}
                 {(role == 1 || role == 2) && (
                   <Link to="/medicina-general" onClick={() => setOpen(false)}>Medicina General</Link>

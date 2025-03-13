@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios"; // Asegúrate de importar axios
-import "./styles/citas.css"; // Estilos para la interfaz
+import axios from "axios";
+import "./styles/citas.css";
 
 const Citas = () => {
-  const [citas, setCitas] = useState([]); // Estado para almacenar las citas
-  const [pacientes, setPacientes] = useState([]); // Estado para almacenar los pacientes
-  const [searchPaciente, setSearchPaciente] = useState(""); // Estado para buscar pacientes
+  const [citas, setCitas] = useState([]);
+  const [pacientes, setPacientes] = useState([]);
+  const [searchPaciente, setSearchPaciente] = useState("");
   const [formData, setFormData] = useState({
     cita_cod_pacie: "",
     cita_cod_espe: "",
@@ -16,9 +16,8 @@ const Citas = () => {
     cita_est_cita: "",
     cita_obs_cita: "",
   });
-  const [editingCita, setEditingCita] = useState(null); // Estado para manejar la edición
+  const [editingCita, setEditingCita] = useState(null);
 
-  // Lista de especialidades predefinidas
   const especialidades = [
     "MEDICINA GENERAL",
     "ODONTOLOGÍA",
@@ -26,67 +25,76 @@ const Citas = () => {
     "ENFERMERÍA",
   ];
 
-  // Obtener todas las citas al cargar el componente
   useEffect(() => {
     fetchCitas();
   }, []);
 
-  // Obtener pacientes al buscar
+  // Obtener pacientes cuando se escribe en el campo de búsqueda
   useEffect(() => {
     if (searchPaciente) {
       fetchPacientes();
+    } else {
+      setPacientes([]); // Limpiar la lista si no hay búsqueda
     }
   }, [searchPaciente]);
 
-  // Función para obtener las citas desde el backend
+  // Obtener las citas
   const fetchCitas = async () => {
     try {
-      const { data } = await axios.get("/api/v1/citas"); // Usar axios.get
+      const { data } = await axios.get("/api/v1/citas");
       setCitas(data);
     } catch (error) {
       console.error("Error fetching citas:", error);
     }
   };
 
-   // Función para obtener pacientes desde el backend
-   const fetchPacientes = async () => {
+  // Obtener los pacientes basados en la búsqueda
+  const fetchPacientes = async () => {
     try {
       const { data } = await axios.get("/api/v1/pacientes", {
         params: { search: searchPaciente },
       });
-      setPacientes(data);
+      console.log("Respuesta de la API:", data); // Verificar la respuesta de la API
+      setPacientes(data.pacientes); // Asegúrate de que la API devuelve un array en `data.pacientes`
     } catch (error) {
       console.error("Error fetching pacientes:", error);
     }
   };
-  // Función para manejar cambios en el formulario
+
+  // Obtener un paciente por su código
+  const fetchPacienteById = async (id) => {
+    try {
+      const { data } = await axios.get(`/api/v1/pacientes/${id}`);
+      return data; // Devuelve los datos del paciente
+    } catch (error) {
+      console.error("Error fetching paciente by ID:", error);
+      return null;
+    }
+  };
+
+  // Manejar cambios en los campos del formulario
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
-  // Función para manejar la selección de un paciente
+  // Seleccionar un paciente de la lista
   const handleSelectPaciente = (paciente) => {
-    setFormData({ ...formData, cita_cod_pacie: paciente.pac_codigo });
-    setSearchPaciente(`${paciente.pac_nombres} ${paciente.pac_apellidos}`);
+    setFormData({ ...formData, cita_cod_pacie: paciente.pacie_cod_pacie }); // Guardar el código del paciente
+    setSearchPaciente(`${paciente.pacie_nom_pacie} ${paciente.pacie_ape_pacie}`); // Mostrar nombre completo en el campo de búsqueda
     setPacientes([]); // Limpiar la lista de pacientes después de seleccionar uno
   };
 
-  // Función para crear o actualizar una cita
+  // Manejar el envío del formulario
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       if (editingCita) {
-        // Si estamos editando, hacemos una solicitud PUT
-        await axios.put(
-          `/api/v1/citas/${editingCita.cita_cod_cita}`,
-          formData
-        );
+        await axios.put(`/api/v1/citas/${editingCita.cita_cod_cita}`, formData);
       } else {
-        // Si no, hacemos una solicitud POST para crear una nueva cita
         await axios.post("/api/v1/citas", formData);
       }
-      fetchCitas(); // Actualizar la lista de citas
+      fetchCitas();
       setFormData({
         cita_cod_pacie: "",
         cita_cod_espe: "",
@@ -97,23 +105,32 @@ const Citas = () => {
         cita_est_cita: "",
         cita_obs_cita: "",
       });
-      setEditingCita(null); // Limpiar el estado de edición
+      setEditingCita(null);
+      setSearchPaciente(""); // Limpiar el campo de búsqueda
     } catch (error) {
       console.error("Error saving cita:", error);
     }
   };
 
-  // Función para editar una cita
-  const handleEdit = (cita) => {
-    setFormData(cita);
+  // Editar una cita
+  const handleEdit = async (cita) => {
+    setFormData(cita); // Actualizar el formulario con los datos de la cita
     setEditingCita(cita);
+
+    // Obtener el nombre del paciente basado en cita_cod_pacie
+    if (cita.cita_cod_pacie) {
+      const paciente = await fetchPacienteById(cita.cita_cod_pacie);
+      if (paciente) {
+        setSearchPaciente(`${paciente.pacie_nom_pacie} ${paciente.pacie_ape_pacie}`); // Mostrar nombre completo en el campo de búsqueda
+      }
+    }
   };
 
-  // Función para eliminar una cita
+  // Eliminar una cita
   const handleDelete = async (cita_cod_cita) => {
     try {
       await axios.delete(`/api/v1/citas/${cita_cod_cita}`);
-      fetchCitas(); // Actualizar la lista de citas
+      fetchCitas();
     } catch (error) {
       console.error("Error deleting cita:", error);
     }
@@ -123,25 +140,33 @@ const Citas = () => {
     <div className="citas-container">
       <h1>Agendamiento de Citas</h1>
 
-      {/* Formulario para crear/editar citas */}
       <form onSubmit={handleSubmit} className="cita-form">
         <h2>{editingCita ? "Editar Cita" : "Crear Nueva Cita"}</h2>
 
+        {/* Campo de búsqueda de paciente */}
+        <div className="form-group">
+          <label>Paciente:</label>
+          <input
+            type="text"
+            placeholder="Buscar por cédula o apellido"
+            value={searchPaciente}
+            onChange={(e) => setSearchPaciente(e.target.value)}
+          />
+          {pacientes.length > 0 && (
+            <ul className="pacientes-list">
+              {pacientes.map((paciente) => (
+                <li
+                  key={paciente.pac_codigo} // Key única para cada paciente
+                  onClick={() => handleSelectPaciente(paciente)}
+                >
+                  {paciente.pacie_nom_pacie} {paciente.pacie_ape_pacie} - {paciente.pacie_ced_pacie}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
 
-       {/* Campo de búsqueda de paciente */}
-       <div className="form-group">
-       <label>Paciente:</label>
-        <input
-          type="text"
-          name="cita_cod_pacie"
-          placeholder="Codigo paciente"
-          value={formData.cita_cod_pacie}
-          onChange={handleInputChange}
-          required
-        />
-         </div>
-
-        {/* Campo de especialidad */}
+        {/* Resto del formulario */}
         <div className="form-group">
           <label>Especialidad:</label>
           <select
@@ -159,7 +184,6 @@ const Citas = () => {
           </select>
         </div>
 
-        {/* Resto del formulario */}
         <input
           type="time"
           name="cita_hor_cita"
@@ -172,7 +196,6 @@ const Citas = () => {
           type="date"
           name="cita_fec_cita"
           placeholder="Fecha de la Cita"
-
           value={
             formData.cita_fec_cita
               ? new Date(formData.cita_fec_cita.split("/").reverse().join("-"))
@@ -180,7 +203,6 @@ const Citas = () => {
                   .split("T")[0]
               : ""
           }
-
           onChange={handleInputChange}
           required
         />
@@ -217,7 +239,6 @@ const Citas = () => {
         <button type="submit">{editingCita ? "Actualizar" : "Crear"}</button>
       </form>
 
-      {/* Lista de citas */}
       <div className="citas-list">
         <h2>Lista de Citas</h2>
         {citas.length === 0 ? (

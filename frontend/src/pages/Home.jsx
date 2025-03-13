@@ -8,33 +8,33 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // Función para obtener las citas pendientes
-  const fetchCitasPendientes = async () => {
-    try {
-      // Obtener citas para hoy
-      const responseHoy = await api.get("/api/v1/citas/hoy");
-      setCitasHoy(responseHoy.data.count);
+  // // Función para obtener las citas pendientes
+  // const fetchCitasPendientes = async () => {
+  //   try {
+  //     // Obtener citas para hoy
+  //     const responseHoy = await api.get("/api/v1/citas/hoy");
+  //     setCitasHoy(responseHoy.data.count);
 
-      // Obtener citas para mañana
-      const responseManana = await api.get("/api/v1/citas/manana");
-      setCitasManana(responseManana.data.count);
+  //     // Obtener citas para mañana
+  //     const responseManana = await api.get("/api/v1/citas/manana");
+  //     setCitasManana(responseManana.data.count);
 
-      // Obtener citas para esta semana
-      const responseSemana = await api.get("/api/v1/citas/semana");
-      setCitasSemana(responseSemana.data.count);
+  //     // Obtener citas para esta semana
+  //     const responseSemana = await api.get("/api/v1/citas/semana");
+  //     setCitasSemana(responseSemana.data.count);
 
-      setLoading(false);
-    } catch (error) {
-      console.error("Error fetching citas:", error);
-      setError("Error al cargar las citas. Inténtalo de nuevo más tarde.");
-      setLoading(false);
-    }
-  };
+  //     setLoading(false);
+  //   } catch (error) {
+  //     console.error("Error fetching citas:", error);
+  //     setError("Error al cargar las citas. Inténtalo de nuevo más tarde.");
+  //     setLoading(false);
+  //   }
+  // };
 
   // Ejecutar la función al cargar el componente
-  useEffect(() => {
-    fetchCitasPendientes();
-  }, []);
+  //useEffect(() => {
+  //  fetchCitasPendientes();
+ // }, []);
 
   return (
     <div className="home">

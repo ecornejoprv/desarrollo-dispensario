@@ -1,115 +1,289 @@
-import React, { useState } from "react";
-import "./styles/odontologia.css";
+import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom"; // Importamos useLocation para recibir datos
+import axios from "axios";
+import "./styles/enfermeria.css";
 
-const dientesSuperiores = [
-  { id: 1, nombre: "Incisivo central superior derecho" },
-  { id: 2, nombre: "Incisivo lateral superior derecho" },
-  { id: 3, nombre: "Canino superior derecho" },
-  { id: 4, nombre: "Premolar superior derecho" },
-  { id: 5, nombre: "Premolar superior izquierdo" },
-  { id: 6, nombre: "Canino superior izquierdo" },
-  { id: 7, nombre: "Incisivo lateral superior izquierdo" },
-  { id: 8, nombre: "Incisivo central superior izquierdo" }
-];
+const Enfermeria = () => {
+  const location = useLocation();
+  const { cita } = location.state || {}; // Recibimos los datos de la cita seleccionada
 
-const dientesInferiores = [
-  { id: 9, nombre: "Incisivo central inferior derecho" },
-  { id: 10, nombre: "Incisivo lateral inferior derecho" },
-  { id: 11, nombre: "Canino inferior derecho" },
-  { id: 12, nombre: "Premolar inferior derecho" },
-  { id: 13, nombre: "Premolar inferior izquierdo" },
-  { id: 14, nombre: "Canino inferior izquierdo" },
-  { id: 15, nombre: "Incisivo lateral inferior izquierdo" },
-  { id: 16, nombre: "Incisivo central inferior izquierdo" }
-];
+  const [atenciones, setAtenciones] = useState([]);
+  const [pacientes, setPacientes] = useState([]);
+  const [searchPaciente, setSearchPaciente] = useState("");
+  const [formData, setFormData] = useState({
+    aten_cod_pacie: cita ? cita.cita_cod_pacie : "", // Prellenamos el código del paciente si hay una cita
+    aten_presion: "",
+    aten_temp: "",
+    aten_frec_card: "",
+    aten_frec_resp: "",
+    aten_peso: "",
+    aten_talla: "",
+    aten_observaciones: "",
+  });
+  const [editingAtencion, setEditingAtencion] = useState(null);
 
-const Odontologia = () => {
-  const [dientesSeleccionados, setDientesSeleccionados] = useState({});
+  // Obtener todas las atenciones al cargar el componente
+  useEffect(() => {
+    fetchAtenciones();
+  }, []);
 
-  // Manejo de selección de dientes
-  const handleDienteClick = (id, nombre) => {
-    setDientesSeleccionados((prev) => ({
-      ...prev,
-      [id]: prev[id] ? undefined : { nombre, diagnostico: "" }
-    }));
+  // Obtener pacientes al buscar
+  useEffect(() => {
+    if (searchPaciente) {
+      fetchPacientes();
+    }
+  }, [searchPaciente]);
+
+  // Función para obtener las atenciones desde el backend
+  const fetchAtenciones = async () => {
+    try {
+      const { data } = await axios.get("/api/v1/atenciones-enfermeria");
+      setAtenciones(data);
+    } catch (error) {
+      console.error("Error fetching atenciones:", error);
+    }
   };
 
-  // Manejo del diagnóstico
-  const handleDiagnosticoChange = (id, diagnostico) => {
-    setDientesSeleccionados((prev) => ({
-      ...prev,
-      [id]: { ...prev[id], diagnostico }
-    }));
+  // Función para obtener pacientes desde el backend
+  const fetchPacientes = async () => {
+    try {
+      const { data } = await axios.get("/api/v1/pacientes", {
+        params: { search: searchPaciente },
+      });
+      setPacientes(data);
+    } catch (error) {
+      console.error("Error fetching pacientes:", error);
+    }
   };
 
-  // Enviar formulario
-  const handleSubmit = (e) => {
+  // Función para manejar cambios en el formulario
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
+
+  // Función para manejar la selección de un paciente
+  const handleSelectPaciente = (paciente) => {
+    setFormData({ ...formData, aten_cod_pacie: paciente.pac_codigo });
+    setSearchPaciente(`${paciente.pac_nombres} ${paciente.pac_apellidos}`);
+    setPacientes([]); // Limpiar la lista de pacientes después de seleccionar uno
+  };
+
+  // Función para crear o actualizar una atención
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const diagnosticosFinales = Object.entries(dientesSeleccionados)
-      .filter(([_, data]) => data !== undefined)
-      .map(([_, data]) => data);
+    try {
+      if (editingAtencion) {
+        // Si estamos editando, hacemos una solicitud PUT
+        await axios.put(
+          `/api/v1/atenciones-enfermeria/${editingAtencion.aten_cod_aten}`,
+          formData
+        );
+      } else {
+        // Si no, hacemos una solicitud POST para crear una nueva atención
+        await axios.post("/api/v1/atenciones-enfermeria", formData);
+      }
+      fetchAtenciones(); // Actualizar la lista de atenciones
+      setFormData({
+        aten_cod_pacie: "",
+        aten_presion: "",
+        aten_temp: "",
+        aten_frec_card: "",
+        aten_frec_resp: "",
+        aten_peso: "",
+        aten_talla: "",
+        aten_observaciones: "",
+      });
+      setEditingAtencion(null); // Limpiar el estado de edición
+    } catch (error) {
+      console.error("Error saving atencion:", error);
+    }
+  };
 
-    console.log("Registro de atención:", diagnosticosFinales);
-    // Aquí podrías enviar los datos al backend
+  // Función para editar una atención
+  const handleEdit = (atencion) => {
+    setFormData(atencion);
+    setEditingAtencion(atencion);
+  };
+
+  // Función para eliminar una atención
+  const handleDelete = async (aten_cod_aten) => {
+    try {
+      await axios.delete(`/api/v1/atenciones-enfermeria/${aten_cod_aten}`);
+      fetchAtenciones(); // Actualizar la lista de atenciones
+    } catch (error) {
+      console.error("Error deleting atencion:", error);
+    }
   };
 
   return (
-    <div className="odontologia-container">
-      <h1>Atención Odontológica</h1>
-      <form onSubmit={handleSubmit} className="odontologia-form">
-        {/* Simulación de dentadura */}
-        <div className="dentadura">
-          <h3>Seleccione los dientes:</h3>
+    <div className="aten-enfer-container">
+      <h1>Registro de Atenciones de Enfermería</h1>
 
-          <div className="dientes-superiores">
-            {dientesSuperiores.map((diente) => (
-              <button
-                key={diente.id}
-                type="button"
-                className={`diente ${dientesSeleccionados[diente.id] ? "seleccionado" : ""}`}
-                onClick={() => handleDienteClick(diente.id, diente.nombre)}
-              >
-                {diente.id}
-              </button>
-            ))}
-          </div>
+      {/* Mostrar información de la cita seleccionada */}
+      {cita && (
+        <div className="cita-info">
+          <h2>Información de la Cita</h2>
+          <p>
+            <strong>Paciente:</strong> {cita.cita_cod_pacie}
+          </p>
+          <p>
+            <strong>Médico:</strong> {cita.cita_nom_medi}
+          </p>
+          <p>
+            <strong>Fecha:</strong> {cita.cita_fec_cita}
+          </p>
+          <p>
+            <strong>Hora:</strong> {cita.cita_hor_cita}
+          </p>
+        </div>
+      )}
 
-          <div className="dientes-inferiores">
-            {dientesInferiores.map((diente) => (
-              <button
-                key={diente.id}
-                type="button"
-                className={`diente ${dientesSeleccionados[diente.id] ? "seleccionado" : ""}`}
-                onClick={() => handleDienteClick(diente.id, diente.nombre)}
-              >
-                {diente.id}
-              </button>
-            ))}
-          </div>
+      {/* Formulario para crear/editar atenciones */}
+      <form onSubmit={handleSubmit} className="aten-enfer-form">
+        <h2>{editingAtencion ? "Editar Atención" : "Crear Nueva Atención"}</h2>
+
+        {/* Campo de búsqueda de paciente */}
+        <div className="form-group">
+          <label>Paciente:</label>
+          <input
+            type="text"
+            placeholder="Buscar paciente por cédula o apellidos"
+            value={searchPaciente}
+            onChange={(e) => setSearchPaciente(e.target.value)}
+          />
+          {pacientes.length > 0 && (
+            <ul className="pacientes-list">
+              {pacientes.map((paciente) => (
+                <li
+                  key={paciente.pac_codigo}
+                  onClick={() => handleSelectPaciente(paciente)}
+                >
+                  {paciente.pac_nombres} {paciente.pac_apellidos} -{" "}
+                  {paciente.pac_cedula}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
 
-        {/* Diagnósticos */}
-        {Object.entries(dientesSeleccionados)
-          .filter(([_, data]) => data !== undefined)
-          .map(([id, data]) => (
-            <div key={id} className="diagnostico">
-              <p><strong>{data.nombre}</strong></p>
-              <input
-                type="text"
-                placeholder="Ingrese diagnóstico"
-                value={data.diagnostico}
-                onChange={(e) => handleDiagnosticoChange(id, e.target.value)}
-              />
-            </div>
-          ))}
+        {/* Campos para los signos vitales */}
+        <div className="form-group">
+          <label>Presión Arterial:</label>
+          <input
+            type="text"
+            name="aten_presion"
+            placeholder="Ej: 120/80"
+            value={formData.aten_presion}
+            onChange={handleInputChange}
+            required
+          />
+        </div>
 
-        {/* Botón de confirmación */}
-        <button type="submit" className="submit-button">
-          Registrar Atención
-        </button>
+        <div className="form-group">
+          <label>Temperatura (°C):</label>
+          <input
+            type="number"
+            name="aten_temp"
+            placeholder="Ej: 36.5"
+            value={formData.aten_temp}
+            onChange={handleInputChange}
+            required
+          />
+        </div>
+
+        <div className="form-group">
+          <label>Frecuencia Cardíaca (lpm):</label>
+          <input
+            type="number"
+            name="aten_frec_card"
+            placeholder="Ej: 80"
+            value={formData.aten_frec_card}
+            onChange={handleInputChange}
+            required
+          />
+        </div>
+
+        <div className="form-group">
+          <label>Frecuencia Respiratoria (rpm):</label>
+          <input
+            type="number"
+            name="aten_frec_resp"
+            placeholder="Ej: 16"
+            value={formData.aten_frec_resp}
+            onChange={handleInputChange}
+            required
+          />
+        </div>
+
+        <div className="form-group">
+          <label>Peso (kg):</label>
+          <input
+            type="number"
+            name="aten_peso"
+            placeholder="Ej: 70"
+            value={formData.aten_peso}
+            onChange={handleInputChange}
+            required
+          />
+        </div>
+
+        <div className="form-group">
+          <label>Talla (cm):</label>
+          <input
+            type="number"
+            name="aten_talla"
+            placeholder="Ej: 170"
+            value={formData.aten_talla}
+            onChange={handleInputChange}
+            required
+          />
+        </div>
+
+        <div className="form-group">
+          <label>Observaciones:</label>
+          <textarea
+            name="aten_observaciones"
+            placeholder="Observaciones de enfermería"
+            value={formData.aten_observaciones}
+            onChange={handleInputChange}
+          />
+        </div>
+
+        <button type="submit">{editingAtencion ? "Actualizar" : "Crear"}</button>
       </form>
+
+      {/* Lista de atenciones */}
+      <div className="aten-enfer-list">
+        <h2>Lista de Atenciones</h2>
+        {atenciones.length === 0 ? (
+          <p>No hay atenciones registradas.</p>
+        ) : (
+          <ul>
+            {atenciones.map((atencion) => (
+              <li key={atencion.aten_cod_aten} className="atencion-item">
+                <div>
+                  <strong>Paciente:</strong> {atencion.aten_cod_pacie} |{" "}
+                  <strong>Presión:</strong> {atencion.aten_presion} |{" "}
+                  <strong>Temp:</strong> {atencion.aten_temp}°C |{" "}
+                  <strong>FC:</strong> {atencion.aten_frec_card} lpm |{" "}
+                  <strong>FR:</strong> {atencion.aten_frec_resp} rpm |{" "}
+                  <strong>Peso:</strong> {atencion.aten_peso} kg |{" "}
+                  <strong>Talla:</strong> {atencion.aten_talla} cm
+                </div>
+                <div>
+                  <button onClick={() => handleEdit(atencion)}>Editar</button>
+                  <button onClick={() => handleDelete(atencion.aten_cod_aten)}>
+                    Eliminar
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </div>
   );
 };
 
-export default Odontologia;
+export default Enfermeria;

@@ -9,6 +9,8 @@ import Odontologia from "./pages/Odontologia";
 import Fisioterapia from "./pages/Fisioterapia";
 import Enfermeria from "./pages/Enfermeria";
 import MedicinaGeneral from "./pages/MedicinaGeneral";
+import Atencita from "./pages/Atencita";
+
 
 function App() {
   return (
@@ -60,10 +62,10 @@ function App() {
             }
           />
           <Route
-            path="/enfermeria"
+            path="/atencita"
             element={
               <PrivateRoute requiredRoles={["1", "5"]}>
-                <Enfermeria />
+                <Atencita />
               </PrivateRoute>
             }
           />
@@ -72,6 +74,15 @@ function App() {
             element={
               <PrivateRoute requiredRoles={["1", "2"]}>
                 <MedicinaGeneral />
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/enfermeria"
+            element={
+              <PrivateRoute requiredRoles={["1", "2"]}>
+                <Enfermeria />
               </PrivateRoute>
             }
           />

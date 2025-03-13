@@ -8,6 +8,7 @@ const Citas = () => {
   const [searchPaciente, setSearchPaciente] = useState("");
   const [formData, setFormData] = useState({
     cita_cod_pacie: "",
+    cita_cod_sucu: "",
     cita_cod_espe: "",
     cita_hor_cita: "",
     cita_fec_cita: "",

@@ -18,6 +18,7 @@ export const getCitaById = async (cita_cod_cita) => {
 export const createCita = async (cita) => {
   const {
     cita_cod_pacie,
+    cita_cod_sucu,
     cita_cod_espe,
     cita_hor_cita,
     cita_fec_cita,
@@ -30,6 +31,7 @@ export const createCita = async (cita) => {
   const query = `
     INSERT INTO dispensario.dmcita (
       cita_cod_pacie,
+      cita_cod_sucu,
       cita_cod_espe,
       cita_hor_cita,
       cita_fec_cita,
@@ -43,6 +45,7 @@ export const createCita = async (cita) => {
 
   const values = [
     cita_cod_pacie,
+    cita_cod_sucu,
     cita_cod_espe,
     cita_hor_cita,
     cita_fec_cita,
@@ -65,6 +68,7 @@ export const createCita = async (cita) => {
 export const updateCita = async (cita_cod_cita, cita) => {
   const {
     cita_cod_pacie,
+    cita_cod_sucu,
     cita_cod_espe,
     cita_hor_cita,
     cita_fec_cita,
@@ -78,19 +82,21 @@ export const updateCita = async (cita_cod_cita, cita) => {
     UPDATE dispensario.dmcita
     SET
       cita_cod_pacie = $1,
-      cita_cod_espe = $2,
-      cita_hor_cita = $3,
-      cita_fec_cita = $4,
-      cita_nom_medi = $5,
-      cita_tie_est = $6,
-      cita_est_cita = $7,
-      cita_obs_cita = $8
-    WHERE cita_cod_cita = $9
+      cita_cod_sucu, = $2
+      cita_cod_espe = $3,
+      cita_hor_cita = $4,
+      cita_fec_cita = $5,
+      cita_nom_medi = $6,
+      cita_tie_est = $7,
+      cita_est_cita = $8,
+      cita_obs_cita = $9
+    WHERE cita_cod_cita = $10
     RETURNING *;
   `;
 
   const values = [
     cita_cod_pacie,
+    cita_cod_sucu,
     cita_cod_espe,
     cita_hor_cita,
     cita_fec_cita,

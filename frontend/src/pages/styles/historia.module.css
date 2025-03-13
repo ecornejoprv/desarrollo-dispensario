@@ -1,0 +1,180 @@
+.historiaClinicaContainer {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.filaBusqueda {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.input {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+.select {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+.button {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.button:hover {
+  background-color: #0056b3;
+}
+
+.tablaResultados {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.tablaResultados th,
+.tablaResultados td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.tablaResultados th {
+  background-color: #007bff;
+  color: white;
+}
+
+.filaResultado {
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.filaResultado:hover {
+  background-color: #f0f0f0;
+}
+
+.pacienteInfo {
+  margin-top: 20px;
+  padding: 15px;
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+.pacienteInfo h2 {
+  margin-bottom: 10px;
+  font-size: 1.5rem;
+  color: #333;
+}
+
+.tablaPaciente {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+.tablaPaciente td {
+  padding: 8px;
+  border-bottom: 1px solid #ddd;
+}
+
+.tablaPaciente td:first-child {
+  font-weight: bold;
+  width: 30%;
+}
+
+/* Estilos para las pestañas horizontales */
+.horizontalTabsContainer {
+  margin-top: 20px;
+}
+
+.tabsHeader {
+  display: flex;
+  gap: 10px;
+  border-bottom: 2px solid #007bff;
+}
+
+.tabButton {
+  padding: 10px 20px;
+  background-color: #f0f0f0;
+  border: none;
+  border-radius: 5px 5px 0 0;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.tabButton.active {
+  background-color: #007bff;
+  color: white;
+}
+
+.tabButton:hover {
+  background-color: #ddd;
+}
+
+.tabsContent {
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-top: none;
+  border-radius: 0 0 5px 5px;
+  background-color: #f9f9f9;
+}
+
+.tabContent {
+  font-size: 14px;
+}
+
+.paginacion {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.paginacion select {
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.paginacion button {
+  padding: 5px 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.paginacion button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.errorMessage {
+  color: red;
+  margin-top: 10px;
+}

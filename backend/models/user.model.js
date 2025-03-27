@@ -26,6 +26,21 @@ const findOneByUserName = async (username) => {
     return rows[0]
 }
 
+const getEspecialidadByMedicoId = async (medicoId) => {
+    const query = {
+      text: `
+        SELECT espe_nom_espe 
+        FROM dispensario.dmespec
+        JOIN dispensario.dmmedic ON dmespec.espe_cod_espe = dmmedic.medic_cod_espe
+        WHERE dmmedic.medic_cod_medic = $1
+      `,
+      values: [medicoId],
+    };
+  
+    const { rows } = await db.query(query);
+    return rows[0]?.espe_nom_espe || null; // Devuelve el nombre de la especialidad o null si no existe
+  };
+
 const findAll = async () => { 
     const query = {
         text: `
@@ -67,5 +82,6 @@ export const UserModel = {
     findOneByUserName,
     findAll,
     findOneByUid,
-    updateRoleMed
+    updateRoleMed,
+    getEspecialidadByMedicoId
 }

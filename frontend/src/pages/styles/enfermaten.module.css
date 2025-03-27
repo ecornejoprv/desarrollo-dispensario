@@ -1,0 +1,278 @@
+/* enfermaten.module.css */
+:root {
+  --primary-color: #2A5C82;       /* Azul profesional */
+  --secondary-color: #5DA8A3;     /* Verde/azul suave */
+  --accent-color: #FF7E67;        /* Coral para acentos */
+  --background-light: #F8F9FA;    /* Fondo claro */
+  --text-dark: #2C3E50;           /* Texto oscuro */
+  --text-light: #FFFFFF;          /* Texto claro */
+  --success-color: #28A745;       /* Verde éxito */
+  --error-color: #DC3545;         /* Rojo error */
+  --border-radius: 8px;
+  --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --transition: all 0.3s ease;
+}
+
+/* Estructura principal */
+.aten-enfer-container {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 2rem;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: var(--background-light);
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+}
+
+/* Encabezados */
+.aten-enfer-container h1 {
+  color: var(--primary-color);
+  text-align: center;
+  font-size: 2.5rem;
+  margin-bottom: 2rem;
+  position: relative;
+  padding-bottom: 0.5rem;
+}
+
+.aten-enfer-container h1::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120px;
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+}
+
+.aten-enfer-container h2 {
+  color: var(--primary-color);
+  font-size: 1.8rem;
+  margin: 2rem 0 1.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--secondary-color);
+}
+
+/* Información de la cita */
+.cita-info {
+  background: white;
+  padding: 2rem;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  margin-bottom: 2rem;
+  border: 1px solid #e0e0e0;
+}
+
+.cita-info p {
+  margin: 0.8rem 0;
+  font-size: 1.1rem;
+  color: var(--text-dark);
+}
+
+/* Formulario principal */
+.aten-enfer-form {
+  background: white;
+  padding: 2rem;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  margin-bottom: 2rem;
+  border: 1px solid #e0e0e0;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+  position: relative;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: var(--primary-color);
+  font-size: 1rem;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+  width: 100%;
+  max-width: 400px;
+  padding: 0.8rem 1rem;
+  border: 2px solid #e0e0e0;
+  border-radius: var(--border-radius);
+  font-size: 1rem;
+  transition: var(--transition);
+  background: #fff;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+  border-color: var(--secondary-color);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(93, 168, 163, 0.2);
+}
+
+/* Checkboxes y radio buttons */
+.form-group input[type="checkbox"] {
+  width: auto;
+  margin-right: 0.5rem;
+  transform: scale(1.2);
+}
+
+/* Secciones condicionales */
+.conditional-section {
+  padding: 1.5rem;
+  background: #f8fafc;
+  border-radius: var(--border-radius);
+  margin: 1.5rem 0;
+  border-left: 4px solid var(--secondary-color);
+}
+
+/* Botones */
+button {
+  padding: 0.8rem 1.5rem;
+  border: none;
+  border-radius: var(--border-radius);
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+button[type="submit"] {
+  background: var(--primary-color);
+  color: var(--text-light);
+  box-shadow: var(--box-shadow);
+}
+
+button[type="submit"]:hover {
+  background: #1d4661;
+  transform: translateY(-2px);
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(3px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  padding: 2rem;
+  border-radius: var(--border-radius);
+  width: 90%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.modal-content h2 {
+  color: var(--primary-color);
+  margin-bottom: 1.5rem;
+}
+
+/* Actividades de postconsulta */
+.actividad-item {
+  padding: 1rem;
+  margin: 0.5rem 0;
+  background: #fff;
+  border: 2px solid #e0e0e0;
+  border-radius: var(--border-radius);
+  transition: var(--transition);
+}
+
+.actividad-item:hover {
+  border-color: var(--secondary-color);
+  transform: translateX(5px);
+}
+
+.actividad-item label {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  cursor: pointer;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .aten-enfer-container {
+    padding: 1rem;
+  }
+  
+  .aten-enfer-form,
+  .cita-info {
+    padding: 1.5rem;
+  }
+  
+  .form-group input,
+  .form-group textarea,
+  .form-group select {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .aten-enfer-container h1 {
+    font-size: 2rem;
+  }
+  
+  .aten-enfer-container h2 {
+    font-size: 1.5rem;
+  }
+  
+  button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* Mejoras adicionales */
+textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+.error-message {
+  color: var(--error-color);
+  background: #fee;
+  padding: 1rem;
+  border-radius: var(--border-radius);
+  margin: 1rem 0;
+  border: 2px solid var(--error-color);
+}
+
+.success-message {
+  color: var(--success-color);
+  background: #e8f5e9;
+  padding: 1rem;
+  border-radius: var(--border-radius);
+  margin: 1rem 0;
+  border: 2px solid var(--success-color);
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

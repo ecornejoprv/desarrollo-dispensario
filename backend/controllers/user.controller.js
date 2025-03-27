@@ -54,50 +54,51 @@ const register = async (req, res) => {
 
 const login = async (req, res) => {
     try {
-        console.log(req.body);
-        const { username, password } = req.body;
-
-        if (!username || !password) {
-            return res.status(400).json({error: 'username and password are required'})
-        }
-
-        const user = await UserModel.findOneByUserName(username);
-        if(!user) {
-            return res.status(404).json({ 
-                ok: false, 
-                msg: 'username not found' 
-            })
-        }
-
-        const isMatch = await bcryptjs.compare(password, user.usua_pass_usua)
-
-        if (!isMatch) {
-            return res.status(401).json({ 
-                ok: false, 
-                msg: 'invalid password' 
-            })
-        }
-
-        const token = jwt.sign({ username: user.usua_nom_usua, role_id: user.role_id }, 
-            process.env.JWT_SECRET,
-            {
-                expiresIn: "1h"
-            }
-        )
-
-        return res.json({ 
-            ok: true, 
-            msg: {token, role_id: user.role_id, username: user.usua_nom_usua}       
-        })
-
+      const { username, password } = req.body;
+  
+      if (!username || !password) {
+        return res.status(400).json({ error: 'username and password are required' });
+      }
+  
+      const user = await UserModel.findOneByUserName(username);
+      if (!user) {
+        return res.status(404).json({ ok: false, msg: 'username not found' });
+      }
+  
+      const isMatch = await bcryptjs.compare(password, user.usua_pass_usua);
+      if (!isMatch) {
+        return res.status(401).json({ ok: false, msg: 'invalid password' });
+      }
+  
+      // Obtener la especialidad del médico
+      const especialidad = await UserModel.getEspecialidadByMedicoId(user.usua_cod_medic);
+  
+      const token = jwt.sign(
+        { 
+          username: user.usua_nom_usua, 
+          role_id: user.role_id, 
+          especialista: user.usua_cod_medic,
+          especialidad, // Incluir la especialidad en el token
+        }, 
+        process.env.JWT_SECRET,
+        { expiresIn: "1h" }
+      );
+  
+      return res.json({ 
+        ok: true, 
+        msg: { 
+          token, 
+          role_id: user.role_id, 
+          username: user.usua_nom_usua, 
+          especialista: user.usua_cod_medic,
+          especialidad, // Devolver la especialidad en la respuesta
+        },       
+      });
     } catch (error) {
-        console.log(error);
-        return res.status(500).json({ 
-            ok: false, 
-            msg: 'Internal server error' 
-        })
+      console.log(error);
+      return res.status(500).json({ ok: false, msg: 'Internal server error' });
     }
-}
+  };
 
 const logout = async (req, res) => {
     try {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios"; // Asegúrate de instalar axios: npm install axios
+import axios from "axios";
 import './styles/pacientes.css';
 
 export default function PacienteForm({ guardarPaciente, pacienteEditando }) {
@@ -38,21 +38,6 @@ export default function PacienteForm({ guardarPaciente, pacienteEditando }) {
   });
 
   const [errores, setErrores] = useState({});
-
-   // Convertir de DD/MM/YYYY a YYYY-MM-DD
-   const formatDateToInput = (dateString) => {
-    if (!dateString) return "";
-    const [day, month, year] = dateString.split("/");
-    return `${year}-${month}-${day}`;
-  };
-
-  // Convertir de YYYY-MM-DD a DD/MM/YYYY
-  const formatDateToDisplay = (dateString) => {
-    if (!dateString) return "";
-    const [year, month, day] = dateString.split("-");
-    return `${day}/${month}/${year}`;
-  };
-  // Estados para los datos de las tablas relacionadas
   const [tiposPacientes, settiposPacientes] = useState([]);
   const [zonas, setZonas] = useState([]);
   const [sexos, setSexos] = useState([]);
@@ -63,6 +48,10 @@ export default function PacienteForm({ guardarPaciente, pacienteEditando }) {
   const [orientacionesSexuales, setOrientacionesSexuales] = useState([]);
   const [generos, setGeneros] = useState([]);
   const [lateralidades, setLateralidades] = useState([]);
+  const [empresas, setEmpresas] = useState([]);
+  const [instituciones, setInstrucciones] = useState([]);
+  const [tiposSangre, setTiposSangre] = useState([]);
+  const [tiposDiscapacidad, setTiposDiscapacidad] = useState([]); // Nuevo estado para tipos de discapacidad
 
   // Obtener datos de las tablas relacionadas al cargar el componente
   useEffect(() => {
@@ -97,6 +86,19 @@ export default function PacienteForm({ guardarPaciente, pacienteEditando }) {
 
         const responseLateralidades = await axios.get("/api/lateralidades");
         setLateralidades(responseLateralidades.data);
+
+        const responseEmpresas = await axios.get("/api/empresas");
+        setEmpresas(responseEmpresas.data);
+
+        const responseInstrucciones = await axios.get("/api/instrucciones");
+        setInstrucciones(responseInstrucciones.data);
+
+        const responseTiposSangre = await axios.get("/api/tipos-sangre");
+        setTiposSangre(responseTiposSangre.data);
+
+        const responseTiposDiscapacidad = await axios.get("/api/tipos-discapacidad"); // Nuevo endpoint para tipos de discapacidad
+        setTiposDiscapacidad(responseTiposDiscapacidad.data);
+
       } catch (error) {
         console.error("Error al obtener datos:", error);
       }
@@ -246,8 +248,9 @@ export default function PacienteForm({ guardarPaciente, pacienteEditando }) {
             />
             {errores.pacie_ape_pacie && <span className="error">{errores.pacie_ape_pacie}</span>}
           </div>
-           {/* Tipo Paciente */}
-           <div className="form-group">
+
+          {/* Tipo Paciente */}
+          <div className="form-group">
             <label>Tipo Paciente:</label>
             <select
               name="pacie_tip_pacie"
@@ -261,35 +264,44 @@ export default function PacienteForm({ guardarPaciente, pacienteEditando }) {
                 </option>
               ))}
             </select>
-      </div>
+          </div>
+
           {/* Fecha de Nacimiento */}
           <div className="form-group">
-          <label>Fecha de Nacimiento:</label>
-          <input
-            type="date"
-            name="pacie_fec_nac"
-            value={
-              formData.pacie_fec_nac
-                ? new Date(formData.pacie_fec_nac.split("/").reverse().join("-"))
-                    .toISOString()
-                    .split("T")[0]
-                : ""
-            }
-            onChange={handleChange}
-          />
-          {errores.pacie_fec_nac && <span className="error">{errores.pacie_fec_nac}</span>}
+            <label>Fecha de Nacimiento:</label>
+            <input
+              type="date"
+              name="pacie_fec_nac"
+              value={
+                formData.pacie_fec_nac
+                  ? new Date(formData.pacie_fec_nac.split("/").reverse().join("-"))
+                      .toISOString()
+                      .split("T")[0]
+                  : ""
+              }
+              onChange={handleChange}
+            />
+            {errores.pacie_fec_nac && <span className="error">{errores.pacie_fec_nac}</span>}
           </div>
-      {/* <div className="form-group">
-        <label>Fecha de Nacimiento:</label>
-        <input
-          type="text"
-          value={formatDateToDisplay(formData.pacie_fec_nac)} // Mostrar en DD/MM/YYYY
-          readOnly // Hacer el campo de solo lectura
-        />
-      </div> */}
 
+          {/* Empresa */}
+          <div className="form-group">
+            <label>Empresa:</label>
+            <select
+              name="pacie_cod_empr"
+              value={formData.pacie_cod_empr}
+              onChange={handleChange}
+            >
+              <option value="">Seleccione una empresa</option>
+              {empresas.map((empresas) => (
+                <option key={empresas.empr_cod_empr} value={empresas.empr_cod_empr}>
+                  {empresas.empr_nom_empr}
+                </option>
+              ))}
+            </select>
+          </div>
 
-           {/* Campo de Zona */}
+          {/* Zona */}
           <div className="form-group">
             <label>Zona:</label>
             <select
@@ -304,7 +316,7 @@ export default function PacienteForm({ guardarPaciente, pacienteEditando }) {
                 </option>
               ))}
             </select>
-      </div>
+          </div>
 
           {/* Sexo */}
           <div className="form-group">
@@ -316,7 +328,7 @@ export default function PacienteForm({ guardarPaciente, pacienteEditando }) {
             >
               <option value="">Seleccione un sexo</option>
               {sexos.map((sexo) => (
-                <option key={sexo.dexo_cod_sexo} value={sexo.sexo_cod_sexo}>
+                <option key={sexo.sexo_cod_sexo} value={sexo.sexo_cod_sexo}>
                   {sexo.sexo_nom_sexo}
                 </option>
               ))}
@@ -339,6 +351,166 @@ export default function PacienteForm({ guardarPaciente, pacienteEditando }) {
               ))}
             </select>
           </div>
+
+          {/* Religión */}
+          <div className="form-group">
+            <label>Religión:</label>
+            <select
+              name="pacie_cod_relig"
+              value={formData.pacie_cod_relig}
+              onChange={handleChange}
+            >
+              <option value="">Seleccione una religión</option>
+              {religiones.map((religion) => (
+                <option key={religion.relig_cod_relig} value={religion.relig_cod_relig}>
+                  {religion.relig_nom_relig}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* País */}
+          <div className="form-group">
+            <label>País:</label>
+            <select
+              name="pacie_cod_pais"
+              value={formData.pacie_cod_pais}
+              onChange={handleChange}
+            >
+              <option value="">Seleccione un país</option>
+              {paises.map((pais) => (
+                <option key={pais.pais_cod_pais} value={pais.pais_cod_pais}>
+                  {pais.pais_nom_pais}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Institución */}
+          <div className="form-group">
+            <label>Instrucción:</label>
+            <select
+              name="pacie_cod_inst"
+              value={formData.pacie_cod_inst}
+              onChange={handleChange}
+            >
+              <option value="">Seleccione una</option>
+              {instituciones.map((institucion) => (
+                <option key={institucion.instr_cod_inst} value={institucion.instr_cod_inst}>
+                  {institucion.instr_nom_inst}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Etnia */}
+          <div className="form-group">
+            <label>Etnia:</label>
+            <select
+              name="pacie_cod_etnia"
+              value={formData.pacie_cod_etnia}
+              onChange={handleChange}
+            >
+              <option value="">Seleccione una etnia</option>
+              {etnias.map((etnia) => (
+                <option key={etnia.etnia_cod_etnia} value={etnia.etnia_cod_etnia}>
+                  {etnia.etnia_nom_etnia}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Orientación Sexual */}
+          <div className="form-group">
+            <label>Orientación Sexual:</label>
+            <select
+              name="pacie_cod_osex"
+              value={formData.pacie_cod_osex}
+              onChange={handleChange}
+            >
+              <option value="">Seleccione una orientación sexual</option>
+              {orientacionesSexuales.map((orientacion) => (
+                <option key={orientacion.dmosex_cod_osex} value={orientacion.dmosex_cod_osex}>
+                  {orientacion.dmosex_nom_osex}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Género */}
+          <div className="form-group">
+            <label>Género:</label>
+            <select
+              name="pacie_cod_gener"
+              value={formData.pacie_cod_gener}
+              onChange={handleChange}
+            >
+              <option value="">Seleccione un género</option>
+              {generos.map((genero) => (
+                <option key={genero.idgen_cod_idgen} value={genero.idgen_cod_idgen}>
+                  {genero.idgen_nom_idgen}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Lateralidad */}
+          <div className="form-group">
+            <label>Lateralidad:</label>
+            <select
+              name="pacie_late_pacie"
+              value={formData.pacie_late_pacie}
+              onChange={handleChange}
+            >
+              <option value="">Seleccione una lateralidad</option>
+              <option value="DE">DIESTRA</option>
+              <option value="IZ">ZURDA</option>
+              <option value="AM">AMBIDIESTRO</option>
+            </select>
+          </div>
+
+          {/* Tipo de Sangre */}
+          <div className="form-group">
+            <label>Tipo de Sangre:</label>
+            <select
+              name="pacie_cod_sangr"
+              value={formData.pacie_cod_sangr}
+              onChange={handleChange}
+            >
+              <option value="">Seleccione un tipo de sangre</option>
+              {tiposSangre.map((tipo) => (
+                <option key={tipo.tisan_cod_tisa} value={tipo.tisan_cod_tisa}>
+                  {tipo.tisan_nom_tisa}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Estado */}
+          <div className="form-group">
+            <label>Estado:</label>
+            <select
+              name="pacie_est_pacie"
+              value={formData.pacie_est_pacie}
+              onChange={handleChange}
+            >
+              <option value="A">Activo</option>
+              <option value="I">Inactivo</option>
+            </select>
+          </div>
+
+          {/* Empresa Familiar (condicional) */}
+          {formData.pacie_tip_pacie === "3" && (
+            <div className="form-group">
+              <label>Empresa Familiar:</label>
+              <input
+                type="text"
+                name="pacie_emp_famil"
+                value={formData.pacie_emp_famil}
+                onChange={handleChange}
+              />
+            </div>
+          )}
         </div>
       </div>
 
@@ -416,21 +588,10 @@ export default function PacienteForm({ guardarPaciente, pacienteEditando }) {
         </div>
       </div>
 
-      {/* Sección de Salud */}
+     {/* Sección de Salud */}
       <div className="form-section">
         <h3>🏥 Información de Salud</h3>
         <div className="form-grid">
-          {/* Tipo de Sangre */}
-          <div className="form-group">
-            <label>Tipo de Sangre:</label>
-            <input
-              type="text"
-              name="pacie_cod_sangr"
-              value={formData.pacie_cod_sangr}
-              onChange={handleChange}
-            />
-          </div>
-
           {/* Discapacidad */}
           <div className="form-group">
             <label>Discapacidad:</label>
@@ -439,19 +600,43 @@ export default function PacienteForm({ guardarPaciente, pacienteEditando }) {
               name="pacie_cod_disc"
               checked={formData.pacie_cod_disc}
               onChange={handleChange}
+              className="small-checkbox" // Clase para reducir el tamaño del checkbox
             />
           </div>
 
-          {/* Porcentaje de Discapacidad */}
-          <div className="form-group">
-            <label>Porcentaje de Discapacidad:</label>
-            <input
-              type="number"
-              name="pacie_por_disc"
-              value={formData.pacie_por_disc}
-              onChange={handleChange}
-            />
-          </div>
+          {/* Mostrar campos condicionales si hay discapacidad */}
+          {formData.pacie_cod_disc && (
+            <>
+              {/* Porcentaje de Discapacidad */}
+              <div className="form-group">
+                <label>Porcentaje de Discapacidad:</label>
+                <input
+                  type="number"
+                  name="pacie_por_disc"
+                  value={formData.pacie_por_disc}
+                  onChange={handleChange}
+                  className="small-input" // Clase para reducir el tamaño del input
+                />
+              </div>
+
+              {/* Tipo de Discapacidad */}
+              <div className="form-group">
+                <label>Tipo de Discapacidad:</label>
+                <select
+                  name="pacie_tipo_disc"
+                  value={formData.pacie_tipo_disc}
+                  onChange={handleChange}
+                >
+                  <option value="">Seleccione un tipo</option>
+                  {tiposDiscapacidad.map((tipo) => (
+                    <option key={tipo.disc_cod_disc} value={tipo.disc_cod_disc}>
+                      {tipo.disc_nombre_disc}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </>
+          )}
 
           {/* Enfermedad Catastrófica */}
           <div className="form-group">
@@ -461,10 +646,12 @@ export default function PacienteForm({ guardarPaciente, pacienteEditando }) {
               name="pacie_enf_catas"
               checked={formData.pacie_enf_catas}
               onChange={handleChange}
+              className="small-checkbox" // Clase para reducir el tamaño del checkbox
             />
           </div>
         </div>
       </div>
+
 
       {/* Botón de envío */}
       <button type="submit" className="submit-button">

@@ -45,14 +45,17 @@ export default function Login() {
     try {
         // Hacer la solicitud de login al backend
         const { data } = await api.post("/api/v1/users/login", { username, password });
+        //console.log(data);
   
         if (data.ok) {
             // Guardar el token y el rol en localStorage
             localStorage.setItem("token", data.msg.token);
             localStorage.setItem("role", data.msg.role_id);
             localStorage.setItem("username", data.msg.username);
+            localStorage.setItem("especialista", data.msg.especialista);
+            localStorage.setItem("especialidad", data.msg.especialidad);
 
-            console.log(data.msg.token, data.msg.role_id, data.msg.username);
+            console.log(data.msg.token, data.msg.role_id, data.msg.username, data.msg.especialista, data.msg.especialidad);
 
             // Redirigir a /home
             navigate("/Home");

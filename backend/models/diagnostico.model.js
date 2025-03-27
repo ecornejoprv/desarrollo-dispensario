@@ -14,3 +14,25 @@ export const getDiagnosticosByAtencionId = async (atencionId) => {
     const { rows } = await db.query(query, [atencionId]);
     return rows;
   };
+
+  // Registrar un diagnóstico
+  export const registrarDiagnostico = async (diagnosticoData) => {
+    const query = `
+      INSERT INTO dispensario.dmdiag (
+        diag_cod_aten,
+        diag_cod_cie10,
+        diag_obs_diag,
+        diag_est_diag
+      ) VALUES ($1, $2, $3, $4)
+      RETURNING diag_cod_diag;
+    `;
+  
+    const { rows } = await db.query(query, [
+      diagnosticoData.diag_cod_aten,
+      diagnosticoData.diag_cod_cie10,
+      diagnosticoData.diag_obs_diag,
+      diagnosticoData.diag_est_diag,
+    ]);
+  
+    return rows[0].diag_cod_diag; // Devuelve el ID del diagnóstico registrado
+  };

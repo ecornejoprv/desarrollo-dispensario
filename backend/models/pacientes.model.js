@@ -26,7 +26,13 @@ export const getAllPacientes = async (search = "", page = 1, limit = 10) => {
 
 // Obtener un paciente por ID
 export const getPacienteById = async (id) => {
-  const { rows } = await db.query("SELECT * FROM dispensario.dmpacie WHERE pacie_cod_pacie = $1", [id]);
+  const { rows } = await db.query(
+    `SELECT p.*, s.sexo_nom_sexo 
+     FROM dispensario.dmpacie p
+     LEFT JOIN dispensario.dmsexo s ON p.pacie_cod_sexo = s.sexo_cod_sexo
+     WHERE p.pacie_cod_pacie = $1`, 
+    [id]
+  );
   return rows[0];
 };
 

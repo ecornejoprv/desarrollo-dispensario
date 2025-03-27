@@ -1,0 +1,226 @@
+/* Estilos generales del contenedor */
+.container {
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.title {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+/* Estilos de la tabla principal */
+.tableContainer {
+  margin-top: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  overflow-x: auto;
+}
+
+.table {
+  min-width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+/* Estilos del encabezado de la tabla */
+.tableHead {
+  background-color: #4caf50;
+  position: sticky;
+  top: 0;
+}
+
+.tableHeadCell {
+  font-weight: bold;
+  color: white;
+  padding: 10px 8px;
+  text-align: center;
+}
+
+/* Estilos de las filas */
+.tableRow:hover {
+  background-color: rgba(76, 175, 80, 0.08);
+}
+
+/* Estilos compactos para la tabla de prescripciones */
+.compactTable {
+  width: 100%;
+  table-layout: auto;
+}
+
+.compactTable th, 
+.compactTable td {
+  padding: 6px 8px;
+  border: 1px solid #e0e0e0;
+  vertical-align: middle;
+}
+
+.compactTable th {
+  background-color: #f5f5f5;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Estilos específicos para columnas */
+.compactTable .productCell {
+  min-width: 220px;
+  max-width: 220px;
+}
+
+/* Estilos específicos para las celdas de la tabla de prescripciones */
+.compactTable .quantityCell {
+  width: 70px; /* Para 3 dígitos */
+  min-width: 70px;
+  max-width: 70px;
+}
+
+.compactTable .unitCell {
+  width: 50px; /* Para 2 dígitos */
+  min-width: 50px;
+  max-width: 50px;
+}
+
+.compactTable .doseCell {
+  width: 70px; /* Para 3 dígitos */
+  min-width: 70px;
+  max-width: 70px;
+}
+
+.compactTable .routeCell {
+  width: 80px; /* Ya está bien como está */
+  min-width: 80px;
+  max-width: 80px;
+}
+
+.compactTable .frequencyCell {
+  width: 100px; /* Ya está bien como está */
+  min-width: 100px;
+  max-width: 100px;
+}
+
+.compactTable .durationCell {
+  width: 50px; /* Para 2 dígitos */
+  min-width: 50px;
+  max-width: 50px;
+}
+
+.compactTable .indicationsCell {
+  min-width: 200px;
+}
+
+.compactTable .actionsCell {
+  width: 50px;
+  text-align: center;
+}
+
+/* Estilos para el Autocomplete de productos */
+.productAutocomplete {
+  width: 100%;
+}
+
+.productAutocomplete .MuiAutocomplete-inputRoot {
+  padding: 4px !important;
+  height: 36px;
+}
+
+.productAutocomplete .MuiInputBase-input {
+  padding: 8px 4px !important;
+  font-size: 0.875rem;
+}
+
+.productAutocomplete .MuiOutlinedInput-notchedOutline {
+  border-width: 1px !important;
+}
+
+/* Estilos para el dropdown del Autocomplete */
+.MuiAutocomplete-popper {
+  min-width: 300px !important;
+}
+
+.MuiAutocomplete-paper {
+  min-width: 300px !important;
+  max-width: 600px !important;
+}
+
+.MuiAutocomplete-option {
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  padding: 8px 16px !important;
+  line-height: 1.4 !important;
+  min-height: auto !important;
+}
+
+/* Estilos para los botones */
+.button {
+  background-color: #4caf50;
+  color: white;
+  font-weight: 500;
+  text-transform: none;
+  padding: 6px 12px;
+  font-size: 0.875rem;
+}
+
+.button:hover {
+  background-color: #45a049;
+}
+
+/* Estilos para el modal */
+.modalBox {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  max-width: 1200px;
+  max-height: 90vh;
+  overflow-y: auto;
+  background-color: white;
+  padding: 24px;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* En MedicinaGeneral.module.css */
+.externalPrescription {
+  background-color: #fff8e1; /* Fondo amarillo claro */
+}
+
+.internalPrescription {
+  background-color: #e8f5e9; /* Fondo verde claro */
+}
+
+/* Estilos para las tablas de Referencias e Indicaciones */
+.referenceTable, .indicationTable {
+  margin-bottom: 20px;
+}
+
+.referenceTable th, .indicationTable th {
+  background-color: #f5f5f5;
+  font-weight: 600;
+}
+
+.referenceTable td, .indicationTable td {
+  vertical-align: middle;
+}
+
+/* Estilos para los botones de agregar */
+.addButton {
+  margin-bottom: 20px;
+  border-color: #4caf50;
+  color: #4caf50;
+}
+
+.addButton:hover {
+  background-color: rgba(76, 175, 80, 0.08);
+  border-color: #3d8b40;
+  color: #3d8b40;
+}
+
+/* Estilos para los placeholders */
+.placeholderText {
+  color: #757575;
+  font-style: italic;
+}

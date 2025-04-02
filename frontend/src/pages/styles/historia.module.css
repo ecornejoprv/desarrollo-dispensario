@@ -178,3 +178,86 @@
   color: red;
   margin-top: 10px;
 }
+.historiaClinicaContainer {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+}
+
+.form {
+  margin-bottom: 20px;
+}
+
+.filaBusqueda {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.input {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  flex-grow: 1;
+}
+
+.select {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: white;
+}
+
+.button {
+  padding: 8px 16px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.button:hover {
+  background-color: #45a049;
+}
+
+.button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.tablaResultados {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+.tablaResultados th, 
+.tablaResultados td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+
+.tablaResultados th {
+  background-color: #f2f2f2;
+}
+
+.filaResultado {
+  cursor: pointer;
+}
+
+.filaResultado:hover {
+  background-color: #f5f5f5;
+}
+
+.errorMessage {
+  color: #d32f2f;
+  margin: 10px 0;
+}
+
+.pacienteInfo {
+  margin-bottom: 20px;
+}

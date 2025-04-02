@@ -24,9 +24,8 @@ import {
   Autocomplete,
   Grid,
   Chip,
-  FormGroup,
-FormControlLabel,
-Checkbox
+  FormControlLabel,
+  Checkbox,
 } from "@mui/material";
 import { Add, Delete, Search, Close } from "@mui/icons-material";
 import api from "../api";
@@ -41,6 +40,18 @@ import MonitorWeightIcon from "@mui/icons-material/MonitorWeight"; // Peso
 import HeightIcon from "@mui/icons-material/Height"; // Altura
 import CalculateIcon from "@mui/icons-material/Calculate"; // Cálculo (IMC)
 import LocalHospitalIcon from "@mui/icons-material/LocalHospital"; // Saturación O2
+import PrintIcon from "@mui/icons-material/LocalHospital";
+import Tabs from "@mui/material/Tabs";
+import Tab from "@mui/material/Tab";
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
+import CardHeader from "@mui/material/CardHeader";
+import {
+  MedicalServices,
+  Vaccines,
+  HealthAndSafety,
+  AssignmentInd,
+} from "@mui/icons-material";
 
 const especialidades = [
   "Todas",
@@ -87,7 +98,9 @@ const MedicinaGeneral = () => {
   const cie10SearchRef = useRef(null);
   const procedimientoSearchRef = useRef(null);
   const [openConfirmCancelModal, setOpenConfirmCancelModal] = useState(false);
-  const [tipoAtencion, setTipoAtencion] = useState("Subsecuente"); // Estado para el tipo de atención
+  const [tipoAtencionAuto, setTipoAtencionAuto] = useState("Subsecuente"); // Valor automático
+  const [tipoAtencionManual, setTipoAtencionManual] = useState(null); // Selección manual
+  const tipoAtencion = tipoAtencionManual || tipoAtencionAuto; // Valor final que se usará
 
   // Estados para manejar las prescripciones
   const [prescripciones, setPrescripciones] = useState([]);
@@ -95,10 +108,12 @@ const MedicinaGeneral = () => {
   const [referencias, setReferencias] = useState([]);
   const [indicacionesGenerales, setIndicacionesGenerales] = useState([]);
 
+  const [activeTab, setActiveTab] = useState("preventiva");
+
   // Estados para los tipos de atención
-  const [tipoAtencionPreventiva, setTipoAtencionPreventiva] = useState('');
+  const [tipoAtencionPreventiva, setTipoAtencionPreventiva] = useState("");
   const [vigilanciaSeleccionada, setVigilanciaSeleccionada] = useState([]);
-  const [morbilidadSeleccionada, setMorbilidadSeleccionada] = useState('');
+  const [morbilidadSeleccionada, setMorbilidadSeleccionada] = useState("");
   const [sistemasAfectados, setSistemasAfectados] = useState([]);
   const [tiposAccidente, setTiposAccidente] = useState([]);
   const [certificadoLaboral, setCertificadoLaboral] = useState(false);
@@ -107,47 +122,47 @@ const MedicinaGeneral = () => {
 
   // Opciones para los selects
   const opcionesPreventiva = [
-    'Evaluación Preocupacional',
-    'Evaluación de Retiro',
-    'Evaluación de Reintegro',
-    'Periódica (Control Médico anual)'
+    "Evaluación Preocupacional",
+    "Evaluación de Retiro",
+    "Evaluación de Reintegro",
+    "Periódica (Control Médico anual)",
   ];
 
   const opcionesVigilancia = [
-    'Expuestos a PIC',
-    'Expuestos a Riesgos Disergonómicos',
-    'Expuestos a Riesgo Biológico',
-    'Conservación Auditiva',
-    'Personal con Discapacidad',
-    'Control Prenatal',
-    'Control PAP Test',
-    'Planificación Familiar'
+    "Expuestos a PIC",
+    "Expuestos a Riesgos Disergonómicos",
+    "Expuestos a Riesgo Biológico",
+    "Conservación Auditiva",
+    "Personal con Discapacidad",
+    "Control Prenatal",
+    "Control PAP Test",
+    "Planificación Familiar",
   ];
 
   const opcionesMorbilidad = [
-    'Valoración por Accidente de Trabajo',
-    'Valoración de Enfermedad Ocupacional',
-    'Atención Pacientes Crónicos',
-    'Atención Enfermedad General'
+    "Valoración por Accidente de Trabajo",
+    "Valoración de Enfermedad Ocupacional",
+    "Atención Pacientes Crónicos",
+    "Atención Enfermedad General",
   ];
 
   const opcionesSistemas = [
-    'NEUROLOGICO',
-    'OFTALMOLOGICO',
-    'OTORRINOLARINGOLOGICO',
-    'RESPIRATORIO',
-    'CARDIOVASCULARES',
-    'METABOLICO',
-    'GASTROINTESTINAL',
-    'GENITOURINARIO',
-    'OSTEOMUSCULAR',
-    'DERMATOLOGICO'
+    "NEUROLOGICO",
+    "OFTALMOLOGICO",
+    "OTORRINOLARINGOLOGICO",
+    "RESPIRATORIO",
+    "CARDIOVASCULARES",
+    "METABOLICO",
+    "GASTROINTESTINAL",
+    "GENITOURINARIO",
+    "OSTEOMUSCULAR",
+    "DERMATOLOGICO",
   ];
 
   const opcionesAccidenteTrabajo = [
-    'ACCIDENTE LABORAL',
-    'ACCIDENTE IN ITINERE',
-    'ACCIDENTE DE TRABAJO'
+    "ACCIDENTE LABORAL",
+    "ACCIDENTE IN ITINERE",
+    "INCIDENTE DE TRABAJO",
   ];
 
   const calcularEdad = (fechaNacimiento) => {
@@ -257,9 +272,9 @@ const MedicinaGeneral = () => {
 
   const handleAtenderCita = async (cita) => {
     setSelectedCita(cita);
-    console.log(cita);
     const tipo = await verificarTipoAtencion(cita.cita_cod_pacie);
-    setTipoAtencion(tipo);
+    setTipoAtencionAuto(tipo);
+    setTipoAtencionManual(null);
     setOpenModal(true);
     buscarProductos("", cita.cita_cod_sucu);
   };
@@ -274,9 +289,9 @@ const MedicinaGeneral = () => {
     setPrescripciones([]);
     setReferencias([]);
     setIndicacionesGenerales([]);
-    setTipoAtencionPreventiva('');
+    setTipoAtencionPreventiva("");
     setVigilanciaSeleccionada([]);
-    setMorbilidadSeleccionada('');
+    setMorbilidadSeleccionada("");
     setSistemasAfectados([]);
     setTiposAccidente([]);
     setCertificadoLaboral(false);
@@ -304,9 +319,9 @@ const MedicinaGeneral = () => {
   const agregarProcedimiento = (indexDiagnostico) => {
     const nuevosDiagnosticos = [...diagnosticos];
     nuevosDiagnosticos[indexDiagnostico].procedimientos.push({
-      proc_cod_cie10: null,
-      pro10_ide_pro10: "",
-      pro10_nom_pro10: "",
+      proc_cod_cie10: 99,
+      pro10_ide_pro10: "M0001",
+      pro10_nom_pro10: "PROCEDIMINETOS DE MEDICINA INTERNA",
       proc_obs_proc: "",
     });
     setDiagnosticos(nuevosDiagnosticos);
@@ -505,8 +520,6 @@ const MedicinaGeneral = () => {
         aten_cert_aten: certificadoLaboral,
       };
 
-      
-
       // 6. Mostrar datos en consola para depuración
       console.log("Datos a enviar:", {
         atencionData,
@@ -527,7 +540,7 @@ const MedicinaGeneral = () => {
         vigilanciaSeleccionada,
         morbilidadSeleccionada,
         sistemasAfectados,
-        tiposAccidente
+        tiposAccidente,
       });
 
       // 8. Manejar respuesta exitosa
@@ -617,7 +630,7 @@ const MedicinaGeneral = () => {
 
   const mapeoSucursal = {
     1: { empresa: 182, sucursal: 3, bodega: 20 },
-    2: { empresa: 182, sucursal: 3, bodega: 21},
+    2: { empresa: 182, sucursal: 3, bodega: 21 },
     3: { empresa: 192, sucursal: 182, bodega: 14 },
   };
 
@@ -639,7 +652,8 @@ const MedicinaGeneral = () => {
       }
 
       // Obtener empresa y sucursal basados en cita_cod_sucu
-      const { bodega, empresa, sucursal } = obtenerEmpresaYSucursal(cita_cod_sucu);
+      const { bodega, empresa, sucursal } =
+        obtenerEmpresaYSucursal(cita_cod_sucu);
 
       const filtro = query; // El término de búsqueda
 
@@ -762,6 +776,478 @@ const MedicinaGeneral = () => {
     }
   };
 
+  // Maneja la impresión de la receta médica
+  const handlePrintReceta = () => {
+    if (!paciente) {
+      setSnackbarMessage("No hay datos del paciente para imprimir");
+      setSnackbarSeverity("warning");
+      setSnackbarOpen(true);
+      return;
+    }
+
+    const printWindow = window.open("", "_blank");
+
+    // Función para convertir números a letras
+    const numeroALetras = (num) => {
+      const unidades = [
+        "",
+        "uno",
+        "dos",
+        "tres",
+        "cuatro",
+        "cinco",
+        "seis",
+        "siete",
+        "ocho",
+        "nueve",
+      ];
+      const decenas = [
+        "",
+        "diez",
+        "veinte",
+        "treinta",
+        "cuarenta",
+        "cincuenta",
+        "sesenta",
+        "setenta",
+        "ochenta",
+        "noventa",
+      ];
+      const especiales = [
+        "once",
+        "doce",
+        "trece",
+        "catorce",
+        "quince",
+        "dieciséis",
+        "diecisiete",
+        "dieciocho",
+        "diecinueve",
+      ];
+
+      num = parseInt(num) || 1;
+      if (num < 1) num = 1;
+      if (num > 99) num = 99;
+
+      if (num < 10) return unidades[num];
+      if (num >= 11 && num <= 19) return especiales[num - 11];
+
+      const decena = Math.floor(num / 10);
+      const unidad = num % 10;
+
+      if (unidad === 0) return decenas[decena];
+      if (decena === 1) return "dieci" + unidades[unidad];
+      if (decena === 2) return "veinti" + unidades[unidad];
+
+      return decenas[decena] + " y " + unidades[unidad];
+    };
+
+    // Función para formatear fecha
+    const formatDate = () => {
+      const options = { day: "numeric", month: "long", year: "numeric" };
+      return new Date().toLocaleDateString("es-ES", options);
+    };
+
+    // Separar prescripciones
+    const prescripcionesEmpresa = prescripciones.filter(
+      (p) => p.pres_tip_pres === "Empresa"
+    );
+    const prescripcionesExterna = prescripciones.filter(
+      (p) => p.pres_tip_pres === "Externa"
+    );
+
+    //Capitalizar el nombre del paciente
+    function capitalize(str) {
+      return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+    }
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Receta Médica - ${paciente.pacie_nom_pacie} ${
+      paciente.pacie_ape_pacie
+    }</title>
+          <style>
+            @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&display=swap');
+            
+            body {
+              font-family: 'Montserrat', sans-serif;
+              margin: 0;
+              padding: 0;
+              background-color: #f9f9f9;
+              font-size: 13pt;
+            }
+            
+            .page-container {
+              width: 21cm;
+              min-height: 29.7cm;
+              margin: 0 auto;
+              display: grid;
+              grid-template-columns: 10.45cm 1px 10.45cm;
+              gap: 0.2cm;
+            }
+            
+            .column {
+              width: 10.45cm;
+              padding: 0.7cm;
+              position: relative;
+              box-sizing: border-box;
+            }
+            
+            .divider {
+              background: repeating-linear-gradient(
+                to bottom,
+                #ccc,
+                #ccc 1px,
+                transparent 1px,
+                transparent 10px
+              );
+              width: 1px;
+            }
+            
+            .header-container {
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              gap: 15px;
+              margin-bottom: 0.8rem;
+            }
+            
+            .logo {
+              height: 22px;
+              width: auto;
+              object-fit: contain;
+            }
+            
+            .header-text {
+              text-align: center;
+              flex-grow: 1;
+            }
+            
+            .clinic-name {
+              font-weight: 700;
+              font-size: 11pt;
+              margin: 0;
+            }
+            
+            .clinic-type {
+              font-weight: 500;
+              font-size: 10pt;
+              margin: 0.1rem 0 0.3rem;
+            }
+            
+            .date {
+              font-size: 9pt;
+              margin-bottom: 0.8rem;
+              text-align: center;
+            }
+            
+            .section-title {
+              font-weight: 600;
+              font-size: 10pt;
+              margin: 0.6rem 0 0.3rem;
+              padding-bottom: 0.1rem;
+              border-bottom: 1px solid #ddd;
+            }
+            
+            .patient-data {
+              font-size: 9pt;
+              line-height: 1.3;
+              margin-bottom: 0.6rem;
+            }
+            
+            .patient-data strong {
+              font-weight: 600;
+            }
+            
+            .diagnosticos-list, 
+            .indicaciones-list, 
+            .referencias-list,
+            .prescripciones-list {
+              font-size: 9pt;
+              margin: 0.3rem 0;
+              padding-left: 0.8rem;
+            }
+            
+            .prescripcion-item {
+              margin-bottom: 0.2rem;
+            }
+            
+            .med-group-title {
+              font-weight: 600;
+              font-size: 9.5pt;
+              margin: 0.6rem 0 0.3rem;
+              color: #4a90e2;
+            }
+            
+            .indicacion-farmacologica {
+              font-size: 8.5pt;
+              margin-bottom: 0.3rem;
+              display: flex;
+              flex-wrap: wrap;
+              gap: 0.5rem;
+              align-items: center;
+              line-height: 1.2;
+            }
+            
+            .med-name {
+              font-weight: 600;
+              width: 100%;
+              margin-bottom: 0.1rem;
+            }
+            
+            .signature {
+              position: absolute;
+              bottom: 0.6cm;
+              width: calc(100% - 1.2cm);
+              text-align: center;
+              font-size: 9pt;
+            }
+            
+            .signature-line {
+              border-top: 1px solid #333;
+              width: 80%;
+              margin: 0 auto 0.1rem;
+            }
+            
+            .doctor-name {
+              font-weight: 600;
+            }
+            
+            @media print {
+              body {
+                background: none;
+                margin: 0;
+                padding: 0;
+              }
+              
+              .page-container {
+                gap: 0.2cm;
+              }
+              
+              .column {
+                padding: 0.5cm;
+              }
+              
+              .logo {
+                height: 16px;
+              }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="page-container">
+            <!-- Columna Izquierda -->
+            <div class="column">
+              <div class="header-container">
+                <img src="/provefrut.jpg" class="logo" alt="Logo Provefrut">
+                <div class="header-text">
+                  <p class="clinic-name">CENTRO DE SALUD TIPO B</p>
+                  <p class="clinic-type">PROVEFRUT - NINTANGA</p>
+                </div>
+                <img src="/nintanga.jpg" class="logo" alt="Logo Nintanga">
+              </div>
+              
+              <div class="date">Guaytacama, ${formatDate()}</div>
+              
+              <div class="section-title">Datos del paciente:</div>
+              <div class="patient-data">
+                <strong>Nombre:</strong> ${capitalize(
+                  paciente.pacie_nom_pacie
+                )} ${capitalize(paciente.pacie_ape_pacie)}<br>
+                <strong>Cédula:</strong> ${paciente.pacie_ced_pacie}<br>
+                <strong>Edad:</strong> ${calcularEdad(
+                  paciente.pacie_fec_nac
+                )} años<br>
+                <strong>Sexo:</strong> ${capitalize(paciente.sexo_nom_sexo)}
+              </div>
+              
+              ${
+                diagnosticos.length > 0
+                  ? `
+                <div class="section-title">Diagnóstico(s):</div>
+                <ul class="diagnosticos-list">
+                  ${diagnosticos
+                    .map(
+                      (d) => `
+                    <li>${d.cie10_id_cie10} - ${d.cie10_nom_cie10}</li>
+                  `
+                    )
+                    .join("")}
+                </ul>
+              `
+                  : ""
+              }
+              
+              <div class="section-title">Receta:</div>
+              
+              ${
+                prescripcionesEmpresa.length > 0
+                  ? `
+                <div class="med-group-title">MEDICACIÓN INTERNA (EMPRESA)</div>
+                <div class="prescripciones-list">
+                  ${prescripcionesEmpresa
+                    .map((p) => {
+                      const cantidad = p.pres_can_pres || 1;
+                      return `
+                      <div class="prescripcion-item">
+                        • ${capitalize(
+                          p.pres_nom_prod
+                        )} - # ${cantidad} (${numeroALetras(cantidad)}) ${
+                        p._siglas_unid || "UN"
+                      }
+                      </div>
+                    `;
+                    })
+                    .join("")}
+                </div>
+              `
+                  : ""
+              }
+              
+              ${
+                prescripcionesExterna.length > 0
+                  ? `
+                <div class="med-group-title">MEDICACIÓN EXTERNA (FARMACIA)</div>
+                <div class="prescripciones-list">
+                  ${prescripcionesExterna
+                    .map((p) => {
+                      const cantidad = p.pres_can_pres || 1;
+                      return `
+                      <div class="prescripcion-item">
+                        • ${capitalize(
+                          p.pres_nom_prod
+                        )} - # ${cantidad} (${numeroALetras(cantidad)}) ${
+                        p._siglas_unid || "UN"
+                      }
+                      </div>
+                    `;
+                    })
+                    .join("")}
+                </div>
+              `
+                  : ""
+              }          
+            </div>
+            
+            <!-- Línea divisoria punteada -->
+            <div class="divider"></div>
+            
+            <!-- Columna Derecha -->
+            <div class="column">
+              <div class="header-container">
+                <img src="/provefrut.jpg" class="logo" alt="Logo Provefrut">
+                <div class="header-text">
+                  <p class="clinic-name">CENTRO DE SALUD TIPO B</p>
+                  <p class="clinic-type">PROVEFRUT - NINTANGA</p>
+                </div>
+                <img src="/nintanga.jpg" class="logo" alt="Logo Nintanga">
+              </div>
+              
+              <div class="date">Guaytacama, ${formatDate()}</div>
+              
+              <div class="section-title">Datos del paciente:</div>
+              <div class="patient-data">
+                <strong>Nombre:</strong> ${capitalize(
+                  paciente.pacie_nom_pacie
+                )} ${capitalize(paciente.pacie_ape_pacie)}<br>
+                <strong>Cédula:</strong> ${paciente.pacie_ced_pacie}<br>
+                <strong>Edad:</strong> ${calcularEdad(
+                  paciente.pacie_fec_nac
+                )} años<br>
+                <strong>Sexo:</strong> ${capitalize(paciente.sexo_nom_sexo)}
+              </div>
+              
+              ${
+                prescripciones.length > 0
+                  ? `
+                <div class="section-title">Indicaciones Farmacológicas:</div>
+                <div class="prescripciones-list">
+                  ${prescripciones
+                    .map(
+                      (p) => `
+                    <div class="indicacion-farmacologica">
+                      <div class="med-name">${capitalize(p.pres_nom_prod)}</div>
+                      ${
+                        p.pres_dos_pres
+                          ? `<span>Dosis: ${p.pres_dos_pres}</span>`
+                          : ""
+                      }
+                      <span>Vía: ${capitalize(p.pres_adm_pres || "Oral")}</span>
+                      <span>Frecuencia: ${
+                        p.pres_fre_pres || "Cada 8 horas"
+                      }</span>
+                      ${
+                        p.pres_dur_pres
+                          ? `<span>Duración: ${p.pres_dur_pres} día(s)</span>`
+                          : ""
+                      }
+                      ${
+                        p.pres_ind_pres
+                          ? `<span style="width:100%;">Indicaciones: ${p.pres_ind_pres}</span>`
+                          : ""
+                      }
+                    </div>
+                  `
+                    )
+                    .join("")}
+                </div>
+              `
+                  : ""
+              }
+              
+              ${
+                indicacionesGenerales.length > 0
+                  ? `
+                <div class="section-title">Indicaciones Generales:</div>
+                <ul class="indicaciones-list">
+                  ${indicacionesGenerales
+                    .map(
+                      (ind) => `
+                    <li>${ind.indi_des_indi}</li>
+                  `
+                    )
+                    .join("")}
+                </ul>
+              `
+                  : ""
+              }
+              
+              ${
+                referencias.length > 0
+                  ? `
+                <div class="section-title">Referencias:</div>
+                <ul class="referencias-list">
+                  ${referencias
+                    .map(
+                      (ref) => `
+                    <li>${ref.refe_des_refe}</li>
+                  `
+                    )
+                    .join("")}
+                </ul>
+              `
+                  : ""
+              }              
+            </div>
+          </div>
+          
+          <script>
+            window.onload = function() {
+              setTimeout(function() {
+                window.print();
+                window.close();
+              }, 300);
+            };
+          </script>
+        </body>
+      </html>
+    `);
+
+    printWindow.document.close();
+  };
+
   return (
     <Container className={styles.container}>
       <Typography variant="h4" gutterBottom className={styles.title}>
@@ -835,13 +1321,56 @@ const MedicinaGeneral = () => {
             borderRadius: 2,
           }}
         >
-          <Typography
-            variant="h6"
-            gutterBottom
-            sx={{ color: tipoAtencion === "Primera" ? "red" : "green" }}
+          <Box
+            sx={{
+              mb: 2,
+              p: 2,
+              border: "1px solid",
+              borderColor: tipoAtencionManual ? "primary.main" : "divider",
+              borderRadius: 1,
+              backgroundColor: tipoAtencionManual
+                ? "rgba(25, 118, 210, 0.08)"
+                : "transparent",
+            }}
           >
-            Tipo de Atención: {tipoAtencion}
-          </Typography>
+            <Typography variant="subtitle2" gutterBottom>
+              Tipo de atención
+            </Typography>
+
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+              <Chip
+                label={`Automático: ${tipoAtencionAuto}`}
+                color={tipoAtencionAuto === "Primera" ? "error" : "success"}
+                variant={tipoAtencionManual ? "outlined" : "filled"}
+              />
+
+              <Typography variant="body1">→</Typography>
+
+              <FormControl size="small">
+                <InputLabel>Sobrescribir</InputLabel>
+                <Select
+                  value={tipoAtencionManual || ""}
+                  onChange={(e) =>
+                    setTipoAtencionManual(e.target.value || null)
+                  }
+                  label="Sobrescribir"
+                  sx={{ minWidth: "120px" }}
+                >
+                  <MenuItem value="">No sobrescribir</MenuItem>
+                  <MenuItem value="Primera">Primera</MenuItem>
+                  <MenuItem value="Subsecuente">Subsecuente</MenuItem>
+                </Select>
+              </FormControl>
+
+              {tipoAtencionManual && (
+                <Chip
+                  label={`Se usará: ${tipoAtencionManual}`}
+                  color="primary"
+                  sx={{ ml: 1 }}
+                />
+              )}
+            </Box>
+          </Box>
 
           {/* Mostrar datos del paciente */}
           {paciente && (
@@ -1065,153 +1594,421 @@ const MedicinaGeneral = () => {
               )}
             </Box>
           )}
-{/* Sección de Certificado Laboral */}
-<Box sx={{ mb: 3, p: 2, border: '1px solid #ddd', borderRadius: 1 }}>
-  <FormControlLabel
-    control={
-      <Checkbox
-        checked={certificadoLaboral}
-        onChange={(e) => {
-          setCertificadoLaboral(e.target.checked);
-        }}
-        color="primary"
-      />
-    }
-    label="Actualización de Certificado Laboral"
-  />
-</Box>
 
-
-<Typography variant="h6" gutterBottom style={{ marginTop: "20px" }}>
-  Tipo de Atención Preventiva
-</Typography>
-<FormControl fullWidth margin="normal">
-  <InputLabel>Seleccione el tipo de atención</InputLabel>
-  <Select
-    value={tipoAtencionPreventiva}
-    onChange={(e) => setTipoAtencionPreventiva(e.target.value === 'Ninguno' ? '' : e.target.value)}
-    label="Seleccione el tipo de atención"
-  >
-    <MenuItem value="Ninguno">-- Ninguno --</MenuItem>
-    {opcionesPreventiva.map((opcion) => (
-      <MenuItem key={opcion} value={opcion}>{opcion}</MenuItem>
-    ))}
-  </Select>
-</FormControl>
-
-<Typography variant="h6" gutterBottom>
-  Vigilancia Epidemiológica
-</Typography>
-<FormGroup>
-  {opcionesVigilancia.map((opcion) => (
-    <FormControlLabel
-      key={opcion}
-      control={
-        <Checkbox
-          checked={vigilanciaSeleccionada.includes(opcion)}
-          onChange={(e) => {
-            if (e.target.checked) {
-              setVigilanciaSeleccionada([...vigilanciaSeleccionada, opcion]);
-            } else {
-              setVigilanciaSeleccionada(vigilanciaSeleccionada.filter(item => item !== opcion));
-            }
-          }}
-        />
-      }
-      label={opcion}
-    />
-  ))}
-</FormGroup>
-
-<Typography variant="h6" gutterBottom>
-  Morbilidad
-</Typography>
-<FormControl fullWidth margin="normal">
-  <InputLabel>Seleccione tipo de morbilidad</InputLabel>
-  <Select
-    value={morbilidadSeleccionada}
-    onChange={(e) => {
-      // Si selecciona "Ninguno", limpia todos los estados relacionados
-      if (e.target.value === 'Ninguno') {
-        setMorbilidadSeleccionada('');
-        setSistemasAfectados([]);
-        setTiposAccidente([]);
-      } else {
-        setMorbilidadSeleccionada(e.target.value);
-        // Limpiar sistemas afectados si no es enfermedad general
-        if (e.target.value !== 'Atención Enfermedad General') {
-          setSistemasAfectados([]);
-        }
-        // Limpiar tipos de accidente si no es accidente de trabajo
-        if (e.target.value !== 'Valoración por Accidente de Trabajo') {
-          setTiposAccidente([]);
-        }
-      }
-    }}
-    label="Seleccione tipo de morbilidad"
-  >
-    <MenuItem value="Ninguno">-- Ninguno --</MenuItem>
-    {opcionesMorbilidad.map((opcion) => (
-      <MenuItem key={opcion} value={opcion}>{opcion}</MenuItem>
-    ))}
-  </Select>
-</FormControl>
-
-{morbilidadSeleccionada === 'Atención Enfermedad General' && (
-  <>
-    <Typography variant="subtitle1" gutterBottom>
-      Sistemas Afectados (Seleccione todos los que apliquen)
-    </Typography>
-    <FormGroup row>
-      {opcionesSistemas.map((opcion) => (
-        <FormControlLabel
-          key={opcion}
-          control={
-            <Checkbox
-              checked={sistemasAfectados.includes(opcion)}
-              onChange={(e) => {
-                if (e.target.checked) {
-                  setSistemasAfectados([...sistemasAfectados, opcion]);
-                } else {
-                  setSistemasAfectados(sistemasAfectados.filter(item => item !== opcion));
-                }
-              }}
+          <Card sx={{ mb: 3, boxShadow: 3 }}>
+            <CardHeader
+              title="Datos Clínicos Adicionales"
+              titleTypographyProps={{ variant: "h6", fontWeight: "bold" }}
+              sx={{ borderBottom: "1px solid #eee" }}
             />
-          }
-          label={opcion}
-        />
-      ))}
-    </FormGroup>
-  </>
-)}
+            <CardContent>
+              <Tabs
+                value={activeTab}
+                onChange={(_, newValue) => setActiveTab(newValue)}
+                variant="scrollable"
+                scrollButtons="auto"
+                sx={{
+                  mb: 3,
+                  "& .MuiTabs-indicator": {
+                    backgroundColor: "#4caf50",
+                  },
+                }}
+              >
+                <Tab
+                  label="Preventiva"
+                  value="preventiva"
+                  icon={<Vaccines />}
+                  iconPosition="start"
+                  sx={{ minHeight: 48 }}
+                />
+                <Tab
+                  label="Vigilancia"
+                  value="vigilancia"
+                  icon={<HealthAndSafety />}
+                  iconPosition="start"
+                  sx={{ minHeight: 48 }}
+                />
+                <Tab
+                  label="Morbilidad"
+                  value="morbilidad"
+                  icon={<MedicalServices />}
+                  iconPosition="start"
+                  sx={{ minHeight: 48 }}
+                />
+                <Tab
+                  label="Certificado"
+                  value="certificado"
+                  icon={<AssignmentInd />}
+                  iconPosition="start"
+                  sx={{ minHeight: 48 }}
+                />
+              </Tabs>
+              {/* Contenido de las pestañas */}
+              {activeTab === "preventiva" && (
+                <Card variant="outlined" sx={{ p: 2, mb: 2 }}>
+                  <Typography
+                    variant="subtitle1"
+                    gutterBottom
+                    sx={{ fontWeight: "bold", mb: 2 }}
+                  >
+                    Tipo de Atención Preventiva
+                  </Typography>
+                  <FormControl fullWidth>
+                    <InputLabel>Seleccione el tipo de atención</InputLabel>
+                    <Select
+                      value={tipoAtencionPreventiva}
+                      onChange={(e) =>
+                        setTipoAtencionPreventiva(
+                          e.target.value === "Ninguno" ? "" : e.target.value
+                        )
+                      }
+                      label="Seleccione el tipo de atención"
+                    >
+                      <MenuItem value="Ninguno">-- Ninguno --</MenuItem>
+                      {opcionesPreventiva.map((opcion) => (
+                        <MenuItem key={opcion} value={opcion}>
+                          {opcion}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Card>
+              )}
+              {/* Vigilancia Epidemiológica */}
+              {activeTab === "vigilancia" && (
+                <Card variant="outlined" sx={{ p: 2 }}>
+                  <Typography
+                    variant="subtitle1"
+                    gutterBottom
+                    sx={{ fontWeight: "bold", mb: 2 }}
+                  >
+                    Vigilancia Epidemiológica
+                  </Typography>
+                  <Grid container spacing={2}>
+                    {opcionesVigilancia.map((opcion) => (
+                      <Grid item xs={12} sm={6} md={4} key={opcion}>
+                        <Card
+                          variant="outlined"
+                          sx={{
+                            p: 1,
+                            borderColor: vigilanciaSeleccionada.includes(opcion)
+                              ? "#4caf50"
+                              : "#e0e0e0",
+                            backgroundColor: vigilanciaSeleccionada.includes(
+                              opcion
+                            )
+                              ? "rgba(76, 175, 80, 0.08)"
+                              : "inherit",
+                            cursor: "pointer",
+                            "&:hover": {
+                              borderColor: "#4caf50",
+                            },
+                          }}
+                          onClick={() => {
+                            if (vigilanciaSeleccionada.includes(opcion)) {
+                              setVigilanciaSeleccionada(
+                                vigilanciaSeleccionada.filter(
+                                  (item) => item !== opcion
+                                )
+                              );
+                            } else {
+                              setVigilanciaSeleccionada([
+                                ...vigilanciaSeleccionada,
+                                opcion,
+                              ]);
+                            }
+                          }}
+                        >
+                          <FormControlLabel
+                            control={
+                              <Checkbox
+                                checked={vigilanciaSeleccionada.includes(
+                                  opcion
+                                )}
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    setVigilanciaSeleccionada([
+                                      ...vigilanciaSeleccionada,
+                                      opcion,
+                                    ]);
+                                  } else {
+                                    setVigilanciaSeleccionada(
+                                      vigilanciaSeleccionada.filter(
+                                        (item) => item !== opcion
+                                      )
+                                    );
+                                  }
+                                }}
+                                sx={{ mr: 1 }}
+                              />
+                            }
+                            label={opcion}
+                            sx={{ width: "100%", m: 0 }}
+                          />
+                        </Card>
+                      </Grid>
+                    ))}
+                  </Grid>
+                </Card>
+              )}
+              {activeTab === "morbilidad" && (
+                <Box>
+                  <Card variant="outlined" sx={{ p: 2, mb: 2 }}>
+                    <Typography
+                      variant="subtitle1"
+                      gutterBottom
+                      sx={{ fontWeight: "bold", mb: 2 }}
+                    >
+                      Morbilidad
+                    </Typography>
+                    <FormControl fullWidth>
+                      <InputLabel>Seleccione tipo de morbilidad</InputLabel>
+                      <Select
+                        value={morbilidadSeleccionada}
+                        onChange={(e) => {
+                          if (e.target.value === "Ninguno") {
+                            setMorbilidadSeleccionada("");
+                            setSistemasAfectados([]);
+                            setTiposAccidente([]);
+                          } else {
+                            setMorbilidadSeleccionada(e.target.value);
+                            if (
+                              e.target.value !== "Atención Enfermedad General"
+                            ) {
+                              setSistemasAfectados([]);
+                            }
+                            if (
+                              e.target.value !==
+                              "Valoración por Accidente de Trabajo"
+                            ) {
+                              setTiposAccidente([]);
+                            }
+                          }
+                        }}
+                        label="Seleccione tipo de morbilidad"
+                      >
+                        <MenuItem value="Ninguno">-- Ninguno --</MenuItem>
+                        {opcionesMorbilidad.map((opcion) => (
+                          <MenuItem key={opcion} value={opcion}>
+                            {opcion}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Card>
 
-{morbilidadSeleccionada === 'Valoración por Accidente de Trabajo' && (
-  <>
-    <Typography variant="subtitle1" gutterBottom>
-      Tipo de Accidente (Seleccione todos los que apliquen)
-    </Typography>
-    <FormGroup row>
-      {opcionesAccidenteTrabajo.map((opcion) => (
-        <FormControlLabel
-          key={opcion}
-          control={
-            <Checkbox
-              checked={tiposAccidente.includes(opcion)}
-              onChange={(e) => {
-                if (e.target.checked) {
-                  setTiposAccidente([...tiposAccidente, opcion]);
-                } else {
-                  setTiposAccidente(tiposAccidente.filter(item => item !== opcion));
-                }
-              }}
-            />
-          }
-          label={opcion}
-        />
-      ))}
-    </FormGroup>
-  </>
-)}
+                  {activeTab === "morbilidad" &&
+                    morbilidadSeleccionada ===
+                      "Atención Enfermedad General" && (
+                      <Card variant="outlined" sx={{ p: 2, mb: 2 }}>
+                        <Typography
+                          variant="subtitle1"
+                          gutterBottom
+                          sx={{ fontWeight: "bold", mb: 2 }}
+                        >
+                          Sistemas Afectados
+                        </Typography>
+                        <Grid container spacing={2}>
+                          {opcionesSistemas.map((opcion) => (
+                            <Grid item xs={12} sm={6} md={4} key={opcion}>
+                              <Card
+                                variant="outlined"
+                                sx={{
+                                  p: 0,
+                                  borderColor: sistemasAfectados.includes(
+                                    opcion
+                                  )
+                                    ? "#4caf50"
+                                    : "#e0e0e0",
+                                  backgroundColor: sistemasAfectados.includes(
+                                    opcion
+                                  )
+                                    ? "rgba(76, 175, 80, 0.08)"
+                                    : "inherit",
+                                  cursor: "pointer",
+                                  "&:hover": {
+                                    borderColor: "#4caf50",
+                                    backgroundColor: "rgba(76, 175, 80, 0.04)",
+                                  },
+                                }}
+                                onClick={() => {
+                                  if (sistemasAfectados.includes(opcion)) {
+                                    setSistemasAfectados(
+                                      sistemasAfectados.filter(
+                                        (item) => item !== opcion
+                                      )
+                                    );
+                                  } else {
+                                    setSistemasAfectados([
+                                      ...sistemasAfectados,
+                                      opcion,
+                                    ]);
+                                  }
+                                }}
+                              >
+                                <Box
+                                  sx={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    p: 2,
+                                  }}
+                                >
+                                  <Checkbox
+                                    checked={sistemasAfectados.includes(opcion)}
+                                    onChange={(e) => {
+                                      if (e.target.checked) {
+                                        setSistemasAfectados([
+                                          ...sistemasAfectados,
+                                          opcion,
+                                        ]);
+                                      } else {
+                                        setSistemasAfectados(
+                                          sistemasAfectados.filter(
+                                            (item) => item !== opcion
+                                          )
+                                        );
+                                      }
+                                    }}
+                                    sx={{ mr: 1 }}
+                                    onClick={(e) => e.stopPropagation()}
+                                  />
+                                  <Typography>{opcion}</Typography>
+                                </Box>
+                              </Card>
+                            </Grid>
+                          ))}
+                        </Grid>
+                      </Card>
+                    )}
+
+                  {activeTab === "morbilidad" &&
+                    morbilidadSeleccionada ===
+                      "Valoración por Accidente de Trabajo" && (
+                      <Card variant="outlined" sx={{ p: 2, mb: 2 }}>
+                        <Typography
+                          variant="subtitle1"
+                          gutterBottom
+                          sx={{ fontWeight: "bold", mb: 2 }}
+                        >
+                          Tipos de Accidente
+                        </Typography>
+                        <Grid container spacing={2}>
+                          {opcionesAccidenteTrabajo.map((opcion) => (
+                            <Grid item xs={12} sm={6} md={4} key={opcion}>
+                              <Card
+                                variant="outlined"
+                                sx={{
+                                  p: 0,
+                                  borderColor: tiposAccidente.includes(opcion)
+                                    ? "#4caf50"
+                                    : "#e0e0e0",
+                                  backgroundColor: tiposAccidente.includes(
+                                    opcion
+                                  )
+                                    ? "rgba(76, 175, 80, 0.08)"
+                                    : "inherit",
+                                  cursor: "pointer",
+                                  "&:hover": {
+                                    borderColor: "#4caf50",
+                                    backgroundColor: "rgba(76, 175, 80, 0.04)",
+                                  },
+                                }}
+                                onClick={() => {
+                                  if (tiposAccidente.includes(opcion)) {
+                                    setTiposAccidente(
+                                      tiposAccidente.filter(
+                                        (item) => item !== opcion
+                                      )
+                                    );
+                                  } else {
+                                    setTiposAccidente([
+                                      ...tiposAccidente,
+                                      opcion,
+                                    ]);
+                                  }
+                                }}
+                              >
+                                <Box
+                                  sx={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    p: 2,
+                                  }}
+                                >
+                                  <Checkbox
+                                    checked={tiposAccidente.includes(opcion)}
+                                    onChange={(e) => {
+                                      if (e.target.checked) {
+                                        setTiposAccidente([
+                                          ...tiposAccidente,
+                                          opcion,
+                                        ]);
+                                      } else {
+                                        setTiposAccidente(
+                                          tiposAccidente.filter(
+                                            (item) => item !== opcion
+                                          )
+                                        );
+                                      }
+                                    }}
+                                    sx={{ mr: 1 }}
+                                    onClick={(e) => e.stopPropagation()}
+                                  />
+                                  <Typography>{opcion}</Typography>
+                                </Box>
+                              </Card>
+                            </Grid>
+                          ))}
+                        </Grid>
+                      </Card>
+                    )}
+                </Box>
+              )}
+
+              {/* Certificado Laboral */}
+              {activeTab === "certificado" && (
+                <Card variant="outlined" sx={{ p: 2 }}>
+                  <Typography
+                    variant="subtitle1"
+                    gutterBottom
+                    sx={{ fontWeight: "bold", mb: 2 }}
+                  >
+                    Certificado Laboral
+                  </Typography>
+                  <Card
+                    variant="outlined"
+                    sx={{
+                      p: 0,
+                      borderColor: certificadoLaboral ? "#4caf50" : "#e0e0e0",
+                      backgroundColor: certificadoLaboral
+                        ? "rgba(76, 175, 80, 0.08)"
+                        : "inherit",
+                      cursor: "pointer",
+                      "&:hover": {
+                        borderColor: "#4caf50",
+                        backgroundColor: "rgba(76, 175, 80, 0.04)",
+                      },
+                    }}
+                    onClick={() => setCertificadoLaboral(!certificadoLaboral)}
+                  >
+                    <Box sx={{ display: "flex", alignItems: "center", p: 2 }}>
+                      <Checkbox
+                        checked={certificadoLaboral}
+                        onChange={(e) =>
+                          setCertificadoLaboral(e.target.checked)
+                        }
+                        sx={{ mr: 1 }}
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                      <Typography>
+                        Actualización de Certificado Laboral
+                      </Typography>
+                    </Box>
+                  </Card>
+                </Card>
+              )}
+            </CardContent>
+          </Card>
 
           {/* Sección de Motivo de Consulta, Enfermedad Actual y Observaciones */}
           <Box
@@ -1240,7 +2037,6 @@ const MedicinaGeneral = () => {
                     label="Motivo de Consulta *"
                     fullWidth
                     multiline
-                    rows={3}
                     value={motivoConsulta}
                     onChange={(e) => setMotivoConsulta(e.target.value)}
                     sx={{
@@ -1264,7 +2060,6 @@ const MedicinaGeneral = () => {
                     label="Enfermedad Actual *"
                     fullWidth
                     multiline
-                    rows={3}
                     value={enfermedadActual}
                     onChange={(e) => setEnfermedadActual(e.target.value)}
                     sx={{
@@ -1291,7 +2086,6 @@ const MedicinaGeneral = () => {
                 label="Observaciones"
                 fullWidth
                 multiline
-                rows={2}
                 value={observaciones}
                 onChange={(e) => setObservaciones(e.target.value)}
                 margin="normal"
@@ -1346,7 +2140,6 @@ const MedicinaGeneral = () => {
                 label="Observación del Diagnóstico"
                 fullWidth
                 multiline
-                rows={4}
                 value={diagnostico.diag_obs_diag}
                 onChange={(e) => {
                   const nuevosDiagnosticos = [...diagnosticos];
@@ -1427,7 +2220,6 @@ const MedicinaGeneral = () => {
                       label="Observación del Procedimiento"
                       fullWidth
                       multiline
-                      rows={4}
                       value={procedimiento.proc_obs_proc}
                       onChange={(e) => {
                         const nuevosDiagnosticos = [...diagnosticos];
@@ -1829,7 +2621,6 @@ const MedicinaGeneral = () => {
                         fullWidth
                         size="small"
                         multiline
-                        rows={2}
                         value={prescripcion.pres_ind_pres || ""}
                         onChange={(e) => {
                           const nuevasPrescripciones = [...prescripciones];
@@ -1914,9 +2705,7 @@ const MedicinaGeneral = () => {
                       <TableCell>
                         <TextField
                           fullWidth
-                          multiline
-                          minRows={2}
-                          maxRows={4}
+                          multiline                          
                           value={indicacion.indi_des_indi}
                           onChange={(e) =>
                             handleIndicacionGeneralChange(index, e.target.value)
@@ -1994,9 +2783,7 @@ const MedicinaGeneral = () => {
                       <TableCell>
                         <TextField
                           fullWidth
-                          multiline
-                          minRows={2}
-                          maxRows={4}
+                          multiline                          
                           value={referencia.refe_des_refe}
                           onChange={(e) =>
                             handleReferenciaChange(index, e.target.value)
@@ -2059,6 +2846,15 @@ const MedicinaGeneral = () => {
               className={styles.button}
             >
               Cancelar
+            </Button>
+            <Button
+              variant="outlined"
+              color="secondary"
+              onClick={handlePrintReceta}
+              startIcon={<PrintIcon />}
+              className={styles.button}
+            >
+              Imprimir Receta
             </Button>
             <Button
               variant="contained"

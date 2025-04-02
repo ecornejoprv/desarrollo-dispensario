@@ -6,6 +6,7 @@ import {
   validarCitaPendienteConTriaje,
   registrarAtencion,
   getCitasPendientesPorMedico,
+  actualizarEstadoCita,
 } from "../models/atencion.model.js";
 import { getPacienteById } from "../models/pacientes.model.js";
 import { registrarDiagnostico } from "../models/diagnostico.model.js"; // Importación agregada
@@ -270,6 +271,10 @@ export const registrarAtencionController = async (req, res) => {
           });
         }
       }
+          // 2. Actualizar el estado de la cita a 'AT' (Atendida)
+    if (atencionData.aten_cod_cita) {
+      await actualizarEstadoCita(atencionData.aten_cod_cita, 'AT');
+    }
   
 
     res.status(201).json({ message: "Atención registrada correctamente." });

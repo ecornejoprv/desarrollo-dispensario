@@ -26,7 +26,7 @@ import {
   Chip,
   FormControlLabel,
   Checkbox,
-  Collapse
+  Collapse,
 } from "@mui/material";
 import { Add, Delete, Search, Close } from "@mui/icons-material";
 import api from "../api";
@@ -41,6 +41,7 @@ import MonitorWeightIcon from "@mui/icons-material/MonitorWeight";
 import HeightIcon from "@mui/icons-material/Height";
 import CalculateIcon from "@mui/icons-material/Calculate";
 import LocalHospitalIcon from "@mui/icons-material/LocalHospital";
+import PrintIcon from "@mui/icons-material/LocalHospital";
 
 const especialidades = [
   "Todas",
@@ -65,7 +66,7 @@ const terapiasOptions = {
     "Movilidad activa",
     "Movilidad pasiva",
     "Fortalecimiento",
-    "Terapia Invasiva"
+    "Terapia Invasiva",
   ],
   "Terapia Neurológica": [
     "Electroterapia",
@@ -80,7 +81,7 @@ const terapiasOptions = {
     "Movilidad pasiva",
     "Movilidad activa",
     "AVD",
-    "Terapia Invasiva"
+    "Terapia Invasiva",
   ],
   "Terapia Respiratoria": [
     "Compresas calientes",
@@ -88,7 +89,7 @@ const terapiasOptions = {
     "Contraste",
     "Nebulizaciones",
     "Ejercicios respiratorios",
-    "Terapia Invasiva"
+    "Terapia Invasiva",
   ],
   "Terapia Geriátrica": [
     "Electroterapia",
@@ -104,7 +105,7 @@ const terapiasOptions = {
     "Reducción de la marcha",
     "AVD",
     "Masoterapia",
-    "Terapia Invasiva"
+    "Terapia Invasiva",
   ],
   "Terapia Pediátrica": [
     "Compresas calientes",
@@ -113,8 +114,8 @@ const terapiasOptions = {
     "Masoterapia",
     "Método de Bobath",
     "Estimulación temprana",
-    "Terapia Invasiva"
-  ]
+    "Terapia Invasiva",
+  ],
 };
 
 const Fisioterapia = () => {
@@ -132,15 +133,18 @@ const Fisioterapia = () => {
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
   const [openCie10Modal, setOpenCie10Modal] = useState(false);
   const [cie10Options, setCie10Options] = useState([]);
-  const [selectedDiagnosticoIndex, setSelectedDiagnosticoIndex] = useState(null);
-  const [openHistoriaClinicaModal, setOpenHistoriaClinicaModal] = useState(false);
+  const [selectedDiagnosticoIndex, setSelectedDiagnosticoIndex] =
+    useState(null);
+  const [openHistoriaClinicaModal, setOpenHistoriaClinicaModal] =
+    useState(false);
   const [paciente, setPaciente] = useState(null);
   const [atenciones, setAtenciones] = useState([]);
   const [totalAtenciones, setTotalAtenciones] = useState(0);
   const [paginaActual, setPaginaActual] = useState(1);
   const [registrosPorPagina, setRegistrosPorPagina] = useState(10);
   const [mostrarEspecialidad, setMostrarEspecialidad] = useState(false);
-  const [especialidadSeleccionada, setEspecialidadSeleccionada] = useState("Todas");
+  const [especialidadSeleccionada, setEspecialidadSeleccionada] =
+    useState("Todas");
   const [tipoAtencion, setTipoAtencion] = useState("Subsecuente");
   const [prescripciones, setPrescripciones] = useState([]);
   const [productoOptions, setProductoOptions] = useState([]);
@@ -215,7 +219,12 @@ const Fisioterapia = () => {
     if (selectedCita) {
       obtenerDatosPaciente(selectedCita.cita_cod_pacie);
     }
-  }, [selectedCita, especialidadSeleccionada, paginaActual, registrosPorPagina]);
+  }, [
+    selectedCita,
+    especialidadSeleccionada,
+    paginaActual,
+    registrosPorPagina,
+  ]);
 
   const cambiarPagina = (nuevaPagina) => {
     setPaginaActual(nuevaPagina);
@@ -281,7 +290,7 @@ const Fisioterapia = () => {
         diag_obs_diag: "",
         diag_est_diag: "Presuntivo",
         terapias: {}, // Objeto para almacenar terapias seleccionadas
-        tecnicasSeleccionadas: {} // Objeto para técnicas seleccionadas por terapia
+        tecnicasSeleccionadas: {}, // Objeto para técnicas seleccionadas por terapia
       },
     ]);
   };
@@ -302,9 +311,12 @@ const Fisioterapia = () => {
 
   const handleSelectCie10 = (cie10) => {
     const nuevosDiagnosticos = [...diagnosticos];
-    nuevosDiagnosticos[selectedDiagnosticoIndex].diag_cod_cie10 = cie10.cie10_cod_cie10;
-    nuevosDiagnosticos[selectedDiagnosticoIndex].cie10_id_cie10 = cie10.cie10_id_cie10;
-    nuevosDiagnosticos[selectedDiagnosticoIndex].cie10_nom_cie10 = cie10.cie10_nom_cie10;
+    nuevosDiagnosticos[selectedDiagnosticoIndex].diag_cod_cie10 =
+      cie10.cie10_cod_cie10;
+    nuevosDiagnosticos[selectedDiagnosticoIndex].cie10_id_cie10 =
+      cie10.cie10_id_cie10;
+    nuevosDiagnosticos[selectedDiagnosticoIndex].cie10_nom_cie10 =
+      cie10.cie10_nom_cie10;
     setDiagnosticos(nuevosDiagnosticos);
     setOpenCie10Modal(false);
   };
@@ -312,19 +324,23 @@ const Fisioterapia = () => {
   const validarCampos = () => {
     for (const diagnostico of diagnosticos) {
       if (!diagnostico.cie10_id_cie10) {
-        setSnackbarMessage("Todos los diagnósticos deben tener un CIE10 seleccionado.");
+        setSnackbarMessage(
+          "Todos los diagnósticos deben tener un CIE10 seleccionado."
+        );
         setSnackbarSeverity("error");
         setSnackbarOpen(true);
         return false;
       }
 
       // Verificar que al menos una terapia esté seleccionada
-      const terapiasSeleccionadas = Object.keys(diagnostico.terapias || {}).filter(
-        terapia => diagnostico.terapias[terapia]
-      );
-      
+      const terapiasSeleccionadas = Object.keys(
+        diagnostico.terapias || {}
+      ).filter((terapia) => diagnostico.terapias[terapia]);
+
       if (terapiasSeleccionadas.length === 0) {
-        setSnackbarMessage("Debe seleccionar al menos una terapia para cada diagnóstico.");
+        setSnackbarMessage(
+          "Debe seleccionar al menos una terapia para cada diagnóstico."
+        );
         setSnackbarSeverity("error");
         setSnackbarOpen(true);
         return false;
@@ -344,7 +360,9 @@ const Fisioterapia = () => {
       }
 
       if (!motivoConsulta.trim() || !enfermedadActual.trim()) {
-        setSnackbarMessage("El motivo de consulta y la enfermedad actual son obligatorios.");
+        setSnackbarMessage(
+          "El motivo de consulta y la enfermedad actual son obligatorios."
+        );
         setSnackbarSeverity("error");
         setSnackbarOpen(true);
         return;
@@ -369,17 +387,17 @@ const Fisioterapia = () => {
         aten_tip_aten: tipoAtencion,
       };
 
-      const diagnosticosParaEnviar = diagnosticos.map(diagnostico => ({
+      const diagnosticosParaEnviar = diagnosticos.map((diagnostico) => ({
         diag_cod_cie10: diagnostico.diag_cod_cie10,
         cie10_id_cie10: diagnostico.cie10_id_cie10,
         cie10_nom_cie10: diagnostico.cie10_nom_cie10,
         diag_obs_diag: diagnostico.diag_obs_diag,
         diag_est_diag: diagnostico.diag_est_diag,
         terapias: diagnostico.terapias || {},
-        tecnicasSeleccionadas: diagnostico.tecnicasSeleccionadas || {}
+        tecnicasSeleccionadas: diagnostico.tecnicasSeleccionadas || {},
       }));
-  
-        console.log("Datos a enviar:", {
+
+      console.log("Datos a enviar:", {
         atencionData,
         diagnosticos: diagnosticosParaEnviar,
         prescripciones,
@@ -442,40 +460,44 @@ const Fisioterapia = () => {
   // Funciones para manejar terapias
   const toggleTerapia = (diagnosticoIndex, terapia) => {
     const nuevosDiagnosticos = [...diagnosticos];
-    
+
     // Inicializar el objeto de terapias si no existe
     if (!nuevosDiagnosticos[diagnosticoIndex].terapias) {
       nuevosDiagnosticos[diagnosticoIndex].terapias = {};
     }
-    
+
     // Inicializar el objeto de técnicas seleccionadas para esta terapia si no existe
     if (!nuevosDiagnosticos[diagnosticoIndex].tecnicasSeleccionadas) {
       nuevosDiagnosticos[diagnosticoIndex].tecnicasSeleccionadas = {};
     }
-    
+
     if (!nuevosDiagnosticos[diagnosticoIndex].tecnicasSeleccionadas[terapia]) {
       nuevosDiagnosticos[diagnosticoIndex].tecnicasSeleccionadas[terapia] = {};
     }
-    
+
     // Toggle de la terapia
-    nuevosDiagnosticos[diagnosticoIndex].terapias[terapia] = 
+    nuevosDiagnosticos[diagnosticoIndex].terapias[terapia] =
       !nuevosDiagnosticos[diagnosticoIndex].terapias[terapia];
-    
+
     setDiagnosticos(nuevosDiagnosticos);
   };
 
   const toggleTecnica = (diagnosticoIndex, terapia, tecnica) => {
     const nuevosDiagnosticos = [...diagnosticos];
-    
+
     // Asegurarse de que existe el objeto para las técnicas de esta terapia
     if (!nuevosDiagnosticos[diagnosticoIndex].tecnicasSeleccionadas[terapia]) {
       nuevosDiagnosticos[diagnosticoIndex].tecnicasSeleccionadas[terapia] = {};
     }
-    
+
     // Toggle de la técnica
-    nuevosDiagnosticos[diagnosticoIndex].tecnicasSeleccionadas[terapia][tecnica] = 
-      !nuevosDiagnosticos[diagnosticoIndex].tecnicasSeleccionadas[terapia][tecnica];
-    
+    nuevosDiagnosticos[diagnosticoIndex].tecnicasSeleccionadas[terapia][
+      tecnica
+    ] =
+      !nuevosDiagnosticos[diagnosticoIndex].tecnicasSeleccionadas[terapia][
+        tecnica
+      ];
+
     setDiagnosticos(nuevosDiagnosticos);
   };
 
@@ -509,7 +531,7 @@ const Fisioterapia = () => {
 
   const mapeoSucursal = {
     1: { empresa: 182, sucursal: 3, bodega: 20 },
-    2: { empresa: 182, sucursal: 3, bodega: 21},
+    2: { empresa: 182, sucursal: 3, bodega: 21 },
     3: { empresa: 192, sucursal: 182, bodega: 14 },
   };
 
@@ -531,7 +553,8 @@ const Fisioterapia = () => {
       }
 
       // Obtener empresa y sucursal basados en cita_cod_sucu
-      const { bodega, empresa, sucursal } = obtenerEmpresaYSucursal(cita_cod_sucu);
+      const { bodega, empresa, sucursal } =
+        obtenerEmpresaYSucursal(cita_cod_sucu);
 
       const filtro = query; // El término de búsqueda
 
@@ -657,6 +680,478 @@ const Fisioterapia = () => {
   if (error) {
     return <Typography color="error">{error}</Typography>;
   }
+
+  // Maneja la impresión de la receta médica
+  const handlePrintReceta = () => {
+    if (!paciente) {
+      setSnackbarMessage("No hay datos del paciente para imprimir");
+      setSnackbarSeverity("warning");
+      setSnackbarOpen(true);
+      return;
+    }
+
+    const printWindow = window.open("", "_blank");
+
+    // Función para convertir números a letras
+    const numeroALetras = (num) => {
+      const unidades = [
+        "",
+        "uno",
+        "dos",
+        "tres",
+        "cuatro",
+        "cinco",
+        "seis",
+        "siete",
+        "ocho",
+        "nueve",
+      ];
+      const decenas = [
+        "",
+        "diez",
+        "veinte",
+        "treinta",
+        "cuarenta",
+        "cincuenta",
+        "sesenta",
+        "setenta",
+        "ochenta",
+        "noventa",
+      ];
+      const especiales = [
+        "once",
+        "doce",
+        "trece",
+        "catorce",
+        "quince",
+        "dieciséis",
+        "diecisiete",
+        "dieciocho",
+        "diecinueve",
+      ];
+
+      num = parseInt(num) || 1;
+      if (num < 1) num = 1;
+      if (num > 99) num = 99;
+
+      if (num < 10) return unidades[num];
+      if (num >= 11 && num <= 19) return especiales[num - 11];
+
+      const decena = Math.floor(num / 10);
+      const unidad = num % 10;
+
+      if (unidad === 0) return decenas[decena];
+      if (decena === 1) return "dieci" + unidades[unidad];
+      if (decena === 2) return "veinti" + unidades[unidad];
+
+      return decenas[decena] + " y " + unidades[unidad];
+    };
+
+    // Función para formatear fecha
+    const formatDate = () => {
+      const options = { day: "numeric", month: "long", year: "numeric" };
+      return new Date().toLocaleDateString("es-ES", options);
+    };
+
+    // Separar prescripciones
+    const prescripcionesEmpresa = prescripciones.filter(
+      (p) => p.pres_tip_pres === "Empresa"
+    );
+    const prescripcionesExterna = prescripciones.filter(
+      (p) => p.pres_tip_pres === "Externa"
+    );
+
+    //Capitalizar el nombre del paciente
+    function capitalize(str) {
+      return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+    }
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Receta Médica - ${paciente.pacie_nom_pacie} ${
+      paciente.pacie_ape_pacie
+    }</title>
+          <style>
+            @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&display=swap');
+            
+            body {
+              font-family: 'Montserrat', sans-serif;
+              margin: 0;
+              padding: 0;
+              background-color: #f9f9f9;
+              font-size: 13pt;
+            }
+            
+            .page-container {
+              width: 21cm;
+              min-height: 29.7cm;
+              margin: 0 auto;
+              display: grid;
+              grid-template-columns: 10.45cm 1px 10.45cm;
+              gap: 0.2cm;
+            }
+            
+            .column {
+              width: 10.45cm;
+              padding: 0.7cm;
+              position: relative;
+              box-sizing: border-box;
+            }
+            
+            .divider {
+              background: repeating-linear-gradient(
+                to bottom,
+                #ccc,
+                #ccc 1px,
+                transparent 1px,
+                transparent 10px
+              );
+              width: 1px;
+            }
+            
+            .header-container {
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              gap: 15px;
+              margin-bottom: 0.8rem;
+            }
+            
+            .logo {
+              height: 22px;
+              width: auto;
+              object-fit: contain;
+            }
+            
+            .header-text {
+              text-align: center;
+              flex-grow: 1;
+            }
+            
+            .clinic-name {
+              font-weight: 700;
+              font-size: 11pt;
+              margin: 0;
+            }
+            
+            .clinic-type {
+              font-weight: 500;
+              font-size: 10pt;
+              margin: 0.1rem 0 0.3rem;
+            }
+            
+            .date {
+              font-size: 9pt;
+              margin-bottom: 0.8rem;
+              text-align: center;
+            }
+            
+            .section-title {
+              font-weight: 600;
+              font-size: 10pt;
+              margin: 0.6rem 0 0.3rem;
+              padding-bottom: 0.1rem;
+              border-bottom: 1px solid #ddd;
+            }
+            
+            .patient-data {
+              font-size: 9pt;
+              line-height: 1.3;
+              margin-bottom: 0.6rem;
+            }
+            
+            .patient-data strong {
+              font-weight: 600;
+            }
+            
+            .diagnosticos-list, 
+            .indicaciones-list, 
+            .referencias-list,
+            .prescripciones-list {
+              font-size: 9pt;
+              margin: 0.3rem 0;
+              padding-left: 0.8rem;
+            }
+            
+            .prescripcion-item {
+              margin-bottom: 0.2rem;
+            }
+            
+            .med-group-title {
+              font-weight: 600;
+              font-size: 9.5pt;
+              margin: 0.6rem 0 0.3rem;
+              color: #4a90e2;
+            }
+            
+            .indicacion-farmacologica {
+              font-size: 8.5pt;
+              margin-bottom: 0.3rem;
+              display: flex;
+              flex-wrap: wrap;
+              gap: 0.5rem;
+              align-items: center;
+              line-height: 1.2;
+            }
+            
+            .med-name {
+              font-weight: 600;
+              width: 100%;
+              margin-bottom: 0.1rem;
+            }
+            
+            .signature {
+              position: absolute;
+              bottom: 0.6cm;
+              width: calc(100% - 1.2cm);
+              text-align: center;
+              font-size: 9pt;
+            }
+            
+            .signature-line {
+              border-top: 1px solid #333;
+              width: 80%;
+              margin: 0 auto 0.1rem;
+            }
+            
+            .doctor-name {
+              font-weight: 600;
+            }
+            
+            @media print {
+              body {
+                background: none;
+                margin: 0;
+                padding: 0;
+              }
+              
+              .page-container {
+                gap: 0.2cm;
+              }
+              
+              .column {
+                padding: 0.5cm;
+              }
+              
+              .logo {
+                height: 16px;
+              }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="page-container">
+            <!-- Columna Izquierda -->
+            <div class="column">
+              <div class="header-container">
+                <img src="/provefrut.jpg" class="logo" alt="Logo Provefrut">
+                <div class="header-text">
+                  <p class="clinic-name">CENTRO DE SALUD TIPO B</p>
+                  <p class="clinic-type">PROVEFRUT - NINTANGA</p>
+                </div>
+                <img src="/nintanga.jpg" class="logo" alt="Logo Nintanga">
+              </div>
+              
+              <div class="date">Guaytacama, ${formatDate()}</div>
+              
+              <div class="section-title">Datos del paciente:</div>
+              <div class="patient-data">
+                <strong>Nombre:</strong> ${capitalize(
+                  paciente.pacie_nom_pacie
+                )} ${capitalize(paciente.pacie_ape_pacie)}<br>
+                <strong>Cédula:</strong> ${paciente.pacie_ced_pacie}<br>
+                <strong>Edad:</strong> ${calcularEdad(
+                  paciente.pacie_fec_nac
+                )} años<br>
+                <strong>Sexo:</strong> ${capitalize(paciente.sexo_nom_sexo)}
+              </div>
+              
+              ${
+                diagnosticos.length > 0
+                  ? `
+                <div class="section-title">Diagnóstico(s):</div>
+                <ul class="diagnosticos-list">
+                  ${diagnosticos
+                    .map(
+                      (d) => `
+                    <li>${d.cie10_id_cie10} - ${d.cie10_nom_cie10}</li>
+                  `
+                    )
+                    .join("")}
+                </ul>
+              `
+                  : ""
+              }
+              
+              <div class="section-title">Receta:</div>
+              
+              ${
+                prescripcionesEmpresa.length > 0
+                  ? `
+                <div class="med-group-title">MEDICACIÓN INTERNA (EMPRESA)</div>
+                <div class="prescripciones-list">
+                  ${prescripcionesEmpresa
+                    .map((p) => {
+                      const cantidad = p.pres_can_pres || 1;
+                      return `
+                      <div class="prescripcion-item">
+                        • ${capitalize(
+                          p.pres_nom_prod
+                        )} - # ${cantidad} (${numeroALetras(cantidad)}) ${
+                        p._siglas_unid || "UN"
+                      }
+                      </div>
+                    `;
+                    })
+                    .join("")}
+                </div>
+              `
+                  : ""
+              }
+              
+              ${
+                prescripcionesExterna.length > 0
+                  ? `
+                <div class="med-group-title">MEDICACIÓN EXTERNA (FARMACIA)</div>
+                <div class="prescripciones-list">
+                  ${prescripcionesExterna
+                    .map((p) => {
+                      const cantidad = p.pres_can_pres || 1;
+                      return `
+                      <div class="prescripcion-item">
+                        • ${capitalize(
+                          p.pres_nom_prod
+                        )} - # ${cantidad} (${numeroALetras(cantidad)}) ${
+                        p._siglas_unid || "UN"
+                      }
+                      </div>
+                    `;
+                    })
+                    .join("")}
+                </div>
+              `
+                  : ""
+              }          
+            </div>
+            
+            <!-- Línea divisoria punteada -->
+            <div class="divider"></div>
+            
+            <!-- Columna Derecha -->
+            <div class="column">
+              <div class="header-container">
+                <img src="/provefrut.jpg" class="logo" alt="Logo Provefrut">
+                <div class="header-text">
+                  <p class="clinic-name">CENTRO DE SALUD TIPO B</p>
+                  <p class="clinic-type">PROVEFRUT - NINTANGA</p>
+                </div>
+                <img src="/nintanga.jpg" class="logo" alt="Logo Nintanga">
+              </div>
+              
+              <div class="date">Guaytacama, ${formatDate()}</div>
+              
+              <div class="section-title">Datos del paciente:</div>
+              <div class="patient-data">
+                <strong>Nombre:</strong> ${capitalize(
+                  paciente.pacie_nom_pacie
+                )} ${capitalize(paciente.pacie_ape_pacie)}<br>
+                <strong>Cédula:</strong> ${paciente.pacie_ced_pacie}<br>
+                <strong>Edad:</strong> ${calcularEdad(
+                  paciente.pacie_fec_nac
+                )} años<br>
+                <strong>Sexo:</strong> ${capitalize(paciente.sexo_nom_sexo)}
+              </div>
+              
+              ${
+                prescripciones.length > 0
+                  ? `
+                <div class="section-title">Indicaciones Farmacológicas:</div>
+                <div class="prescripciones-list">
+                  ${prescripciones
+                    .map(
+                      (p) => `
+                    <div class="indicacion-farmacologica">
+                      <div class="med-name">${capitalize(p.pres_nom_prod)}</div>
+                      ${
+                        p.pres_dos_pres
+                          ? `<span>Dosis: ${p.pres_dos_pres}</span>`
+                          : ""
+                      }
+                      <span>Vía: ${capitalize(p.pres_adm_pres || "Oral")}</span>
+                      <span>Frecuencia: ${
+                        p.pres_fre_pres || "Cada 8 horas"
+                      }</span>
+                      ${
+                        p.pres_dur_pres
+                          ? `<span>Duración: ${p.pres_dur_pres} día(s)</span>`
+                          : ""
+                      }
+                      ${
+                        p.pres_ind_pres
+                          ? `<span style="width:100%;">Indicaciones: ${p.pres_ind_pres}</span>`
+                          : ""
+                      }
+                    </div>
+                  `
+                    )
+                    .join("")}
+                </div>
+              `
+                  : ""
+              }
+              
+              ${
+                indicacionesGenerales.length > 0
+                  ? `
+                <div class="section-title">Indicaciones Generales:</div>
+                <ul class="indicaciones-list">
+                  ${indicacionesGenerales
+                    .map(
+                      (ind) => `
+                    <li>${ind.indi_des_indi}</li>
+                  `
+                    )
+                    .join("")}
+                </ul>
+              `
+                  : ""
+              }
+              
+              ${
+                referencias.length > 0
+                  ? `
+                <div class="section-title">Referencias:</div>
+                <ul class="referencias-list">
+                  ${referencias
+                    .map(
+                      (ref) => `
+                    <li>${ref.refe_des_refe}</li>
+                  `
+                    )
+                    .join("")}
+                </ul>
+              `
+                  : ""
+              }              
+            </div>
+          </div>
+          
+          <script>
+            window.onload = function() {
+              setTimeout(function() {
+                window.print();
+                window.close();
+              }, 300);
+            };
+          </script>
+        </body>
+      </html>
+    `);
+
+    printWindow.document.close();
+  };
 
   return (
     <Container className={styles.container}>
@@ -988,8 +1483,7 @@ const Fisioterapia = () => {
                   <TextField
                     label="Motivo de Consulta *"
                     fullWidth
-                    multiline
-                    rows={3}
+                    multiline                  
                     value={motivoConsulta}
                     onChange={(e) => setMotivoConsulta(e.target.value)}
                     sx={{
@@ -1012,8 +1506,7 @@ const Fisioterapia = () => {
                   <TextField
                     label="Enfermedad Actual *"
                     fullWidth
-                    multiline
-                    rows={3}
+                    multiline                  
                     value={enfermedadActual}
                     onChange={(e) => setEnfermedadActual(e.target.value)}
                     sx={{
@@ -1039,8 +1532,7 @@ const Fisioterapia = () => {
               <TextField
                 label="Observaciones"
                 fullWidth
-                multiline
-                rows={2}
+                multiline                
                 value={observaciones}
                 onChange={(e) => setObservaciones(e.target.value)}
                 margin="normal"
@@ -1094,8 +1586,7 @@ const Fisioterapia = () => {
               <TextField
                 label="Observación del Diagnóstico"
                 fullWidth
-                multiline
-                rows={4}
+                multiline                
                 value={diagnostico.diag_obs_diag}
                 onChange={(e) => {
                   const nuevosDiagnosticos = [...diagnosticos];
@@ -1124,57 +1615,75 @@ const Fisioterapia = () => {
 
               {/* Sección de Terapias */}
               <Typography
-  variant="subtitle2"
-  gutterBottom
-  style={{ marginTop: "20px" }}
->
-  Terapias
-</Typography>
-              
-{Object.keys(terapiasOptions).map((terapia) => {
-  const terapias = diagnostico.terapias || {};
-  const tecnicasSeleccionadas = diagnostico.tecnicasSeleccionadas?.[terapia] || {};
-  const isTerapiaSelected = terapias[terapia];
-  
-  return (
-    <Box key={terapia} sx={{ mb: 2 }}>
-      <FormControlLabel
-        control={
-          <Checkbox
-            checked={isTerapiaSelected || false}
-            onChange={() => toggleTerapia(indexDiagnostico, terapia)}
-          />
-        }
-        label={
-          <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
-            {terapia}
-          </Typography>
-        }
-      />
-      
-      <Collapse in={isTerapiaSelected}>
-        <Box sx={{ ml: 4, mt: 1 }}>
-          <Grid container spacing={1}>
-            {terapiasOptions[terapia].map((tecnica) => (
-              <Grid item xs={12} sm={6} md={2} key={tecnica}>
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      size="small"
-                      checked={tecnicasSeleccionadas[tecnica] || false}
-                      onChange={() => toggleTecnica(indexDiagnostico, terapia, tecnica)}
+                variant="subtitle2"
+                gutterBottom
+                style={{ marginTop: "20px" }}
+              >
+                Terapias
+              </Typography>
+
+              {Object.keys(terapiasOptions).map((terapia) => {
+                const terapias = diagnostico.terapias || {};
+                const tecnicasSeleccionadas =
+                  diagnostico.tecnicasSeleccionadas?.[terapia] || {};
+                const isTerapiaSelected = terapias[terapia];
+
+                return (
+                  <Box key={terapia} sx={{ mb: 2 }}>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={isTerapiaSelected || false}
+                          onChange={() =>
+                            toggleTerapia(indexDiagnostico, terapia)
+                          }
+                        />
+                      }
+                      label={
+                        <Typography
+                          variant="subtitle1"
+                          sx={{ fontWeight: "bold" }}
+                        >
+                          {terapia}
+                        </Typography>
+                      }
                     />
-                  }
-                  label={<Typography variant="body2">{tecnica}</Typography>}
-                />
-              </Grid>
-            ))}
-          </Grid>
-        </Box>
-      </Collapse>
-    </Box>
-  );
-})}
+
+                    <Collapse in={isTerapiaSelected}>
+                      <Box sx={{ ml: 4, mt: 1 }}>
+                        <Grid container spacing={1}>
+                          {terapiasOptions[terapia].map((tecnica) => (
+                            <Grid item xs={12} sm={6} md={2} key={tecnica}>
+                              <FormControlLabel
+                                control={
+                                  <Checkbox
+                                    size="small"
+                                    checked={
+                                      tecnicasSeleccionadas[tecnica] || false
+                                    }
+                                    onChange={() =>
+                                      toggleTecnica(
+                                        indexDiagnostico,
+                                        terapia,
+                                        tecnica
+                                      )
+                                    }
+                                  />
+                                }
+                                label={
+                                  <Typography variant="body2">
+                                    {tecnica}
+                                  </Typography>
+                                }
+                              />
+                            </Grid>
+                          ))}
+                        </Grid>
+                      </Box>
+                    </Collapse>
+                  </Box>
+                );
+              })}
 
               {/* Botón para eliminar diagnóstico */}
               <IconButton
@@ -1206,13 +1715,19 @@ const Fisioterapia = () => {
               <TableHead>
                 <TableRow>
                   <TableCell className={styles.productName}>Producto</TableCell>
-                  <TableCell className={styles.quantityCell}>Cantidad</TableCell>
+                  <TableCell className={styles.quantityCell}>
+                    Cantidad
+                  </TableCell>
                   <TableCell className={styles.unitCell}>Unidad</TableCell>
                   <TableCell className={styles.doseCell}>Dosis</TableCell>
                   <TableCell className={styles.routeCell}>Vía</TableCell>
-                  <TableCell className={styles.frequencyCell}>Frecuencia</TableCell>
+                  <TableCell className={styles.frequencyCell}>
+                    Frecuencia
+                  </TableCell>
                   <TableCell className={styles.durationCell}>Días</TableCell>
-                  <TableCell className={styles.indications}>Indicaciones</TableCell>
+                  <TableCell className={styles.indications}>
+                    Indicaciones
+                  </TableCell>
                   <TableCell className={styles.actionsCell}></TableCell>
                 </TableRow>
               </TableHead>
@@ -1425,7 +1940,9 @@ const Fisioterapia = () => {
                           sx={{ fontSize: "0.875rem" }}
                         >
                           <MenuItem value="Oral">Oral</MenuItem>
-                          <MenuItem value="Intramuscular">Intramuscular</MenuItem>
+                          <MenuItem value="Intramuscular">
+                            Intramuscular
+                          </MenuItem>
                           <MenuItem value="Intravenosa">Intravenosa</MenuItem>
                           <MenuItem value="Subcutanea">Subcutánea</MenuItem>
                           <MenuItem value="Sublingual">Sublingual</MenuItem>
@@ -1455,11 +1972,19 @@ const Fisioterapia = () => {
                           <MenuItem value="Inmediato">Inmediato</MenuItem>
                           <MenuItem value="Cada 6 horas">Cada 6 horas</MenuItem>
                           <MenuItem value="Cada 8 horas">Cada 8 horas</MenuItem>
-                          <MenuItem value="Cada 12 horas">Cada 12 horas</MenuItem>
-                          <MenuItem value="Cada 24 horas">Cada 24 horas</MenuItem>
-                          <MenuItem value="Cada 48 horas">Cada 48 horas</MenuItem>
+                          <MenuItem value="Cada 12 horas">
+                            Cada 12 horas
+                          </MenuItem>
+                          <MenuItem value="Cada 24 horas">
+                            Cada 24 horas
+                          </MenuItem>
+                          <MenuItem value="Cada 48 horas">
+                            Cada 48 horas
+                          </MenuItem>
                           <MenuItem value="En ayunas">En ayunas</MenuItem>
-                          <MenuItem value="Una vez al día">Una vez al día</MenuItem>
+                          <MenuItem value="Una vez al día">
+                            Una vez al día
+                          </MenuItem>
                           <MenuItem value="Cada semana">Cada semana</MenuItem>
                           <MenuItem value="Otro">Otro</MenuItem>
                         </Select>
@@ -1514,8 +2039,7 @@ const Fisioterapia = () => {
                       <TextField
                         fullWidth
                         size="small"
-                        multiline
-                        rows={2}
+                        multiline                        
                         value={prescripcion.pres_ind_pres || ""}
                         onChange={(e) => {
                           const nuevasPrescripciones = [...prescripciones];
@@ -1575,10 +2099,18 @@ const Fisioterapia = () => {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell sx={{ fontWeight: "bold", backgroundColor: "#f5f5f5" }}>
+                  <TableCell
+                    sx={{ fontWeight: "bold", backgroundColor: "#f5f5f5" }}
+                  >
                     Descripción
                   </TableCell>
-                  <TableCell sx={{ fontWeight: "bold", backgroundColor: "#f5f5f5", width: "120px" }}>
+                  <TableCell
+                    sx={{
+                      fontWeight: "bold",
+                      backgroundColor: "#f5f5f5",
+                      width: "120px",
+                    }}
+                  >
                     Acciones
                   </TableCell>
                 </TableRow>
@@ -1590,8 +2122,7 @@ const Fisioterapia = () => {
                       <TableCell>
                         <TextField
                           fullWidth
-                          multiline
-                          minRows={2}
+                          multiline                          
                           maxRows={4}
                           value={indicacion.indi_des_indi}
                           onChange={(e) =>
@@ -1647,10 +2178,18 @@ const Fisioterapia = () => {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell sx={{ fontWeight: "bold", backgroundColor: "#f5f5f5" }}>
+                  <TableCell
+                    sx={{ fontWeight: "bold", backgroundColor: "#f5f5f5" }}
+                  >
                     Descripción
                   </TableCell>
-                  <TableCell sx={{ fontWeight: "bold", backgroundColor: "#f5f5f5", width: "120px" }}>
+                  <TableCell
+                    sx={{
+                      fontWeight: "bold",
+                      backgroundColor: "#f5f5f5",
+                      width: "120px",
+                    }}
+                  >
                     Acciones
                   </TableCell>
                 </TableRow>
@@ -1662,8 +2201,7 @@ const Fisioterapia = () => {
                       <TableCell>
                         <TextField
                           fullWidth
-                          multiline
-                          minRows={2}
+                          multiline                          
                           maxRows={4}
                           value={referencia.refe_des_refe}
                           onChange={(e) =>
@@ -1727,6 +2265,15 @@ const Fisioterapia = () => {
               className={styles.button}
             >
               Cancelar
+            </Button>
+            <Button
+              variant="outlined"
+              color="secondary"
+              onClick={handlePrintReceta}
+              startIcon={<PrintIcon />}
+              className={styles.button}
+            >
+              Imprimir Receta
             </Button>
             <Button
               variant="contained"

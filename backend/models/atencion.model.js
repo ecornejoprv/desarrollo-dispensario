@@ -193,3 +193,15 @@ export const getCitasPendientesPorMedico = async (medicoId) => {
   const { rows } = await db.query(query, [medicoId]);
   return rows;
 };
+
+// 5. Funciones para actualizar el estado de la cita
+export const actualizarEstadoCita = async (citaId, nuevoEstado) => {
+  const query = `
+    UPDATE dispensario.dmcita 
+    SET cita_est_cita = $1
+    WHERE cita_cod_cita = $2
+    RETURNING *;
+  `;
+  const { rows } = await db.query(query, [nuevoEstado, citaId]);
+  return rows[0];
+};

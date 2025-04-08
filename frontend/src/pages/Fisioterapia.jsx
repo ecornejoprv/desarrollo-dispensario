@@ -27,6 +27,9 @@ import {
   FormControlLabel,
   Checkbox,
   Collapse,
+  Switch,
+  RadioGroup,
+  Radio
 } from "@mui/material";
 import { Add, Delete, Search, Close } from "@mui/icons-material";
 import api from "../api";
@@ -151,6 +154,8 @@ const Fisioterapia = () => {
   const [referencias, setReferencias] = useState([]);
   const [indicacionesGenerales, setIndicacionesGenerales] = useState([]);
   const [openConfirmCancelModal, setOpenConfirmCancelModal] = useState(false);
+  const [tipoSesion, setTipoSesion] = useState('numero');
+  const [numeroSesion, setNumeroSesion] = useState(1);
 
   const cie10SearchRef = useRef(null);
   const navigate = useNavigate();
@@ -278,6 +283,7 @@ const Fisioterapia = () => {
     setPrescripciones([]);
     setReferencias([]);
     setIndicacionesGenerales([]);
+    setNumeroSesion(1);
   };
 
   const agregarDiagnostico = () => {
@@ -371,6 +377,7 @@ const Fisioterapia = () => {
       if (!validarCampos()) {
         return;
       }
+      
 
       // Preparar datos para enviar al backend
       const atencionData = {
@@ -385,6 +392,7 @@ const Fisioterapia = () => {
         aten_enf_actu: enfermedadActual,
         aten_obs_ate: observaciones,
         aten_tip_aten: tipoAtencion,
+        aten_num_sesi: tipoSesion === 'numero' ? numeroSesion.toString() : 'PROGRAMADA'
       };
 
       const diagnosticosParaEnviar = diagnosticos.map((diagnostico) => ({
@@ -1465,6 +1473,47 @@ const Fisioterapia = () => {
               handleGuardarAtencion();
             }}
           >
+<Grid container spacing={2} alignItems="center">
+  <Grid item xs={12} md={2}>
+    <FormControl component="fieldset">
+      <RadioGroup
+        row
+        value={tipoSesion}
+        onChange={(e) => setTipoSesion(e.target.value)}
+      >
+        <FormControlLabel 
+          value="numero" 
+          control={<Radio size="small" />} 
+          label="Número" 
+        />
+        <FormControlLabel 
+          value="programada" 
+          control={<Radio size="small" />} 
+          label="Programada" 
+        />
+      </RadioGroup>
+    </FormControl>
+  </Grid>
+
+  <Grid item xs={12} md={2}>
+    {tipoSesion === 'numero' ? (
+      <TextField
+        label="Número de Sesión"
+        type="number"
+        value={numeroSesion}
+        onChange={(e) => setNumeroSesion(Math.max(1, parseInt(e.target.value) || 1))}
+        inputProps={{ min: 1 }}
+        fullWidth
+      />
+    ) : (
+      <TextField
+        value="PROGRAMADA"
+        InputProps={{ readOnly: true }}
+        fullWidth
+      />
+    )}
+  </Grid>
+</Grid>
             <Box
               sx={{
                 mb: 3,
@@ -1483,7 +1532,7 @@ const Fisioterapia = () => {
                   <TextField
                     label="Motivo de Consulta *"
                     fullWidth
-                    multiline                  
+                    multiline
                     value={motivoConsulta}
                     onChange={(e) => setMotivoConsulta(e.target.value)}
                     sx={{
@@ -1506,7 +1555,7 @@ const Fisioterapia = () => {
                   <TextField
                     label="Enfermedad Actual *"
                     fullWidth
-                    multiline                  
+                    multiline
                     value={enfermedadActual}
                     onChange={(e) => setEnfermedadActual(e.target.value)}
                     sx={{
@@ -1532,7 +1581,7 @@ const Fisioterapia = () => {
               <TextField
                 label="Observaciones"
                 fullWidth
-                multiline                
+                multiline
                 value={observaciones}
                 onChange={(e) => setObservaciones(e.target.value)}
                 margin="normal"
@@ -1586,7 +1635,7 @@ const Fisioterapia = () => {
               <TextField
                 label="Observación del Diagnóstico"
                 fullWidth
-                multiline                
+                multiline
                 value={diagnostico.diag_obs_diag}
                 onChange={(e) => {
                   const nuevosDiagnosticos = [...diagnosticos];
@@ -2039,7 +2088,7 @@ const Fisioterapia = () => {
                       <TextField
                         fullWidth
                         size="small"
-                        multiline                        
+                        multiline
                         value={prescripcion.pres_ind_pres || ""}
                         onChange={(e) => {
                           const nuevasPrescripciones = [...prescripciones];
@@ -2122,7 +2171,7 @@ const Fisioterapia = () => {
                       <TableCell>
                         <TextField
                           fullWidth
-                          multiline                          
+                          multiline
                           maxRows={4}
                           value={indicacion.indi_des_indi}
                           onChange={(e) =>
@@ -2201,7 +2250,7 @@ const Fisioterapia = () => {
                       <TableCell>
                         <TextField
                           fullWidth
-                          multiline                          
+                          multiline
                           maxRows={4}
                           value={referencia.refe_des_refe}
                           onChange={(e) =>

@@ -501,6 +501,7 @@ const MedicinaGeneral = () => {
             Math.min(Number(p.pres_dur_pres) || 1, 365)
           ),
           pres_ind_pres: p.pres_ind_pres || "",
+          pres_cod_bode: Number(p.pres_cod_bode),
         };
       });
 
@@ -602,6 +603,7 @@ const MedicinaGeneral = () => {
   // Funciones para manejar las prescripciones
   const agregarPrescripcion = (tipo = "Empresa") => {
     const { empresa } = obtenerEmpresaYSucursal(selectedCita.cita_cod_sucu);
+    const { bodega } = mapeoSucursal[selectedCita.cita_cod_sucu];
 
     const nuevaPrescripcion = {
       pres_cod_empr: empresa,
@@ -615,6 +617,7 @@ const MedicinaGeneral = () => {
       pres_fre_pres: "Cada 8 horas",
       pres_dur_pres: 1,
       pres_ind_pres: "",
+      pres_cod_bode: bodega, 
       // Campos visuales (no se envían al backend)
       _siglas_unid: tipo === "Empresa" ? "UN" : "",
       disponible: 0,

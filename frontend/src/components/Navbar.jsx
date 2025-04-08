@@ -1,8 +1,16 @@
 import { Link } from "react-router-dom";
-import { Menu, X, User, Calendar, Stethoscope, Activity, LogOut } from "lucide-react";
+import {
+  Menu,
+  X,
+  User,
+  Calendar,
+  Stethoscope,
+  Activity,
+  LogOut,
+} from "lucide-react";
 import { logout } from "../api"; // Ajusta la ruta según tu estructura
 import "./styles/Navbar.css";
-import PropTypes from 'prop-types';
+import PropTypes from "prop-types";
 
 export default function Navbar({ open, setOpen }) {
   const role = localStorage.getItem("role");
@@ -25,7 +33,6 @@ export default function Navbar({ open, setOpen }) {
               <User size={18} /> {username}
             </div>
           )}
-
           {/* Enlaces comunes para todos los roles */}
           <Link to="/Home" onClick={() => setOpen(false)}>
             <User size={18} /> Inicio
@@ -39,6 +46,7 @@ export default function Navbar({ open, setOpen }) {
           <Link to="/historia-clinica" onClick={() => setOpen(false)}>
             <Stethoscope size={18} /> Historia Clinica
           </Link>
+          
           {/* Enlaces específicos basados en el rol */}
           {(role == 1 || role == 2 || role == 3 || role == 4 || role == 5) && (
             <div>
@@ -47,21 +55,39 @@ export default function Navbar({ open, setOpen }) {
               </button>
               <div className="submenu">
                 {(role == 1 || role == 3) && (
-                  <Link to="/odontologia" onClick={() => setOpen(false)}>Odontología</Link>
+                  <Link to="/odontologia" onClick={() => setOpen(false)}>
+                    Odontología
+                  </Link>
                 )}
                 {(role == 1 || role == 4) && (
-                  <Link to="/fisioterapia" onClick={() => setOpen(false)}>Fisioterapia</Link>
+                  <Link to="/fisioterapia" onClick={() => setOpen(false)}>
+                    Fisioterapia
+                  </Link>
                 )}
                 {(role == 1 || role == 5) && (
-                  <Link to="/atencita" onClick={() => setOpen(false)}>Enfermería</Link>
+                  <Link to="/atencita" onClick={() => setOpen(false)}>
+                    Enfermería
+                  </Link>
                 )}
                 {(role == 1 || role == 2) && (
-                  <Link to="/medicina-general" onClick={() => setOpen(false)}>Medicina General</Link>
+                  <Link to="/medicina-general" onClick={() => setOpen(false)}>
+                    Medicina General
+                  </Link>
                 )}
               </div>
             </div>
           )}
 
+<div>
+  <button className="submenu-btn">
+    <Activity size={18} /> Reportes
+  </button>
+  <div className="submenu">
+    <Link to="/reporte-atenciones" onClick={() => setOpen(false)}>
+      <Stethoscope size={18} /> Atenciones
+    </Link>
+  </div>
+</div>
           {/* Botón de logout */}
           <button onClick={logout} className="logout-button">
             <LogOut size={18} /> Cerrar sesión
@@ -70,7 +96,6 @@ export default function Navbar({ open, setOpen }) {
       </div>
     </>
   );
-  
 }
 Navbar.propTypes = {
   open: PropTypes.bool.isRequired,

@@ -106,7 +106,7 @@
     padding: 0.7rem 1rem;
     border: 1px solid #ced4da;
     border-radius: var(--citas-radius);
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     transition: var(--citas-transition);
     background-color: white;
     color: var(--citas-dark);

@@ -11,8 +11,39 @@ import {
   getActividadesByTipo,
   registrarActividadesPost,
   getMedicoByUsername,
+  updateEstadoCita,
   getMedicoByCodigo,
+  getEstadisticasAtenciones,
+  getAtenciones,
 } from '../models/citas.model.js';
+
+
+export const actualizarEstadoCita = async (req, res) => {
+  const { id } = req.params;
+  const { estado } = req.body;
+  
+  try {
+    const citaActualizada = await updateEstadoCita(id, estado);
+    if (citaActualizada) {
+      res.status(200).json({ 
+        success: true,
+        data: citaActualizada 
+      });
+    } else {
+      res.status(404).json({ 
+        success: false,
+        message: 'Cita no encontrada' 
+      });
+    }
+  } catch (error) {
+    console.error('Error al actualizar estado de cita:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Error al actualizar estado de cita',
+      error: error.message 
+    });
+  }
+};
 
 // Obtener todas las citas
 export const obtenerCitas = async (req, res) => {
@@ -309,6 +340,79 @@ export const obtenerMedicoPorCodigo = async (req, res) => {
       success: false,
       message: 'Error al obtener el médico',
       error: error.message 
+    });
+  }
+};
+export const obtenerAtenciones = async (req, res) => {
+  try {
+    const { fechaDesde, fechaHasta, medicoId, pacienteId, tipoActividad } = req.query;
+    
+    // Validar y parsear parámetros
+    const filters = {
+      fechaDesde: fechaDesde || null,
+      fechaHasta: fechaHasta || null,
+      medicoId: medicoId ? parseInt(medicoId) : null,
+      pacienteId: pacienteId ? parseInt(pacienteId) : null,
+      tipoActividad: tipoActividad || 'ATENCION'
+    };
+
+    // Validar fechas
+    if (filters.fechaDesde && filters.fechaHasta && filters.fechaDesde > filters.fechaHasta) {
+      return res.status(400).json({
+        success: false,
+        message: 'La fecha desde no puede ser mayor que la fecha hasta'
+      });
+    }
+
+    const atenciones = await getAtenciones(filters);
+    
+    res.status(200).json({
+      success: true,
+      data: atenciones,
+      count: atenciones.length,
+      filters: filters // Opcional: devolver los filtros aplicados
+    });
+  } catch (error) {
+    console.error('Error en obtenerAtenciones:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Error al obtener las atenciones',
+      error: error.message
+    });
+  }
+};
+
+export const obtenerEstadisticasAtenciones = async (req, res) => {
+  try {
+    const { fechaDesde, fechaHasta, medicoId } = req.query;
+    
+    const filters = {
+      fechaDesde: fechaDesde || null,
+      fechaHasta: fechaHasta || null,
+      medicoId: medicoId ? parseInt(medicoId) : null
+    };
+
+    // Validar fechas
+    if (filters.fechaDesde && filters.fechaHasta && filters.fechaDesde > filters.fechaHasta) {
+      return res.status(400).json({
+        success: false,
+        message: 'La fecha desde no puede ser mayor que la fecha hasta'
+      });
+    }
+
+    const estadisticas = await getEstadisticasAtenciones(filters);
+    
+    res.status(200).json({
+      success: true,
+      data: estadisticas,
+      filters: filters // Opcional: devolver los filtros aplicados
+    });
+  } catch (error) {
+    console.error('Error en obtenerEstadisticasAtenciones:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Error al obtener estadísticas',
+      error: error.message
     });
   }
 };

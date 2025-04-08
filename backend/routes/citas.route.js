@@ -11,7 +11,10 @@ import {
   obtenerMedicosEspecialidad,
   obtenerActividades,
   registrarActividadesAdmin,
-  obtenerMedicoPorCodigo
+  obtenerMedicoPorCodigo,
+  actualizarEstadoCita,
+  obtenerAtenciones,
+  obtenerEstadisticasAtenciones,
 } from '../controllers/citas.controller.js';
 
 const router = express.Router();
@@ -22,6 +25,7 @@ router.get('/citas/:id', obtenerCitaPorId); // Obtener una cita por su ID
 router.post('/citas', crearCita); // Crear una nueva cita
 router.put('/citas/:id', actualizarCita); // Actualizar una cita existente
 router.delete('/citas/:id', eliminarCita); // Eliminar una cita
+router.put('/citas/:id/estado', actualizarEstadoCita); // Nueva ruta para actualizar solo el estado
 
 // Rutas para especialidades y lugares de atención
 router.get('/especialidades', obtenerEspecialidades);
@@ -33,4 +37,6 @@ router.get('/medicos/especialidad/:especialidadId', obtenerMedicosEspecialidad);
 router.get('/tiposactividades', obtenerActividades);
 router.post('/actividades/registrar', registrarActividadesAdmin);
 router.get('/medicos/:codigo', obtenerMedicoPorCodigo);
+router.get('/atenciones', obtenerAtenciones);
+router.get('/atenciones/estadisticas', obtenerEstadisticasAtenciones);
 export default router;

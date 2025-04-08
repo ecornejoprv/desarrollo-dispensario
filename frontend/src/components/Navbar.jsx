@@ -37,7 +37,13 @@ export default function Navbar({ open, setOpen }) {
             <Stethoscope size={18} /> Ingreso Pacientes
           </Link>
           <Link to="/historia-clinica" onClick={() => setOpen(false)}>
-            <Stethoscope size={18} /> Historia Clinica
+            <Stethoscope size={18} /> Historia Clínica
+          </Link>
+          <Link to="/pacientesreport" onClick={() => setOpen(false)}>
+            <User size={18} /> Reporte Pacientes
+          </Link>
+          <Link to="/enfermreport" onClick={() => setOpen(false)}>
+            <User size={18} /> Reporte Atenciones Enfermería
           </Link>
           {/* Enlaces específicos basados en el rol */}
           {(role == 1 || role == 2 || role == 3 || role == 4 || role == 5) && (

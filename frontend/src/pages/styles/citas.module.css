@@ -82,7 +82,7 @@
 }
 
 .citas-form-group {
-    margin-bottom: 1.2rem;
+    margin-bottom: 1.3rem;
     position: relative;
     width: 100%;
     display: flex;
@@ -112,7 +112,7 @@
     color: var(--citas-dark);
     box-sizing: border-box;
     height: 40px;
-    line-height: 1.5;
+    line-height: 1;
     font-family: inherit;
     -webkit-appearance: none;
     -moz-appearance: none;

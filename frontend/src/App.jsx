@@ -11,6 +11,8 @@ import Enfermeria from "./pages/Enfermeria";
 import MedicinaGeneral from "./pages/MedicinaGeneral";
 import Atencita from "./pages/Atencita";
 import HistoriaClinica from "./pages/HistoriaClinica";
+import Pacientesreport from "./pages/Pacientesreport";
+import AtencionesEnferReport from "./pages/AtencionesEnferReport";
 
 function App() {
   return (
@@ -94,8 +96,26 @@ function App() {
               </PrivateRoute>
             }
           />
-        </Route>
+          <Route
+            path="/pacientesreport"
+            element={
+              <PrivateRoute requiredRoles={["1", "2"]}>
+                <Pacientesreport />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/enfermreport"
+            element={
+              <PrivateRoute requiredRoles={["1", "2"]}>
+                <AtencionesEnferReport />
+              </PrivateRoute>
+            }
+          />  
 
+        </Route>
+        
+         
         {/* Redirigir a /login si la ruta no coincide */}
         <Route path="*" element={<Navigate to="/login" />} />
       </Routes>

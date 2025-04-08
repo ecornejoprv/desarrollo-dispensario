@@ -62,7 +62,7 @@ const Atencita = () => {
     setLoading(true);
     setError(null);
     try {
-      const { data } = await axios.get("/api/v1/tiposactividades?tipo=ADMINISTRATIVAS");
+      const { data } = await axios.get("/api/v1/tiposactividades?tipo=POSTCONSULTA");
       
       // Asegurarse de que data es un array
       const actividadesData = Array.isArray(data) ? data : (data.data || []);

@@ -12,6 +12,7 @@ import cie10Route from './routes/cie10.route.js';
 import prescripcionesRouter from './routes/prescripciones.route.js';
 import fisioterapiaRoute from './routes/fisioterapia.route.js';
 import antecedentesRoutes from './routes/antecedentes.route.js';
+import triajesRoutes from './routes/triaje.route.js';
 
 const app = express();
 app.use(cors());
@@ -27,6 +28,7 @@ app.use("/api/v1/diagnosticos", diagnosticoRoute);
 app.use("/api/v1/procedimientos", procedimientoRoute); 
 app.use("/api/v1/cie10", cie10Route);
 app.use('/api/v1', prescripcionesRouter);
+app.use('/api/v1', triajesRoutes);
 app.use('/api/v1/fisioterapia', fisioterapiaRoute);
 // Monta las rutas de antecedentes bajo /api/v1
 app.use('/api/v1', antecedentesRoutes);

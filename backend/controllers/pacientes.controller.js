@@ -52,12 +52,37 @@ export const obtenerPaciente = async (req, res) => {
 };
 
 // Crear un nuevo paciente
+
 export const crearPaciente = async (req, res) => {
   try {
+    console.log("Datos recibidos:", req.body); // Agrega este log
+    
+    // Validar campos requeridos
+    if (!req.body.pacie_ced_pacie || !req.body.pacie_nom_pacie || !req.body.pacie_ape_pacie) {
+      return res.status(400).json({ 
+        message: "Cédula, nombre y apellido son campos requeridos" 
+      });
+    }
+
+    // Formatear fecha si es necesario
+    if (req.body.pacie_fec_nac) {
+      req.body.pacie_fec_nac = new Date(req.body.pacie_fec_nac).toISOString().split('T')[0];
+    }
+
+    // Asegurar tipos de datos
+    req.body.pacie_cod_disc = Boolean(req.body.pacie_cod_disc);
+    req.body.pacie_enf_catas = Boolean(req.body.pacie_enf_catas);
+    req.body.pacie_por_disc = Number(req.body.pacie_por_disc) || 0;
+
     const nuevoPaciente = await createPaciente(req.body);
     res.status(201).json(nuevoPaciente);
   } catch (error) {
-    res.status(500).json({ message: "Error al crear el paciente", error });
+    console.error("Error detallado:", error);
+    res.status(500).json({ 
+      message: "Error al crear el paciente",
+      error: error.message,
+      stack: error.stack 
+    });
   }
 };
 
@@ -215,6 +240,6 @@ export const obtenerEmpresas = async (req, res) => {
     const empresas = await getAllEmpresas();
     res.status(200).json(empresas);
   } catch (error) {
-    res.status(500).json({ message: "Error al obtener los tipos de sangre", error });
+    res.status(500).json({ message: "Error al obtener las empresas", error });
   }
 };

@@ -3,7 +3,7 @@ import { useLocation } from "react-router-dom";
 import axios from "axios";
 import styles from "./styles/enfermaten.module.css";
 import Modal from 'react-modal';
-
+import { useNavigate } from 'react-router-dom';
 Modal.setAppElement('#root');
 
 const Enfermeria = () => {
@@ -38,10 +38,10 @@ const Enfermeria = () => {
     triaj_obs_triaj: "",
     triaj_niv_urge: null,
     triaj_sat_triaj: null,
-    triaj_exl_triaj: false,
-    triaj_exi_triaj: false,
-    mostrarSignosVitales: false,
-    mostrarMedidasAntropometricas: false,
+    triaj_exl_triaj: null,
+    triaj_exi_triaj: null,
+    mostrarSignosVitales: null,
+    mostrarMedidasAntropometricas: null,
   });
   const [editingTriaje, setEditingTriaje] = useState(null);
 
@@ -75,6 +75,35 @@ const Enfermeria = () => {
   
     fetchMedico();
   }, [cita]);
+  const navigate = useNavigate(); // Esta línea es crucial
+  // Función para cerrar postconsulta - VERSIÓN CORREGIDA
+const cerrarPostconsulta = async () => {
+  if (!window.confirm('¿Estás seguro de cerrar la postconsulta? Esta acción no se puede deshacer.')) {
+    return;
+  }
+
+  try {
+    if (!cita?.cita_cod_cita) {
+      throw new Error("No hay información de cita disponible");
+    }
+
+    // Solo enviamos el campo que queremos actualizar
+    const response = await axios.put(`/api/v1/citas/${cita.cita_cod_cita}/estado`, {
+      estado: "AM"
+    });
+
+    if (response.data) {
+      alert("Postconsulta cerrada correctamente");
+      navigate('/atencita'); // Redirige a /atencita después del éxito
+    } else {
+      throw new Error(response.data.message || "Error al actualizar el estado");
+    }
+  } catch (error) {
+    console.error("Error al cerrar postconsulta:", error);
+    alert(error.message || "Error al cerrar la postconsulta");
+  }
+};
+
   // Función para obtener médico por ID
   const fetchMedicoById = async (codMedico) => {
     try {
@@ -100,6 +129,7 @@ const Enfermeria = () => {
       return null;
     }
   };
+
   // Función para obtener actividades de postconsulta
   const fetchActividadesPostconsulta = async () => {
     setLoading(true);
@@ -162,7 +192,6 @@ const Enfermeria = () => {
         throw new Error("No se encontró información del médico. Por favor inicie sesión nuevamente.");
       }
 
-
       // Preparar actividades seleccionadas (solo los IDs)
       const actividadesSeleccionadas = Object.keys(selectedActivities)
         .filter(key => selectedActivities[key])
@@ -214,7 +243,9 @@ const Enfermeria = () => {
         triaj_exl_triaj: formData.triaj_exl_triaj ? 1 : 0,
         triaj_exi_triaj: formData.triaj_exi_triaj ? 1 : 0,
       };
-
+         // Elimina campos que no existen en la base de datos
+        delete dataToSend.mostrarSignosVitales;
+        delete dataToSend.mostrarMedidasAntropometricas; 
       if (editingTriaje) {
         await axios.put(`/api/v1/triaje/${editingTriaje.triaj_cod_triaj}`, dataToSend);
       } else {
@@ -234,14 +265,17 @@ const Enfermeria = () => {
         triaj_obs_triaj: "",
         triaj_niv_urge: null,
         triaj_sat_triaj: null,
-        triaj_exl_triaj: false,
-        triaj_exi_triaj: false,
-        mostrarSignosVitales: false,
-        mostrarMedidasAntropometricas: false,
+        triaj_exl_triaj: null,
+        triaj_exi_triaj: null,
+        mostrarSignosVitales: null,
+        mostrarMedidasAntropometricas: null,
       });
       setEditingTriaje(null);
     } catch (error) {
-      console.error("Error saving triaje:", error);
+
+      console.error("Error completo:", error); // Log 6
+    console.error("Respuesta de error:", error.response); // Log 7
+    alert(`Error: ${error.response?.data?.error || error.message}`);
     }
   };
 
@@ -278,192 +312,210 @@ const Enfermeria = () => {
             <strong>Hora:</strong> {cita.cita_hor_cita}
           </p>
           
-          {/* Botón para abrir el modal de postconsulta */}
-          <button 
-            onClick={openModalPostconsulta}
-            style={{
-              backgroundColor: '#2196F3',
-              color: 'white',
-              padding: '10px 15px',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              marginTop: '15px'
-            }}
-          >
-            Agregar Actividades de Postconsulta
-          </button>
+          <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
+            {/* Botón para abrir el modal de postconsulta */}
+            <button 
+              onClick={openModalPostconsulta}
+              style={{
+                backgroundColor: '#2196F3',
+                color: 'white',
+                padding: '10px 15px',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer'
+              }}
+            >
+              Agregar Actividades de Postconsulta
+            </button>
+
+            {/* Botón para cerrar postconsulta - NUEVO BOTÓN AGREGADO */}
+            <button 
+              onClick={cerrarPostconsulta}
+              style={{
+                backgroundColor: '#f44336',
+                color: 'white',
+                padding: '10px 15px',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer'
+              }}
+            >
+              Cerrar Postconsulta
+            </button>
+          </div>
         </div>
       )}
-{/* Modal para actividades de postconsulta */}
-<Modal
-  isOpen={modalPostconsultaIsOpen}
-  onRequestClose={closeModalPostconsulta}
-  contentLabel="Seleccionar Actividades de Postconsulta"
-  style={{
-    content: {
-      position: 'absolute',
-      top: '50%',
-      left: '50%',
-      transform: 'translate(-50%, -50%)',
-      background: 'white',
-      padding: '2rem',
-      borderRadius: '12px',
-      maxWidth: '700px',
-      width: '90%',
-      maxHeight: '85vh',
-      overflowY: 'auto',
-      border: 'none',
-      boxShadow: '0 10px 30px rgba(0, 0, 0, 0.15)'
-    },
-    overlay: {
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: 'rgba(42, 92, 130, 0.8)',
-      backdropFilter: 'blur(4px)',
-      zIndex: 1000,
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center'
-    }
-  }}
->
-  <h2 style={{
-    color: '#2A5C82',
-    marginBottom: '1.5rem',
-    fontSize: '1.8rem',
-    fontWeight: '600',
-    textAlign: 'center',
-    borderBottom: '2px solid #E1F5FE',
-    paddingBottom: '0.5rem'
-  }}>
-    Seleccionar Actividades de Postconsulta
-  </h2>
-  
-  {loading ? (
-    <div style={{
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      height: '100px'
-    }}>
-      <div style={{
-        border: '4px solid #E1F5FE',
-        borderTop: '4px solid #4FC3F7',
-        borderRadius: '50%',
-        width: '40px',
-        height: '40px',
-        animation: 'spin 1s linear infinite'
-      }}></div>
-    </div>
-  ) : error ? (
-    <div style={{
-      backgroundColor: '#FFEBEE',
-      color: '#D32F2F',
-      padding: '1rem',
-      borderRadius: '8px',
-      marginBottom: '1.5rem',
-      borderLeft: '4px solid #D32F2F'
-    }}>
-      {error}
-    </div>
-  ) : (
-    <>
-      <div style={{ 
-        margin: '1.5rem 0',
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
-        gap: '12px'
-      }}>
-        {actividadesPostconsulta.map(actividad => (
-          <div 
-            key={actividad.acti_cod_acti} 
-            style={{
-              padding: '1rem',
-              background: selectedActivities[actividad.acti_cod_acti] ? '#E1F5FE' : '#F8F9FA',
-              borderRadius: '8px',
-              border: `2px solid ${selectedActivities[actividad.acti_cod_acti] ? '#4FC3F7' : '#E0E0E0'}`,
-              transition: 'all 0.3s ease',
-              cursor: 'pointer'
-            }} 
-            onClick={() => handleCheckboxChange(actividad.acti_cod_acti)}
-          >
-            <label style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-              cursor: 'pointer',
-              fontWeight: selectedActivities[actividad.acti_cod_acti] ? '600' : '400',
-              color: selectedActivities[actividad.acti_cod_acti] ? '#0288D1' : '#424242'
-            }}>
-              <input
-                type="checkbox"
-                checked={selectedActivities[actividad.acti_cod_acti] || false}
-                onChange={() => handleCheckboxChange(actividad.acti_cod_acti)}
-                style={{
-                  transform: 'scale(1.3)',
-                  accentColor: '#4FC3F7',
-                  cursor: 'pointer'
-                }}
-              />
-              {actividad.acti_nom_acti}
-            </label>
+
+      {/* Modal para actividades de postconsulta */}
+      <Modal
+        isOpen={modalPostconsultaIsOpen}
+        onRequestClose={closeModalPostconsulta}
+        contentLabel="Seleccionar Actividades de Postconsulta"
+        style={{
+          content: {
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            background: 'white',
+            padding: '2rem',
+            borderRadius: '12px',
+            maxWidth: '700px',
+            width: '90%',
+            maxHeight: '85vh',
+            overflowY: 'auto',
+            border: 'none',
+            boxShadow: '0 10px 30px rgba(0, 0, 0, 0.15)'
+          },
+          overlay: {
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(42, 92, 130, 0.8)',
+            backdropFilter: 'blur(4px)',
+            zIndex: 1000,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center'
+          }
+        }}
+      >
+        <h2 style={{
+          color: '#2A5C82',
+          marginBottom: '1.5rem',
+          fontSize: '1.8rem',
+          fontWeight: '600',
+          textAlign: 'center',
+          borderBottom: '2px solid #E1F5FE',
+          paddingBottom: '0.5rem'
+        }}>
+          Seleccionar Actividades de Postconsulta
+        </h2>
+        
+        {loading ? (
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: '100px'
+          }}>
+            <div style={{
+              border: '4px solid #E1F5FE',
+              borderTop: '4px solid #4FC3F7',
+              borderRadius: '50%',
+              width: '40px',
+              height: '40px',
+              animation: 'spin 1s linear infinite'
+            }}></div>
           </div>
-        ))}
-      </div>
-      
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'flex-end', 
-        gap: '1rem', 
-        marginTop: '2rem',
-        paddingTop: '1.5rem',
-        borderTop: '1px solid #E0E0E0'
-      }}>
-        <button 
-          onClick={closeModalPostconsulta}
-          style={{
-            backgroundColor: '#E0E0E0',
-            color: '#424242',
-            padding: '0.8rem 1.5rem',
-            border: 'none',
+        ) : error ? (
+          <div style={{
+            backgroundColor: '#FFEBEE',
+            color: '#D32F2F',
+            padding: '1rem',
             borderRadius: '8px',
-            cursor: 'pointer',
-            fontWeight: '600',
-            transition: 'all 0.3s ease',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-          }}
-          onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#BDBDBD'}
-          onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#E0E0E0'}
-        >
-          Cancelar
-        </button>
-        <button 
-          onClick={guardarActividades}
-          style={{
-            backgroundColor: '#81D4FA',
-            color: '#01579B',
-            padding: '0.8rem 1.5rem',
-            border: 'none',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            fontWeight: '600',
-            transition: 'all 0.3s ease',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-          }}
-          onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#4FC3F7'}
-          onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#81D4FA'}
-        >
-          Guardar Actividades
-        </button>
-      </div>
-    </>
-  )}
-</Modal>
-      {/* Formulario para crear/editar triajes (MANTENIDO EXACTAMENTE IGUAL) */}
+            marginBottom: '1.5rem',
+            borderLeft: '4px solid #D32F2F'
+          }}>
+            {error}
+          </div>
+        ) : (
+          <>
+            <div style={{ 
+              margin: '1.5rem 0',
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
+              gap: '12px'
+            }}>
+              {actividadesPostconsulta.map(actividad => (
+                <div 
+                  key={actividad.acti_cod_acti} 
+                  style={{
+                    padding: '1rem',
+                    background: selectedActivities[actividad.acti_cod_acti] ? '#E1F5FE' : '#F8F9FA',
+                    borderRadius: '8px',
+                    border: `2px solid ${selectedActivities[actividad.acti_cod_acti] ? '#4FC3F7' : '#E0E0E0'}`,
+                    transition: 'all 0.3s ease',
+                    cursor: 'pointer'
+                  }} 
+                  onClick={() => handleCheckboxChange(actividad.acti_cod_acti)}
+                >
+                  <label style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    cursor: 'pointer',
+                    fontWeight: selectedActivities[actividad.acti_cod_acti] ? '600' : '400',
+                    color: selectedActivities[actividad.acti_cod_acti] ? '#0288D1' : '#424242'
+                  }}>
+                    <input
+                      type="checkbox"
+                      checked={selectedActivities[actividad.acti_cod_acti] || false}
+                      onChange={() => handleCheckboxChange(actividad.acti_cod_acti)}
+                      style={{
+                        transform: 'scale(1.3)',
+                        accentColor: '#4FC3F7',
+                        cursor: 'pointer'
+                      }}
+                    />
+                    {actividad.acti_nom_acti}
+                  </label>
+                </div>
+              ))}
+            </div>
+            
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'flex-end', 
+              gap: '1rem', 
+              marginTop: '2rem',
+              paddingTop: '1.5rem',
+              borderTop: '1px solid #E0E0E0'
+            }}>
+              <button 
+                onClick={closeModalPostconsulta}
+                style={{
+                  backgroundColor: '#E0E0E0',
+                  color: '#424242',
+                  padding: '0.8rem 1.5rem',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontWeight: '600',
+                  transition: 'all 0.3s ease',
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                }}
+                onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#BDBDBD'}
+                onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#E0E0E0'}
+              >
+                Cancelar
+              </button>
+              <button 
+                onClick={guardarActividades}
+                style={{
+                  backgroundColor: '#81D4FA',
+                  color: '#01579B',
+                  padding: '0.8rem 1.5rem',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontWeight: '600',
+                  transition: 'all 0.3s ease',
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                }}
+                onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#4FC3F7'}
+                onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#81D4FA'}
+              >
+                Guardar Actividades
+              </button>
+            </div>
+          </>
+        )}
+      </Modal>
+
+      {/* Formulario para crear/editar triajes */}
       <form onSubmit={handleSubmit} className={styles["aten-enfer-form"]}>
         <h2>{editingTriaje ? "Editar Triaje" : "Crear Nuevo Triaje"}</h2>
 

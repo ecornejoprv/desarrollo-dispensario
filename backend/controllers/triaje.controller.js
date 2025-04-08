@@ -3,8 +3,8 @@ import {
     getTriajeById,
     createTriaje,
     updateTriaje,
-    deleteTriaje,
-  } from '../models/triajeModel.js';
+    deleteTriaje
+  } from '../models/triaje.model.js';
   
   // Obtener todos los triajes de una cita
   export const obtenerTriajesPorCita = async (req, res) => {
@@ -35,9 +35,12 @@ import {
   // Crear un nuevo triaje
   export const crearTriaje = async (req, res) => {
     try {
+      console.log('Datos recibidos:', req.body); // Agrega este log
       const nuevoTriaje = await createTriaje(req.body);
+      console.log('Triaje creado:', nuevoTriaje); // Agrega este log
       res.status(201).json(nuevoTriaje);
     } catch (error) {
+      console.error('Error al crear triaje:', error); // Agrega este log
       res.status(400).json({ error: error.message });
     }
   };

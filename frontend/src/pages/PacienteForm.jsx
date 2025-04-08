@@ -23,18 +23,18 @@ export default function PacienteForm({ guardarPaciente, pacienteEditando }) {
     pacie_parr_nacim: "",
     pacie_emai_pacie: "",
     pacie_cod_inst: "",
-    pacie_cod_disc: false,
-    pacie_por_disc: 0,
+    pacie_cod_disc: "",
+    pacie_por_disc: "",
     pacie_nom_cont: "",
     pacie_dir_cont: "",
     pacie_tel_con: "",
     pacie_cod_etnia: "",
-    pacie_enf_catas: false,
+    pacie_enf_catas: "",
     pacie_cod_sangr: "",
     pacie_cod_osex: "",
     pacie_cod_gener: "",
     pacie_late_pacie: "",
-    pacie_est_pacie: "Activo",
+    pacie_est_pacie: "A",
   });
 
   const [errores, setErrores] = useState({});
@@ -51,9 +51,25 @@ export default function PacienteForm({ guardarPaciente, pacienteEditando }) {
   const [empresas, setEmpresas] = useState([]);
   const [instituciones, setInstrucciones] = useState([]);
   const [tiposSangre, setTiposSangre] = useState([]);
-  const [tiposDiscapacidad, setTiposDiscapacidad] = useState([]); // Nuevo estado para tipos de discapacidad
+  const [tiposDiscapacidad, setTiposDiscapacidad] = useState([]);
 
-  // Obtener datos de las tablas relacionadas al cargar el componente
+  // Función para formatear YYYY-MM-DD a DD/MM/YYYY para mostrar
+  const formatDateToDisplay = (dateStr) => {
+    if (!dateStr) return "";
+    if (dateStr.includes("/")) return dateStr;
+    const [year, month, day] = dateStr.split("-");
+    return `${day}/${month}/${year}`;
+  };
+
+  // Función para formatear DD/MM/YYYY a YYYY-MM-DD para enviar al backend
+  const formatDateForBackend = (dateStr) => {
+    if (!dateStr) return "";
+    if (dateStr.includes("-")) return dateStr;
+    const [day, month, year] = dateStr.split("/");
+    return `${year}-${month}-${day}`;
+  };
+
+  // Obtener datos de las tablas relacionadas
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -68,7 +84,7 @@ export default function PacienteForm({ guardarPaciente, pacienteEditando }) {
 
         const responseEstadosCiviles = await axios.get("/api/estados-civiles");
         setEstadosCiviles(responseEstadosCiviles.data);
-
+            
         const responseReligiones = await axios.get("/api/religiones");
         setReligiones(responseReligiones.data);
 
@@ -96,7 +112,7 @@ export default function PacienteForm({ guardarPaciente, pacienteEditando }) {
         const responseTiposSangre = await axios.get("/api/tipos-sangre");
         setTiposSangre(responseTiposSangre.data);
 
-        const responseTiposDiscapacidad = await axios.get("/api/tipos-discapacidad"); // Nuevo endpoint para tipos de discapacidad
+        const responseTiposDiscapacidad = await axios.get("/api/tipos-discapacidad");
         setTiposDiscapacidad(responseTiposDiscapacidad.data);
 
       } catch (error) {
@@ -109,7 +125,12 @@ export default function PacienteForm({ guardarPaciente, pacienteEditando }) {
   // Actualizar el formulario si se está editando un paciente
   useEffect(() => {
     if (pacienteEditando) {
-      setFormData(pacienteEditando);
+      // Formatear la fecha para mostrarla en DD/MM/YYYY
+      const pacienteFormateado = {
+        ...pacienteEditando,
+        pacie_fec_nac: formatDateToDisplay(pacienteEditando.pacie_fec_nac)
+      };
+      setFormData(pacienteFormateado);
     } else {
       setFormData({
         pacie_ced_pacie: "",
@@ -131,18 +152,18 @@ export default function PacienteForm({ guardarPaciente, pacienteEditando }) {
         pacie_parr_nacim: "",
         pacie_emai_pacie: "",
         pacie_cod_inst: "",
-        pacie_cod_disc: false,
-        pacie_por_disc: 0,
+        pacie_cod_disc: "",
+        pacie_por_disc: "",
         pacie_nom_cont: "",
         pacie_dir_cont: "",
         pacie_tel_con: "",
         pacie_cod_etnia: "",
-        pacie_enf_catas: false,
+        pacie_enf_catas: "",
         pacie_cod_sangr: "",
         pacie_cod_osex: "",
         pacie_cod_gener: "",
         pacie_late_pacie: "",
-        pacie_est_pacie: "Activo",
+        pacie_est_pacie: "A",
       });
     }
   }, [pacienteEditando]);
@@ -150,23 +171,12 @@ export default function PacienteForm({ guardarPaciente, pacienteEditando }) {
   // Manejar cambios en los campos del formulario
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-  
-    if (name === "pacie_fec_nac") {
-      // Convertir de YYYY-MM-DD a DD/MM/YYYY si el input es tipo date
-      const [year, month, day] = value.split("-");
-      const fechaFormateada = `${day}/${month}/${year}`;
-  
-      setFormData({
-        ...formData,
-        [name]: fechaFormateada,
-      });
-    } else {
-      setFormData({
-        ...formData,
-        [name]: type === "checkbox" ? checked : value,
-      });
-    }
-  
+
+    setFormData({
+      ...formData,
+      [name]: type === "checkbox" ? (checked ? 1 : 0) : value,
+    });
+
     // Limpiar errores al escribir
     setErrores({ ...errores, [name]: "" });
   };
@@ -193,7 +203,19 @@ export default function PacienteForm({ guardarPaciente, pacienteEditando }) {
       alert("Por favor, completa todos los campos obligatorios.");
       return;
     }
-    guardarPaciente(formData);
+    
+    // Crear copia del formData y formatear la fecha para el backend
+    const dataToSend = {
+      ...formData,
+       pacie_fec_nac: formatDateForBackend(formData.pacie_fec_nac),
+      // pacie_cod_disc: formData.pacie_cod_disc ? 1 : 0,
+      // pacie_enf_catas: formData.pacie_enf_catas ? 1 : 0,
+       pacie_est_pacie: "A" // Mantiene el estado como "A"
+    };
+
+    guardarPaciente(dataToSend);
+    
+    // Resetear el formulario
     setFormData({
       pacie_ced_pacie: "",
       pacie_nom_pacie: "",
@@ -201,7 +223,7 @@ export default function PacienteForm({ guardarPaciente, pacienteEditando }) {
       pacie_tel_pacie: "",
       pacie_emai_pacie: "",
       pacie_fec_nac: "",
-      pacie_est_pacie: "Activo",
+      pacie_est_pacie: "A",
     });
   };
 
@@ -273,11 +295,9 @@ export default function PacienteForm({ guardarPaciente, pacienteEditando }) {
               type="date"
               name="pacie_fec_nac"
               value={
-                formData.pacie_fec_nac
-                  ? new Date(formData.pacie_fec_nac.split("/").reverse().join("-"))
-                      .toISOString()
-                      .split("T")[0]
-                  : ""
+                formData.pacie_fec_nac && formData.pacie_fec_nac.includes("/") 
+                  ? formatDateForBackend(formData.pacie_fec_nac) 
+                  : formData.pacie_fec_nac || ""
               }
               onChange={handleChange}
             />
@@ -494,8 +514,8 @@ export default function PacienteForm({ guardarPaciente, pacienteEditando }) {
               value={formData.pacie_est_pacie}
               onChange={handleChange}
             >
-              <option value="A">Activo</option>
-              <option value="I">Inactivo</option>
+              <option value="A">A</option>
+              <option value="I">I</option>
             </select>
           </div>
 
@@ -588,7 +608,7 @@ export default function PacienteForm({ guardarPaciente, pacienteEditando }) {
         </div>
       </div>
 
-     {/* Sección de Salud */}
+      {/* Sección de Salud */}
       <div className="form-section">
         <h3>🏥 Información de Salud</h3>
         <div className="form-grid">
@@ -598,9 +618,9 @@ export default function PacienteForm({ guardarPaciente, pacienteEditando }) {
             <input
               type="checkbox"
               name="pacie_cod_disc"
-              checked={formData.pacie_cod_disc}
+              checked={formData.pacie_cod_disc === 1}
               onChange={handleChange}
-              className="small-checkbox" // Clase para reducir el tamaño del checkbox
+              className="small-checkbox"
             />
           </div>
 
@@ -615,7 +635,7 @@ export default function PacienteForm({ guardarPaciente, pacienteEditando }) {
                   name="pacie_por_disc"
                   value={formData.pacie_por_disc}
                   onChange={handleChange}
-                  className="small-input" // Clase para reducir el tamaño del input
+                  className="small-input"
                 />
               </div>
 
@@ -644,14 +664,13 @@ export default function PacienteForm({ guardarPaciente, pacienteEditando }) {
             <input
               type="checkbox"
               name="pacie_enf_catas"
-              checked={formData.pacie_enf_catas}
+              checked={formData.pacie_enf_catas === 1}
               onChange={handleChange}
-              className="small-checkbox" // Clase para reducir el tamaño del checkbox
+              className="small-checkbox"
             />
           </div>
         </div>
       </div>
-
 
       {/* Botón de envío */}
       <button type="submit" className="submit-button">

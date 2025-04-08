@@ -2,9 +2,27 @@ import { db } from '../database/databasePostgres.js'; // Importa la conexión a 
 
 // Obtener todas las citas
 export const getCitas = async () => {
-  const query = 'SELECT * FROM dispensario.dmcita';
+  const query = "SELECT * FROM dispensario.dmcita where cita_est_cita <> 'AM'";
   const result = await db.query(query);
   return result.rows;
+};
+
+// Actualizar solo el estado de una cita
+export const updateEstadoCita = async (cita_cod_cita, estado) => {
+  const query = `
+    UPDATE dispensario.dmcita
+    SET cita_est_cita = $1
+    WHERE cita_cod_cita = $2
+    RETURNING *;
+  `;
+
+  try {
+    const result = await db.query(query, [estado, cita_cod_cita]);
+    return result.rows[0];
+  } catch (error) {
+    console.error('Error al actualizar estado de cita:', error);
+    throw new Error(`Error al actualizar estado de cita: ${error.message}`);
+  }
 };
 
 // Obtener una cita por su ID
@@ -256,6 +274,7 @@ export const registrarActividadesPost = async (medicoId, actividades, citaId = n
 };
 
 
+
 // Obtener médico por username
 export const getMedicoByUsername = async (username) => {
   try {
@@ -284,5 +303,157 @@ export const getMedicoByCodigo = async (codigoMedico) => {
   } catch (error) {
     console.error('Error al obtener médico por código:', error);
     throw new Error('Error al obtener médico por código');
+  }
+};
+// ... (todo el código existente se mantiene igual)
+
+// ==============================================
+// NUEVAS FUNCIONES PARA REPORTE DE ATENCIONES
+// ==============================================
+
+// ... (mantener todas las funciones existentes)
+
+// Modificar las funciones de atenciones:
+
+export const getAtenciones = async (filters = {}) => {
+  const {
+    fechaDesde,
+    fechaHasta,
+    medicoId,
+    pacienteId,
+    tipoActividad = 'POSTCONSULTA'
+  } = filters;
+
+  // Validar parámetros
+  if (!tipoActividad) {
+    throw new Error('El tipo de actividad es requerido');
+  }
+
+  let query = `
+    SELECT 
+      p.post_cod_post,
+      p.post_cod_pacie,
+      p.post_cod_medi,
+      p.post_cod_acti,
+      p.post_cod_cita,
+      p.post_fec_post,
+      a.acti_nom_acti,
+      COALESCE(pac.pacie_nom_pacie, 'N/A') AS paciente_nombre,
+      COALESCE(pac.pacie_ape_pacie, '') AS paciente_apellido,
+      COALESCE(med.medic_nom_medic, 'N/A') AS medico_nombre,
+      c.cita_fec_cita AS fecha_cita,
+      c.cita_hor_cita AS hora_cita,
+      COALESCE(esp.espe_nom_espe, 'N/A') AS especialidad,
+      COALESCE(suc.disuc_nom_disuc, 'N/A') AS sucursal
+    FROM 
+      dispensario.dmpost p
+    INNER JOIN 
+      dispensario.dmacti a ON p.post_cod_acti = a.acti_cod_acti
+    LEFT JOIN 
+      dispensario.dmpacie pac ON p.post_cod_pacie = pac.pacie_cod_pacie
+    LEFT JOIN 
+      dispensario.dmmedic med ON p.post_cod_medi = med.medic_cod_medic
+    LEFT JOIN
+      dispensario.dmcita c ON p.post_cod_cita = c.cita_cod_cita
+    LEFT JOIN
+      dispensario.dmespec esp ON c.cita_cod_espe = esp.espe_cod_espe
+    LEFT JOIN
+      dispensario.dmdisuc suc ON c.cita_cod_sucu = suc.disuc_cod_disuc
+    WHERE 
+      a.acti_tip_acti = $1
+  `;
+
+  const values = [tipoActividad];
+  let paramIndex = 2;
+
+  // Filtros adicionales con validación
+  if (fechaDesde) {
+    query += ` AND p.post_fec_post >= $${paramIndex}`;
+    values.push(fechaDesde);
+    paramIndex++;
+  }
+
+  if (fechaHasta) {
+    query += ` AND p.post_fec_post <= $${paramIndex}`;
+    values.push(fechaHasta);
+    paramIndex++;
+  }
+
+  if (medicoId) {
+    query += ` AND p.post_cod_medi = $${paramIndex}`;
+    values.push(medicoId);
+    paramIndex++;
+  }
+
+  if (pacienteId) {
+    query += ` AND p.post_cod_pacie = $${paramIndex}`;
+    values.push(pacienteId);
+    paramIndex++;
+  }
+
+  query += ` ORDER BY p.post_fec_post DESC, p.post_cod_post DESC`;
+
+  try {
+    const result = await db.query(query, values);
+    return result.rows;
+  } catch (error) {
+    console.error('Error en getAtenciones:', error);
+    throw new Error(`Error al obtener atenciones: ${error.message}`);
+  }
+};
+
+export const getEstadisticasAtenciones = async (filters = {}) => {
+  const { fechaDesde, fechaHasta, medicoId } = filters;
+
+  let query = `
+    SELECT 
+      COUNT(*) AS total_atenciones,
+      COUNT(DISTINCT p.post_cod_pacie) AS pacientes_unicos,
+      COUNT(DISTINCT p.post_cod_medi) AS medicos_involucrados,
+      a.acti_nom_acti AS tipo_atencion,
+      COALESCE(med.medic_nom_medic, 'N/A') AS medico_nombre
+    FROM 
+      dispensario.dmpost p
+    INNER JOIN 
+      dispensario.dmacti a ON p.post_cod_acti = a.acti_cod_acti
+    LEFT JOIN 
+      dispensario.dmmedic med ON p.post_cod_medi = med.medic_cod_medic
+    WHERE 
+      a.acti_tip_acti = $1
+  `;
+
+  const values = ['POSTCONSULTA'];
+  let paramIndex = 2;
+
+  // Filtros con validación
+  if (fechaDesde) {
+    query += ` AND p.post_fec_post >= $${paramIndex}`;
+    values.push(fechaDesde);
+    paramIndex++;
+  }
+
+  if (fechaHasta) {
+    query += ` AND p.post_fec_post <= $${paramIndex}`;
+    values.push(fechaHasta);
+    paramIndex++;
+  }
+
+  if (medicoId) {
+    query += ` AND p.post_cod_medi = $${paramIndex}`;
+    values.push(medicoId);
+    paramIndex++;
+  }
+
+  query += `
+    GROUP BY a.acti_nom_acti, med.medic_nom_medic
+    ORDER BY total_atenciones DESC
+  `;
+
+  try {
+    const result = await db.query(query, values);
+    return result.rows;
+  } catch (error) {
+    console.error('Error en getEstadisticasAtenciones:', error);
+    throw new Error(`Error al obtener estadísticas: ${error.message}`);
   }
 };

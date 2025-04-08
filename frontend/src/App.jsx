@@ -18,6 +18,7 @@ import Atencita from "./pages/Atencita";
 import HistoriaClinica from "./pages/HistoriaClinica";
 import ReporteAtenciones from "./pages/ReporteAtenciones";
 
+
 function App() {
   return (
     <Router>

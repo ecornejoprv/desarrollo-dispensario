@@ -38,8 +38,8 @@ export const createTriaje = async (triajeData) => {
       triaj_tal_triaj,
       triaj_imc_triaj,
       triaj_pab_triaj,
-      triaj_exl_triaj,  -- Nuevo campo
-      triaj_exi_triaj   -- Nuevo campo
+      triaj_exl_triaj,  
+      triaj_exi_triaj  
     ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
     RETURNING *;
   `;
@@ -81,8 +81,8 @@ export const updateTriaje = async (triajeId, triajeData) => {
       triaj_tal_triaj = $11,
       triaj_imc_triaj = $12,
       triaj_pab_triaj = $13,
-      triaj_exl_triaj = $14,  -- Nuevo campo
-      triaj_exi_triaj = $15   -- Nuevo campo
+      triaj_exl_triaj = $14,  
+      triaj_exi_triaj = $15   
     WHERE triaj_cod_triaj = $16
     RETURNING *;
   `;

@@ -15,8 +15,9 @@ export const registrarPrescripcion = async (prescripcionData) => {
       pres_adm_pres,
       pres_fre_pres,
       pres_dur_pres,
-      pres_ind_pres
-    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+      pres_ind_pres,
+      pres_cod_bode
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
     RETURNING *;
   `;
 
@@ -33,6 +34,7 @@ export const registrarPrescripcion = async (prescripcionData) => {
     prescripcionData.pres_fre_pres,
     prescripcionData.pres_dur_pres,
     prescripcionData.pres_ind_pres,
+    prescripcionData.pres_cod_bode,
   ];
 
   try {

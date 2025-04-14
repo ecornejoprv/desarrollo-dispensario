@@ -1,4 +1,9 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 import Home from "./pages/Home";
 import Citas from "./pages/Citas";
 import Layout from "./components/Layout";
@@ -11,8 +16,8 @@ import Enfermeria from "./pages/Enfermeria";
 import MedicinaGeneral from "./pages/MedicinaGeneral";
 import Atencita from "./pages/Atencita";
 import HistoriaClinica from "./pages/HistoriaClinica";
-import Pacientesreport from "./pages/Pacientesreport";
-import AtencionesEnferReport from "./pages/AtencionesEnferReport";
+import ReporteAtenciones from "./pages/ReporteAtenciones";
+
 
 function App() {
   return (
@@ -56,6 +61,14 @@ function App() {
             }
           />
           <Route
+            path="/reporte-atenciones"
+            element={
+              <PrivateRoute>
+                <ReporteAtenciones />
+              </PrivateRoute>
+            }
+          />
+          <Route
             path="/odontologia"
             element={
               <PrivateRoute requiredRoles={["1", "3"]}>
@@ -95,27 +108,9 @@ function App() {
                 <Enfermeria />
               </PrivateRoute>
             }
-          />
-          <Route
-            path="/pacientesreport"
-            element={
-              <PrivateRoute requiredRoles={["1", "2"]}>
-                <Pacientesreport />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/enfermreport"
-            element={
-              <PrivateRoute requiredRoles={["1", "2"]}>
-                <AtencionesEnferReport />
-              </PrivateRoute>
-            }
-          />  
-
+          />          
         </Route>
-        
-         
+
         {/* Redirigir a /login si la ruta no coincide */}
         <Route path="*" element={<Navigate to="/login" />} />
       </Routes>

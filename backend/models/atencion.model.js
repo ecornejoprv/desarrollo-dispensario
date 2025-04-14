@@ -107,6 +107,7 @@ export const registrarAtencion = async (atencionData) => {
     aten_enf_actu,
     aten_obs_ate,
     aten_cert_aten,
+    aten_num_sesi,
   } = atencionData;
 
   // Verificar si el paciente ya tiene atenciones en la misma especialidad
@@ -136,8 +137,9 @@ export const registrarAtencion = async (atencionData) => {
       aten_enf_actu,
       aten_obs_ate,
       aten_tip_aten,
-      aten_cert_aten
-    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+      aten_cert_aten,
+      aten_num_sesi
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
     RETURNING *;
   `;
 
@@ -154,6 +156,7 @@ export const registrarAtencion = async (atencionData) => {
     aten_obs_ate,
     aten_tip_aten,
     aten_cert_aten,
+    aten_num_sesi,
   ]);
 
   return atencionRows[0]; // Devuelve la atención registrada
@@ -204,4 +207,140 @@ export const actualizarEstadoCita = async (citaId, nuevoEstado) => {
   `;
   const { rows } = await db.query(query, [nuevoEstado, citaId]);
   return rows[0];
+};
+
+export const getAtencionesByMedicoAndDates = async (medicoId, fechaInicio, fechaFin, limit, offset) => {
+  // Validación de parámetros
+  if (isNaN(limit)) throw new Error("Limit debe ser número");
+  if (isNaN(offset)) throw new Error("Offset debe ser número");
+  
+  let query = `
+    SELECT 
+      a.*,
+      p.pacie_nom_pacie,
+      p.pacie_ape_pacie,
+      p.pacie_ced_pacie,
+      m.medic_nom_medic,
+      e.espe_nom_espe
+    FROM dispensario.dmatenc a
+    JOIN dispensario.dmpacie p ON a.aten_cod_paci = p.pacie_cod_pacie
+    JOIN dispensario.dmmedic m ON a.aten_cod_medi = m.medic_cod_medic
+    LEFT JOIN dispensario.dmespec e ON m.medic_cod_espe = e.espe_cod_espe
+    WHERE a.aten_fec_aten BETWEEN $1::date AND $2::date
+  `;
+  
+  let params = [fechaInicio, fechaFin];
+  
+  if (medicoId) {
+    query += ` AND a.aten_cod_medi = $${params.length + 1}`;
+    params.push(medicoId);
+  }
+  
+  query += `
+    ORDER BY a.aten_fec_aten DESC, a.aten_hor_aten DESC
+    LIMIT $${params.length + 1} OFFSET $${params.length + 2}
+  `;
+  
+  params.push(parseInt(limit), parseInt(offset));
+
+  console.log("Consulta SQL:", { query, params });
+
+  try {
+    const { rows } = await db.query(query, params);
+    return rows;
+  } catch (error) {
+    console.error("Error en consulta:", error);
+    throw new Error(`Error al obtener atenciones: ${error.message}`);
+  }
+};
+
+export const countAtencionesByMedicoAndDates = async (medicoId, fechaInicio, fechaFin) => {
+  const query = `
+    SELECT COUNT(*) as total 
+    FROM dispensario.dmatenc
+    WHERE aten_cod_medi = $1 
+      AND aten_fec_aten BETWEEN $2 AND $3;
+  `;
+  const { rows } = await db.query(query, [medicoId, fechaInicio, fechaFin]);
+  return parseInt(rows[0].total);
+};
+
+export const getEstadisticasAtenciones = async (medicoId, fechaInicio, fechaFin) => {
+  const query = `
+    SELECT 
+      aten_esp_aten as especialidad,
+      COUNT(*) as total,
+      SUM(CASE WHEN aten_tip_aten = 'Primera' THEN 1 ELSE 0 END) as primeras,
+      SUM(CASE WHEN aten_tip_aten = 'Subsecuente' THEN 1 ELSE 0 END) as subsecuentes
+    FROM dispensario.dmatenc
+    WHERE aten_cod_medi = $1 
+      AND aten_fec_aten BETWEEN $2 AND $3
+    GROUP BY aten_esp_aten;
+  `;
+  const { rows } = await db.query(query, [medicoId, fechaInicio, fechaFin]);
+  return rows;
+};
+
+export const getAtencionesPorFechas = async (fechaInicio, fechaFin, medicoId, limit, offset) => {
+  let query = `
+    SELECT 
+      a.*,
+      p.pacie_nom_pacie,
+      p.pacie_ape_pacie,
+      p.pacie_ced_pacie,
+      m.medic_nom_medic,
+      e.espe_nom_espe
+    FROM dispensario.dmatenc a
+    JOIN dispensario.dmpacie p ON a.aten_cod_paci = p.pacie_cod_pacie
+    JOIN dispensario.dmmedic m ON a.aten_cod_medi = m.medic_cod_medic
+    LEFT JOIN dispensario.dmespec e ON m.medic_cod_espe = e.espe_cod_espe
+    WHERE a.aten_fec_aten BETWEEN $1 AND $2
+  `;
+  
+  let params = [fechaInicio, fechaFin];
+  
+  if (medicoId) {
+    query += ` AND a.aten_cod_medi = $${params.length + 1}`;
+    params.push(medicoId);
+  }
+  
+  query += `
+    ORDER BY a.aten_fec_aten DESC, a.aten_hor_aten DESC
+    LIMIT $${params.length + 1} OFFSET $${params.length + 2}
+  `;
+  
+  params.push(limit, offset);
+  console.log('Params a enviar a DB:', {
+    fechaInicio,
+    fechaFin,
+    medicoId: medicoIdNumber,
+    limit: parseInt(limit),
+    offset: parseInt(offset)
+  });
+  
+  try {
+    const { rows } = await db.query(query, params);
+    return rows;
+  } catch (error) {
+    console.error('Error en getAtencionesPorFechas:', error);
+    throw new Error(`Error en consulta: ${error.message}`);
+  }
+};
+
+export const countAtencionesPorFechas = async (fechaInicio, fechaFin, medicoId) => {
+  let query = `
+    SELECT COUNT(*) as total 
+    FROM dispensario.dmatenc
+    WHERE aten_fec_aten BETWEEN $1::date AND $2::date
+  `;
+  
+  let params = [fechaInicio, fechaFin];
+  
+  if (medicoId) {
+    query += ` AND aten_cod_medi = $${params.length + 1}`;
+    params.push(medicoId);
+  }
+  
+  const { rows } = await db.query(query, params);
+  return parseInt(rows[0].total);
 };

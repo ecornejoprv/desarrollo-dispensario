@@ -7,6 +7,9 @@ import {
   registrarAtencion,
   getCitasPendientesPorMedico,
   actualizarEstadoCita,
+  getAtencionesByMedicoAndDates,  // ¡Esta es la función que falta!
+  countAtencionesByMedicoAndDates,
+  getEstadisticasAtenciones
 } from "../models/atencion.model.js";
 import { getPacienteById } from "../models/pacientes.model.js";
 import { registrarDiagnostico } from "../models/diagnostico.model.js"; // Importación agregada
@@ -44,22 +47,25 @@ export const obtenerAtencionesPorPaciente = async (req, res) => {
 export const obtenerAtencionPorId = async (req, res) => {
   const { atencionId } = req.params;
 
-  // Validar que el atencionId sea un número
-  if (isNaN(atencionId)) {
-    return res
-      .status(400)
-      .json({ error: "El ID de la atención debe ser un número válido." });
+  // Validación mejorada
+  if (!atencionId || isNaN(Number(atencionId))) {
+    return res.status(400).json({ 
+      error: "El ID de la atención debe ser un número válido.",
+      received: atencionId // Para debug
+    });
   }
 
   try {
-    const atencion = await getAtencionById(atencionId);
-    if (atencion) {
-      res.status(200).json(atencion);
-    } else {
-      res.status(404).json({ error: "Atención no encontrada." });
+    const atencion = await getAtencionById(Number(atencionId)); // Asegurar número
+    if (!atencion) {
+      return res.status(404).json({ error: "Atención no encontrada." });
     }
+    res.status(200).json(atencion);
   } catch (error) {
-    res.status(500).json({ error: "Error al obtener la atención." });
+    res.status(500).json({ 
+      error: "Error al obtener la atención",
+      details: error.message 
+    });
   }
 };
 
@@ -303,5 +309,92 @@ export const obtenerCitasPendientesPorMedico = async (req, res) => {
     res
       .status(500)
       .json({ error: "Error al obtener las citas pendientes del médico." });
+  }
+};
+
+// Obtener atenciones por médico y rango de fechas
+export const obtenerAtencionesPorMedicoYFechas = async (req, res) => {
+  const { medicoId } = req.params;
+  const { fechaInicio, fechaFin, page = 1, limit = 10 } = req.query;
+  
+  if (isNaN(medicoId)) {
+    return res.status(400).json({ error: "ID de médico inválido" });
+  }
+
+  try {
+    const offset = (page - 1) * limit;
+    const atenciones = await getAtencionesByMedicoAndDates(
+      medicoId, 
+      fechaInicio, 
+      fechaFin, 
+      limit, 
+      offset
+    );
+    
+    const total = await countAtencionesByMedicoAndDates(
+      medicoId, 
+      fechaInicio, 
+      fechaFin
+    );
+    
+    const estadisticas = await getEstadisticasAtenciones(
+      medicoId, 
+      fechaInicio, 
+      fechaFin
+    );
+
+    res.status(200).json({
+      atenciones,
+      total,
+      estadisticas,
+      totalPages: Math.ceil(total / limit),
+      currentPage: parseInt(page)
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      error: "Error al obtener atenciones",
+      details: error.message 
+    });
+  }
+};
+
+export const obtenerAtencionesPorFechas = async (req, res) => {
+  const { fechaInicio, fechaFin, medicoId, page = 1, limit = 10 } = req.query;
+
+  // Validaciones
+  if (!fechaInicio || !fechaFin) {
+    return res.status(400).json({ error: "Se requieren fechaInicio y fechaFin" });
+  }
+
+  try {
+    const offset = (page - 1) * limit;
+    
+    // Asegúrate de usar el nombre correcto de la función
+    const atenciones = await getAtencionesByMedicoAndDates(
+      medicoId ? parseInt(medicoId) : null,
+      fechaInicio,
+      fechaFin,
+      parseInt(limit),
+      parseInt(offset)
+    );
+    
+    const total = await countAtencionesByMedicoAndDates(
+      medicoId ? parseInt(medicoId) : null,
+      fechaInicio,
+      fechaFin
+    );
+
+    res.status(200).json({
+      atenciones,
+      total,
+      totalPages: Math.ceil(total / limit),
+      currentPage: parseInt(page)
+    });
+  } catch (error) {
+    console.error("Error en obtenerAtencionesPorFechas:", error);
+    res.status(500).json({
+      error: "Error al obtener atenciones",
+      details: process.env.NODE_ENV === 'development' ? error.message : null
+    });
   }
 };

@@ -1,87 +1,202 @@
-import { useState, useEffect } from "react"; // Solo importa lo que necesitas
-import api from "../api"; // Importar la instancia de `api`
+import { useState } from "react";
+import api from "../api";
 
 export default function Home() {
-  const [citasHoy, setCitasHoy] = useState(0);
-  const [citasManana, setCitasManana] = useState(0);
-  const [citasSemana, setCitasSemana] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  // Estilos como objetos JavaScript
+  const styles = {
+    home: {
+      fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+      color: "#333",
+      backgroundColor: "#f5f7fa",
+      minHeight: "100vh",
+      padding: "20px"
+    },
+    container: {
+      maxWidth: "1200px",
+      margin: "0 auto"
+    },
+    homeHeader: {
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      marginBottom: "40px",
+      backgroundColor: "#fff",
+      padding: "40px 20px",
+      borderRadius: "10px",
+      boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+      textAlign: "center"
+    },
+    logoContainer: {
+      marginBottom: "20px"
+    },
+    logo: {
+      width: "150px",
+      height: "150px",
+      objectFit: "contain"
+    },
+    headerText: {
+      maxWidth: "800px"
+    },
+    headerTitle: {
+      color: "#2c3e50",
+      margin: 0,
+      fontSize: "32px",
+      marginBottom: "10px"
+    },
+    subtitle: {
+      color: "#7f8c8d",
+      margin: "5px 0 0",
+      fontSize: "18px",
+      lineHeight: "1.5"
+    },
+    sectionTitle: {
+      color: "#2c3e50",
+      borderBottom: "2px solid #3498db",
+      paddingBottom: "10px",
+      marginBottom: "20px",
+      fontSize: "24px"
+    },
+    quickActions: {
+      marginTop: "30px"
+    },
+    actionCardsContainer: {
+      display: "grid",
+      gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+      gap: "20px"
+    },
+    actionCard: {
+      background: "white",
+      borderRadius: "10px",
+      padding: "25px",
+      textAlign: "center",
+      boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+      transition: "all 0.3s ease"
+    },
+    actionButton: {
+      backgroundColor: "#3498db",
+      color: "white",
+      border: "none",
+      padding: "10px 20px",
+      borderRadius: "5px",
+      cursor: "pointer",
+      fontWeight: "bold",
+      transition: "background-color 0.3s",
+      fontSize: "16px",
+      marginTop: "15px"
+    },
+    cardIcon: {
+      fontSize: "50px",
+      opacity: "0.7",
+      marginBottom: "15px"
+    },
+    cardTitle: {
+      margin: "0 0 10px",
+      color: "#2c3e50",
+      fontSize: "20px"
+    }
+  };
 
-  // // Función para obtener las citas pendientes
-  // const fetchCitasPendientes = async () => {
-  //   try {
-  //     // Obtener citas para hoy
-  //     const responseHoy = await api.get("/api/v1/citas/hoy");
-  //     setCitasHoy(responseHoy.data.count);
+  // Estilo para el hover (se aplica dinámicamente)
+  const cardHover = {
+    transform: "translateY(-5px)",
+    boxShadow: "0 10px 20px rgba(0, 0, 0, 0.1)"
+  };
 
-  //     // Obtener citas para mañana
-  //     const responseManana = await api.get("/api/v1/citas/manana");
-  //     setCitasManana(responseManana.data.count);
-
-  //     // Obtener citas para esta semana
-  //     const responseSemana = await api.get("/api/v1/citas/semana");
-  //     setCitasSemana(responseSemana.data.count);
-
-  //     setLoading(false);
-  //   } catch (error) {
-  //     console.error("Error fetching citas:", error);
-  //     setError("Error al cargar las citas. Inténtalo de nuevo más tarde.");
-  //     setLoading(false);
-  //   }
-  // };
-
-  // Ejecutar la función al cargar el componente
-  //useEffect(() => {
-  //  fetchCitasPendientes();
- // }, []);
+  const buttonHover = {
+    backgroundColor: "#2980b9"
+  };
 
   return (
-    <div className="home">
-      <div className="container">
-        <h1>Bienvenido al Dispensario Médico</h1>
-        <p>Gestiona fácilmente pacientes, citas y atención médica.</p>
-
-        {/* Dashboard de citas pendientes */}
-        <div className="dashboard">
-          <h2>Citas Pendientes</h2>
-          {loading ? (
-            <p>Cargando citas...</p>
-          ) : error ? (
-            <p style={{ color: "red" }}>{error}</p>
-          ) : (
-            <div className="dashboard-cards">
-              <div className="dashboard-card">
-                <h3>Hoy</h3>
-                <p>{citasHoy} citas</p>
-              </div>
-              <div className="dashboard-card">
-                <h3>Mañana</h3>
-                <p>{citasManana} citas</p>
-              </div>
-              <div className="dashboard-card">
-                <h3>Esta Semana</h3>
-                <p>{citasSemana} citas</p>
-              </div>
-            </div>
-          )}
-        </div>
+    <div style={styles.home}>
+      <div style={styles.container}>
+        {/* Header con logo y título */}
+        <header style={styles.homeHeader}>
+          <div style={styles.logoContainer}>
+            <img 
+              src="/icono_disp.png" 
+              alt="Logo Dispensario Médico" 
+              style={styles.logo}
+            />
+          </div>
+          <div style={styles.headerText}>
+            <h1 style={styles.headerTitle}>Bienvenido al Dispensario Médico</h1>
+            <p style={styles.subtitle}>
+              Sistema integral para la gestión de pacientes, citas médicas y registros de atención.
+              <br />
+              Optimiza tu flujo de trabajo y brinda una mejor experiencia a tus pacientes.
+            </p>
+          </div>
+        </header>
 
         {/* Tarjetas de acciones rápidas */}
-        <div className="card-container">
-          <div className="card">
-            <h2>Ingreso de Pacientes</h2>
-            <p>Registra nuevos pacientes en el sistema.</p>
+        <section style={styles.quickActions}>
+          <h2 style={styles.sectionTitle}>Acciones Rápidas</h2>
+          <div style={styles.actionCardsContainer}>
+            <div 
+              style={styles.actionCard}
+              onMouseEnter={e => Object.assign(e.currentTarget.style, cardHover)}
+              onMouseLeave={e => {
+                e.currentTarget.style.transform = "";
+                e.currentTarget.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.1)";
+              }}
+            >
+              <div style={styles.cardIcon}>👤</div>
+              <h3 style={styles.cardTitle}>Ingreso de Pacientes</h3>
+              <p>Registra nuevos pacientes en el sistema.</p>
+              <button 
+                style={styles.actionButton}
+                onMouseEnter={e => e.currentTarget.style.backgroundColor = "#2980b9"}
+                onMouseLeave={e => e.currentTarget.style.backgroundColor = "#3498db"}
+                onClick={() => window.location.href = '/pacientes'}
+              >
+                Acceder
+              </button>
+            </div>
+            
+            <div 
+              style={styles.actionCard}
+              onMouseEnter={e => Object.assign(e.currentTarget.style, cardHover)}
+              onMouseLeave={e => {
+                e.currentTarget.style.transform = "";
+                e.currentTarget.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.1)";
+              }}
+            >
+              <div style={styles.cardIcon}>📝</div>
+              <h3 style={styles.cardTitle}>Agendamiento de Citas</h3>
+              <p>Gestiona citas médicas de manera eficiente.</p>
+              <button 
+                style={styles.actionButton}
+                onMouseEnter={e => e.currentTarget.style.backgroundColor = "#2980b9"}
+                onMouseLeave={e => e.currentTarget.style.backgroundColor = "#3498db"}
+                onClick={() => window.location.href = '/citas'}
+              >
+                Acceder
+              </button>
+            </div>
+            
+            <div 
+              style={styles.actionCard}
+              onMouseEnter={e => Object.assign(e.currentTarget.style, cardHover)}
+              onMouseLeave={e => {
+                e.currentTarget.style.transform = "";
+                e.currentTarget.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.1)";
+              }}
+            >
+              <div style={styles.cardIcon}>🏥</div>
+              <h3 style={styles.cardTitle}>Reporte de Atención</h3>
+              <p>Documenta cada consulta y tratamiento.</p>
+              <button 
+                style={styles.actionButton}
+                onMouseEnter={e => e.currentTarget.style.backgroundColor = "#2980b9"}
+                onMouseLeave={e => e.currentTarget.style.backgroundColor = "#3498db"}
+                onClick={() => window.location.href = '/reporte-atenciones'}
+              >
+                Acceder
+              </button>
+            </div>
           </div>
-          <div className="card">
-            <h2>Agendamiento de Citas</h2>
-            <p>Gestiona citas médicas de manera eficiente.</p>
-          </div>
-          <div className="card">
-            <h2>Registro de Atención</h2>
-            <p>Documenta cada consulta y tratamiento.</p>
-          </div>
-        </div>
+        </section>
       </div>
     </div>
   );

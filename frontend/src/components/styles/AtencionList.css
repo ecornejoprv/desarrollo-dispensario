@@ -1,55 +1,447 @@
+/* Estilos base */
+body { /* Es bueno definir fuentes base en el body o html */
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color: #333; /* Un gris oscuro estándar para texto */
+  background-color: #f4f6f8; /* Un fondo global ligeramente grisáceo si la lista es la vista principal */
+}
+
 .atencion-list {
   margin-top: 20px;
-  overflow-x: auto; /* Permite scroll horizontal solo si es necesario */
+  overflow-x: auto;
+  background-color: #fff; /* Fondo blanco para la lista en sí */
+  border-radius: 8px; /* Bordes redondeados para un look más suave */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); /* Sombra sutil */
+  padding: 15px; /* Espacio interno */
 }
 
 .tabla-atenciones {
   width: 100%;
-  border-collapse: collapse;
-  table-layout: fixed; /* Fija el ancho de las columnas */
+  border-collapse: collapse; /* Mantenemos esto para el control fino */
+  table-layout: fixed;
+  font-size: 0.9rem; /* Se mantiene el tamaño de fuente original */
 }
 
-.tabla-atenciones th, .tabla-atenciones td {
-  padding: 10px;
+.tabla-atenciones th,
+.tabla-atenciones td {
+  padding: 12px 15px; /* Un poco más de padding */
   text-align: left;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid #e9ecef; /* Borde más suave */
 }
 
 .tabla-atenciones th {
-  background-color: #f4f4f4;
+  background-color: #f8f9fa; /* Cabecera más clara */
+  font-weight: 600;
+  color: #495057; /* Color de texto de cabecera ligeramente más suave */
+  text-transform: uppercase; /* Opcional: para dar más énfasis a las cabeceras */
+  font-size: 0.85em; /* Ligeramente más pequeño para cabeceras */
+  letter-spacing: 0.05em; /* Espaciado entre letras para cabeceras */
 }
 
-.tabla-atenciones .atencion-row:hover {
-  background-color: #f9f9f9;
-  cursor: pointer;
+.tabla-atenciones tr:hover {
+  background-color: #e9f5ff; /* Un hover más distintivo pero sutil */
 }
 
-/* Ajustar el ancho de las columnas */
-.tabla-atenciones th:nth-child(1), .tabla-atenciones td:nth-child(1) {
-  width: 15%; /* Fecha ocupa el 15% del ancho */
+.tabla-atenciones tr:last-child td {
+  border-bottom: none; /* Quitar el borde de la última fila */
 }
 
-.tabla-atenciones th:nth-child(2), .tabla-atenciones td:nth-child(2) {
-  width: 65%; /* Motivo ocupa el 65% del ancho */
+
+/* Columnas - Distribución (se mantiene la original) */
+.tabla-atenciones th:nth-child(1),
+.tabla-atenciones td:nth-child(1) {
+  width: 20%;
 }
 
-.tabla-atenciones th:nth-child(3), .tabla-atenciones td:nth-child(3) {
-  width: 20%; /* Especialidad ocupa el 20% del ancho */
+.tabla-atenciones th:nth-child(2),
+.tabla-atenciones td:nth-child(2) {
+  width: 40%;
 }
 
-/* Estilos para el motivo truncado y expandido */
+.tabla-atenciones th:nth-child(3),
+.tabla-atenciones td:nth-child(3) {
+  width: 20%;
+}
+
+.tabla-atenciones th:nth-child(4),
+.tabla-atenciones td:nth-child(4) {
+  width: 20%;
+}
+
+/* Motivo de consulta */
 .motivo-truncado {
-  cursor: pointer; /* Cambiar el cursor al pasar sobre el motivo */
-  white-space: nowrap; /* Evitar que el texto se divida en varias líneas */
-  overflow: hidden; /* Ocultar el contenido que se desborda */
-  text-overflow: ellipsis; /* Mostrar "..." si el texto es demasiado largo */
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #007bff; /* Color primario para indicar clickeabilidad */
+  font-weight: 500; /* Un poco más de peso */
 }
 
-.motivo-expandido {
-  white-space: normal; /* Permite que el texto se divida en varias líneas */
-  overflow: visible; /* Muestra todo el contenido */
-  text-overflow: clip; /* No muestra "..." */
+.motivo-truncado:hover {
+  color: #0056b3; /* Oscurecer en hover */
+  text-decoration: underline;
 }
-.motivo-truncado, .motivo-expandido {
-  cursor: pointer; /* Cambiar el cursor al pasar sobre el motivo */
+
+/* Icono de especialidad */
+.especialidad-icon {
+  margin-right: 8px;
+  font-size: 1.2em; /* Ligeramente más grande para el icono */
+  vertical-align: middle;
+}
+
+.especialidad-nombre {
+  vertical-align: middle;
+}
+
+/* >>> ESTILOS PARA EL MODAL DE DETALLES <<< */
+
+/* Contenedor de detalles */
+.details-section {
+  /* font-family se hereda del body */
+  color: #343a40; /* Color de texto principal en modal */
+  line-height: 1.7; /* Un poco más de interlineado para legibilidad */
+  padding: 0 10px;
+}
+
+.details-section p {
+  margin: 12px 0;
+  padding: 0;
+  line-height: 1.6;
+}
+
+.details-section strong {
+  color: #2c3e50;
+  min-width: 140px; /* Un poco más de espacio para las etiquetas */
+  display: inline-block;
+  font-weight: 600; /* Asegurar que sea bold */
+}
+
+.details-section h4 {
+  color: #007bff; /* Color de acento para los títulos de sección */
+  margin: 30px 0 15px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #007bff; /* Borde de acento */
+  font-size: 1.15rem; /* Ligeramente más grande y consistente */
+  font-weight: 600;
+}
+
+/* Estilo para información adicional agrupada */
+.additional-info {
+  background-color: #f8f9fa;
+  padding: 15px;
+  border-radius: 6px;
+  margin-bottom: 15px;
+  border: 1px solid #e9ecef;
+}
+
+.additional-info p {
+  margin: 8px 0;
+}
+.additional-info ul {
+  padding-left: 20px;
+  margin-top: 5px;
+}
+.additional-info li {
+  margin-bottom: 5px;
+}
+
+
+/* Tabla de cabecera de diagnósticos (antes .cabeceraprocedimiento-table) */
+.diagnostico-header-table { /* Renombrado para mayor claridad */
+  width: 100%;
+  margin: 15px 0 5px; /* Menos margen inferior, va pegado a la tabla de procedimientos */
+  border-collapse: separate; /* Permite border-radius */
+  border-spacing: 0;
+  background-color: #e9f5ff; /* Un fondo azulado muy claro */
+  border-radius: 6px;
+  border: 1px solid #bce0ff; /* Borde que combine con el fondo */
+}
+
+.diagnostico-header-table td {
+  padding: 10px 12px;
+  vertical-align: top;
+  border-bottom: 1px solid #bce0ff; /* Separador interno */
+}
+.diagnostico-header-table tr:last-child td {
+  border-bottom: none;
+}
+
+.diagnostico-header-table .cie10 strong,
+.diagnostico-header-table .diagnostico strong,
+.diagnostico-header-table .estado strong,
+.diagnostico-header-table .observacion strong {
+  color: #0056b3; /* Color más oscuro para las etiquetas dentro de esta tabla */
+}
+
+
+/* Tabla de procedimientos/terapias */
+.procedimiento-table {
+  width: 100%;
+  margin: 0 0 25px; /* Margen superior 0 porque ya lo tiene diagnostico-header-table */
+  border-collapse: collapse;
+  background-color: #fff;
+  font-size: 0.85rem;
+  border: 1px solid #dee2e6; /* Borde alrededor de la tabla */
+  border-radius: 0 0 6px 6px; /* Redondear solo abajo si va pegada a la cabecera */
+}
+
+.procedimiento-table th {
+  background-color: #f1f3f5; /* Gris claro para cabeceras de esta tabla */
+  padding: 10px 12px;
+  text-align: left;
+  font-weight: 600;
+  border-bottom: 2px solid #dee2e6; /* Borde inferior más grueso para cabecera */
+  border-right: 1px solid #dee2e6; /* Separador vertical */
+}
+.procedimiento-table th:last-child {
+  border-right: none;
+}
+
+.procedimiento-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #e9ecef;
+  border-right: 1px solid #e9ecef;
+}
+.procedimiento-table td:last-child {
+  border-right: none;
+}
+.procedimiento-table tr:last-child td {
+  border-bottom: none;
+}
+
+
+/* Estilos específicos para terapias */
+.terapia-row {
+  background-color: #f0f8ff; /* AliceBlue, un azul muy pálido */
+}
+.terapia-row:hover {
+  background-color: #e6f2ff;
+}
+
+.terapia-row td:first-child {
+  font-weight: bold;
+  color: #007bff; /* Azul para destacar "TERAPIA" */
+}
+
+/* Celda de técnicas */
+.tecnicas-cell {
+  padding: 8px 10px !important;
+  white-space: normal !important;
+}
+
+.tecnicas-cell div {
+  margin: 4px 0;
+  padding: 3px 0;
+  line-height: 1.4;
+}
+
+/* Bullets para técnicas */
+.tecnicas-cell div::before {
+  content: "•"; /* Se mantiene el bullet */
+  color: #007bff;
+  margin-right: 8px;
+  font-size: 1.1em; /* Bullet un poco más grande */
+}
+
+/* Mensaje de no datos */
+.no-data-message {
+  padding: 20px;
+  text-align: center;
+  color: #6c757d; /* Gris para texto secundario */
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  margin-top: 20px;
+  font-style: italic;
+}
+
+/* Estilos para prescripciones */
+.prescripciones-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0; /* Más margen vertical */
+  font-size: 0.85rem;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  overflow: hidden; /* Para que el border-radius afecte a las celdas */
+}
+
+.prescripciones-table th,
+.prescripciones-table td {
+  border-bottom: 1px solid #e9ecef; /* Borde inferior para todas las celdas */
+  padding: 10px 12px;
+  text-align: left;
+}
+/* Quitar bordes laterales para un look más limpio dentro de la tabla */
+.prescripciones-table th {
+  background-color: #f1f3f5;
+  font-weight: 600;
+  border-top: none; /* La tabla ya tiene borde superior */
+}
+
+.prescripciones-table tr:last-child td {
+  border-bottom: none;
+}
+
+.prescripciones-table tr:nth-child(even) td { /* Solo aplicar al td para no afectar th */
+  background-color: #f8f9fa; /* Fondo para filas pares más sutil */
+}
+
+/* Estilos para tablas de Indicaciones y Referencias */
+/* Aplicado a .indicaciones-table y .referencias-table */
+.indicaciones-table,
+.referencias-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+  font-size: 0.9rem; /* Un poco más grande para mejor lectura */
+}
+
+.indicaciones-table td,
+.referencias-table td {
+  padding: 12px 15px;
+  background-color: #f8f9fa;
+  border-left: 4px solid #007bff; /* El borde de acento que tenías */
+  margin-bottom: 0; /* No aplica a <td>, pero sí si fueran <li> */
+  border-bottom: 1px solid #e9ecef; /* Separador entre items */
+}
+
+.indicaciones-table tr:last-child td,
+.referencias-table tr:last-child td {
+  border-bottom: none; /* Quitar borde del último item */
+}
+
+
+/* >>> ESTILOS RESPONSIVOS (Se mantienen los originales ya que la petición es no afectar tamaño) <<< */
+@media (max-width: 768px) {
+  .tabla-atenciones {
+    table-layout: auto; /* Permitir que se ajuste */
+  }
+  
+  .tabla-atenciones th,
+  .tabla-atenciones td {
+    padding: 10px 8px; /* Ajustar padding en móvil */
+    font-size: 0.8rem;
+  }
+  
+  .tabla-atenciones th:nth-child(4),
+  .tabla-atenciones td:nth-child(4) {
+    display: none; /* Ocultar médico en móviles */
+  }
+
+  .details-section {
+    font-size: 0.9rem;
+  }
+  
+  .procedimiento-table {
+    font-size: 0.75em;
+  }
+
+  .tecnicas-cell div {
+    font-size: 0.8em; /* Asegurar que no sea demasiado pequeño */
+  }
+  
+  .details-section strong {
+    min-width: 100px; /* Reducir min-width en móvil */
+  }
+
+  /* Para tablas que se vuelven muy anchas en móvil */
+  .prescripciones-table {
+    display: block; /* Permitir scroll horizontal */
+    overflow-x: auto;
+    white-space: nowrap; /* Evitar que el contenido se rompa en múltiples líneas */
+    border-radius: 0; /* Quitar border-radius si se hace scrollable */
+  }
+  .prescripciones-table th,
+  .prescripciones-table td {
+     white-space: nowrap; /* Asegurar que el contenido de las celdas no se rompa */
+  }
+
+}
+
+@media (max-width: 480px) {
+  .tabla-atenciones th:nth-child(3),
+  .tabla-atenciones td:nth-child(3) {
+    display: none; /* Ocultar especialidad en pantallas muy pequeñas */
+  }
+  
+  .details-section p {
+    margin: 10px 0;
+  }
+}
+
+/* Estilos para la información básica de la atención */
+.atencion-info-basica {
+  margin-bottom: 25px; /* Espacio antes de la siguiente sección (ej. DATOS ADICIONALES) */
+  padding-bottom: 20px; /* Espacio interno inferior */
+  border-bottom: 1px solid #e9ecef; /* Una línea sutil para separar visualmente */
+}
+
+.atencion-info-basica p {
+  margin-bottom: 12px; /* Aumenta el espacio entre cada línea de información */
+  line-height: 1.6;    /* Mejora la legibilidad del texto */
+  display: flex; /* Para alinear etiqueta y valor si es necesario o para control futuro */
+  flex-wrap: wrap; /* Si el contenido es muy largo */
+}
+
+.atencion-info-basica p strong {
+  font-weight: 600; /* Un poco más de peso si no lo tiene ya */
+  color: #343a40;    /* Un color oscuro pero no negro puro */
+  min-width: 150px; /* Asegura que todas las etiquetas tengan un ancho mínimo, creando alineación visual */
+  margin-right: 10px; /* Espacio entre la etiqueta y el valor */
+  display: inline-block; /* Para que min-width funcione correctamente */
+}
+
+/* Para el valor después del strong, si queremos que ocupe el resto del espacio */
+.atencion-info-basica p span.valor { /* Necesitarías envolver el valor en un span si usas esto */
+  flex: 1;
+}
+
+.triaje-section {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
+}
+
+.triaje-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); 
+  gap: 15px;
+  margin-top: 10px;
+}
+
+.triaje-item {
+  display: flex;
+  align-items: center;
+  background-color: #f9f9f9;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #eee;
+}
+
+.triaje-icon {
+  margin-right: 12px;
+  font-size: 1.5rem !important; /* Asegurar tamaño del ícono */
+}
+
+.triaje-item span {
+  font-size: 0.9rem;
+}
+
+.triaje-item strong {
+  color: #333;
+}
+
+.triaje-observaciones {
+  margin-top: 15px;
+  padding: 12px;
+  background-color: #f0f7ff;
+  border-left: 4px solid #007bff;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-style: italic;
+}
+
+.triaje-observaciones strong {
+  font-style: normal;
+  color: #0056b3;
 }

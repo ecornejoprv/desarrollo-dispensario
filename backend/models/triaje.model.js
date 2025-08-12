@@ -117,3 +117,82 @@ export const deleteTriaje = async (triajeId) => {
   const { rows } = await db.query(query, [triajeId]);
   return rows[0];
 };
+
+
+// Obtener todas las prescripciones de una cita, separadas por tipo
+export const getPrescripcionesByCitaId = async (citaId) => {
+  const query = `
+    SELECT
+      p.pres_cod_pres AS codigo,
+      p.pres_tip_pres AS tipo,
+      p.pres_nom_prod AS producto,
+      p.pres_can_pres AS cantidad,
+      p.pres_dos_pres AS dosis,
+      p.pres_adm_pres AS via,
+      p.pres_fre_pres AS frecuencia,
+      p.pres_dur_pres AS duracion,
+      p.pres_ind_pres AS indicaciones
+    FROM dispensario.dmpresc p
+    JOIN dispensario.dmatenc a ON p.pres_cod_aten = a.aten_cod_aten
+    WHERE a.aten_cod_cita = $1
+    ORDER BY p.pres_tip_pres, p.pres_nom_prod;
+  `;
+  
+  const { rows } = await db.query(query, [citaId]);
+  
+  // Separar por tipo de prescripción
+  const resultado = {
+    empresa: rows.filter(p => p.tipo === 'Empresa'),
+    externa: rows.filter(p => p.tipo === 'Externa')
+  };
+  
+  return resultado;
+};
+
+// Obtener todos los detalles de la cita (diagnósticos, prescripciones, etc.)
+export const getDetallesCompletosByCitaId = async (citaId) => {
+  const query = `
+    SELECT
+      a.aten_cod_aten AS codigo_atencion,
+      ci.cita_cod_cita AS codigo_cita,
+      ci.cita_fec_cita AS fecha_cita,
+      ci.cita_hor_cita AS hora_cita,
+      d.diag_cod_diag AS codigo_diagnostico,
+      c.cie10_id_cie10 AS id_cie10,
+      c.cie10_nom_cie10 AS nombre_cie10,
+      d.diag_est_diag AS estado_diagnostico,
+      d.diag_obs_diag AS observacion_diagnostico,
+      p.pres_cod_pres AS codigo_prescripcion,
+      p.pres_tip_pres AS tipo_prescripcion,
+      p.pres_nom_prod AS nombre_producto,
+      p.pres_can_pres AS cantidad,
+      p.pres_dos_pres AS dosis,
+      p.pres_adm_pres AS via_administracion,
+      p.pres_fre_pres AS frecuencia,
+      p.pres_dur_pres AS duracion_dias,
+      p.pres_ind_pres AS indicaciones_prescripcion,
+      r.refe_cod_refe AS codigo_referencia,
+      r.refe_des_refe AS descripcion_referencia,
+      i.indi_cod_indi AS codigo_indicacion,
+      i.indi_des_indi AS descripcion_indicacion
+    FROM
+      dispensario.dmatenc a
+    LEFT JOIN
+      dispensario.dmcita ci ON a.aten_cod_cita = ci.cita_cod_cita
+    LEFT JOIN
+      dispensario.dmdiag d ON a.aten_cod_aten = d.diag_cod_aten
+    LEFT JOIN
+      dispensario.dmcie10 c ON d.diag_cod_cie10 = c.cie10_cod_cie10
+    LEFT JOIN
+      dispensario.dmpresc p ON a.aten_cod_aten = p.pres_cod_aten
+    LEFT JOIN
+      dispensario.dmrefer r ON a.aten_cod_aten = r.refe_cod_aten
+    LEFT JOIN
+      dispensario.dmindic i ON a.aten_cod_aten = i.indi_cod_aten
+    WHERE
+      ci.cita_cod_cita = $1;
+  `;
+  
+  const { rows } = await db.query(query, [citaId]);
+  return rows;
+};

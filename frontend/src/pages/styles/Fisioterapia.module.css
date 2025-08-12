@@ -224,3 +224,83 @@
   color: #757575;
   font-style: italic;
 }
+
+.cancelButton {
+  background-color: #f44336; /* Rojo estándar */
+}
+
+.cancelButton:hover {
+  background-color: #d32f2f; /* Rojo más oscuro para el hover */
+}
+
+/* Contenedor principal de la tarjeta. */
+.patientCard {
+  margin-bottom: 2rem !important;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05) !important;
+  border-radius: 12px !important;
+}
+
+/* Contenedor del contenido de la tarjeta, organizado en columnas. */
+.patientCardContent {
+  display: flex;
+  flex-wrap: wrap; /* Permite que las columnas se apilen en pantallas pequeñas */
+  gap: 2rem;
+  padding-top: 0 !important;
+  padding-bottom: 1rem !important;
+}
+
+/* Columna izquierda (principal). */
+.mainInfo {
+  flex: 2; /* Ocupa el doble de espacio que la columna de trabajo */
+  min-width: 300px;
+}
+
+/* Estilo para el nombre del paciente, para que destaque. */
+.patientName {
+  font-weight: 700 !important;
+  color: #1a237e; /* Un azul oscuro y profesional */
+  margin-bottom: 1.5rem !important;
+  border-bottom: 2px solid #3b82f6; /* Línea de acento azul */
+  padding-bottom: 0.75rem;
+}
+
+/* Cuadrícula para los datos demográficos. */
+.demographicGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* Crea una cuadrícula de 2x2 */
+  gap: 1.5rem; /* Espacio entre los items de la cuadrícula */
+}
+
+/* Columna derecha con la información laboral. */
+.workInfo {
+  flex: 1; /* Ocupa una parte del espacio */
+  min-width: 250px;
+  background-color: #f8f9fa;
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+/* Estilo REUTILIZABLE para cada pieza de información (en ambas columnas). */
+.infoItem {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Estilo para las etiquetas (Cédula, Cargo, etc.). */
+.infoItem strong {
+  font-size: 0.8rem;
+  color: #6c757d;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+/* Estilo para los valores (el número, el nombre del cargo, etc.). */
+.infoItem span {
+  font-size: 1rem;
+  color: #212529;
+  font-weight: 500;
+}
+

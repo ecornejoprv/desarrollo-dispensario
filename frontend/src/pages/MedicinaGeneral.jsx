@@ -1,3 +1,12 @@
+// src/pages/MedicinaGeneral.jsx (Código Absolutamente Completo y Final)
+// ==============================================================================
+// @summary: Componente principal para el módulo de Medicina General.
+//           Se refactoriza para usar el hook 'useAuth' como única fuente de
+//           verdad para los datos del usuario (ID de especialista y especialidad),
+//           eliminando lecturas a localStorage y solucionando errores de carga.
+//           Todo el código está presente, sin ninguna omisión.
+// ==============================================================================
+
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -27,31 +36,39 @@ import {
   FormControlLabel,
   Checkbox,
 } from "@mui/material";
-import { Add, Delete, Search, Close } from "@mui/icons-material";
+import {
+  Add,
+  Delete,
+  Search,
+  Close,
+  MedicalServices,
+  Vaccines,
+  HealthAndSafety,
+  AssignmentInd,
+  Favorite as FavoriteIcon,
+  Air as AirIcon,
+  Straighten as StraightenIcon,
+  Speed as SpeedIcon,
+  Thermostat as ThermostatIcon,
+  MonitorWeight as MonitorWeightIcon,
+  Height as HeightIcon,
+  Calculate as CalculateIcon,
+  LocalHospital as LocalHospitalIcon,
+  Print as PrintIcon,
+} from "@mui/icons-material";
 import api from "../api";
 import styles from "./styles/medicinaGeneral.module.css";
 import AtencionList from "../components/AtencionList";
 import { Popper } from "@mui/material";
-import FavoriteIcon from "@mui/icons-material/Favorite"; // Corazón (frecuencia cardíaca)
-import AirIcon from "@mui/icons-material/Air"; // Aire (respiración)
-import SpeedIcon from "@mui/icons-material/Speed"; // Velocímetro (presión arterial)
-import ThermostatIcon from "@mui/icons-material/Thermostat"; // Termómetro
-import MonitorWeightIcon from "@mui/icons-material/MonitorWeight"; // Peso
-import HeightIcon from "@mui/icons-material/Height"; // Altura
-import CalculateIcon from "@mui/icons-material/Calculate"; // Cálculo (IMC)
-import LocalHospitalIcon from "@mui/icons-material/LocalHospital"; // Saturación O2
-import PrintIcon from "@mui/icons-material/LocalHospital";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import CardHeader from "@mui/material/CardHeader";
-import {
-  MedicalServices,
-  Vaccines,
-  HealthAndSafety,
-  AssignmentInd,
-} from "@mui/icons-material";
+import AntecedentesCompletos from "../components/Antecedentes";
+import { formatDateDDMMYYYY } from "../components/utils/formatters.js";
+import { useAuth } from "../components/context/AuthContext";
+import { RecetaMedicaPrint } from "../components/RecetaMedicaPrint";
 
 const especialidades = [
   "Todas",
@@ -62,6 +79,9 @@ const especialidades = [
 ];
 
 const MedicinaGeneral = () => {
+  const { user, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
+
   const [citasPendientes, setCitasPendientes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -87,6 +107,12 @@ const MedicinaGeneral = () => {
   const [openHistoriaClinicaModal, setOpenHistoriaClinicaModal] =
     useState(false);
   const [paciente, setPaciente] = useState(null);
+  const [datosEmpleado, setDatosEmpleado] = useState({
+    departamento: "",
+    seccion: "",
+    cargo: "",
+    fechaIngreso: null,
+  });
   const [atenciones, setAtenciones] = useState([]);
   const [totalAtenciones, setTotalAtenciones] = useState(0);
   const [paginaActual, setPaginaActual] = useState(1);
@@ -94,40 +120,34 @@ const MedicinaGeneral = () => {
   const [mostrarEspecialidad, setMostrarEspecialidad] = useState(false);
   const [especialidadSeleccionada, setEspecialidadSeleccionada] =
     useState("Todas");
-
-  const cie10SearchRef = useRef(null);
-  const procedimientoSearchRef = useRef(null);
   const [openConfirmCancelModal, setOpenConfirmCancelModal] = useState(false);
-  const [tipoAtencionAuto, setTipoAtencionAuto] = useState("Subsecuente"); // Valor automático
-  const [tipoAtencionManual, setTipoAtencionManual] = useState(null); // Selección manual
-  const tipoAtencion = tipoAtencionManual || tipoAtencionAuto; // Valor final que se usará
-
-  // Estados para manejar las prescripciones
+  const [tipoAtencionAuto, setTipoAtencionAuto] = useState("Subsecuente");
+  const [tipoAtencionManual, setTipoAtencionManual] = useState(null);
+  const tipoAtencion = tipoAtencionManual || tipoAtencionAuto;
   const [prescripciones, setPrescripciones] = useState([]);
   const [productoOptions, setProductoOptions] = useState([]);
   const [referencias, setReferencias] = useState([]);
   const [indicacionesGenerales, setIndicacionesGenerales] = useState([]);
-
   const [activeTab, setActiveTab] = useState("preventiva");
-
-  // Estados para los tipos de atención
   const [tipoAtencionPreventiva, setTipoAtencionPreventiva] = useState("");
   const [vigilanciaSeleccionada, setVigilanciaSeleccionada] = useState([]);
   const [morbilidadSeleccionada, setMorbilidadSeleccionada] = useState("");
   const [sistemasAfectados, setSistemasAfectados] = useState([]);
   const [tiposAccidente, setTiposAccidente] = useState([]);
   const [certificadoLaboral, setCertificadoLaboral] = useState(false);
+  const [openCancelCitaModal, setOpenCancelCitaModal] = useState(false);
+  const [citaParaCancelarId, setCitaParaCancelarId] = useState(null);
+  const [signosAlarma, setSignosAlarma] = useState([]);
+  const [imprimiendoReceta, setImprimiendoReceta] = useState(false);
+  const [datosParaImprimir, setDatosParaImprimir] = useState(null);
+  const [atencionGuardadaId, setAtencionGuardadaId] = useState(null);
 
-  const navigate = useNavigate();
-
-  // Opciones para los selects
   const opcionesPreventiva = [
     "Evaluación Preocupacional",
     "Evaluación de Retiro",
     "Evaluación de Reintegro",
     "Periódica (Control Médico anual)",
   ];
-
   const opcionesVigilancia = [
     "Expuestos a PIC",
     "Expuestos a Riesgos Disergonómicos",
@@ -137,15 +157,14 @@ const MedicinaGeneral = () => {
     "Control Prenatal",
     "Control PAP Test",
     "Planificación Familiar",
+    "Control General",
   ];
-
   const opcionesMorbilidad = [
     "Valoración por Accidente de Trabajo",
     "Valoración de Enfermedad Ocupacional",
     "Atención Pacientes Crónicos",
     "Atención Enfermedad General",
   ];
-
   const opcionesSistemas = [
     "NEUROLOGICO",
     "OFTALMOLOGICO",
@@ -157,36 +176,29 @@ const MedicinaGeneral = () => {
     "GENITOURINARIO",
     "OSTEOMUSCULAR",
     "DERMATOLOGICO",
+    "ENDOCRINOLOGICO",
+    "VASCULAR",
+    "ONCOLOGICO",
+    "NEFROLOGICO",
+    "OTRO",
   ];
-
   const opcionesAccidenteTrabajo = [
     "ACCIDENTE LABORAL",
     "ACCIDENTE IN ITINERE",
     "INCIDENTE DE TRABAJO",
   ];
 
-  const calcularEdad = (fechaNacimiento) => {
-    const hoy = new Date();
-    const nacimiento = new Date(fechaNacimiento);
-    let edad = hoy.getFullYear() - nacimiento.getFullYear();
-    const mes = hoy.getMonth() - nacimiento.getMonth();
-
-    if (mes < 0 || (mes === 0 && hoy.getDate() < nacimiento.getDate())) {
-      edad--;
-    }
-
-    return edad;
-  };
-
   useEffect(() => {
     const fetchCitasPendientes = async () => {
       try {
-        const medicoId = localStorage.getItem("especialista");
+        const medicoId = user ? user.especialista : null;
         if (!medicoId) {
-          setError("No se pudo obtener el ID del especialista.");
+          setError(
+            "No se pudo obtener el ID del especialista desde el perfil de usuario."
+          );
+          setLoading(false);
           return;
         }
-
         const response = await api.get(
           `/api/v1/atenciones/citas-pendientes/${medicoId}`
         );
@@ -198,15 +210,87 @@ const MedicinaGeneral = () => {
         setLoading(false);
       }
     };
+    if (authLoading) {
+      return;
+    }
+    if (user) {
+      fetchCitasPendientes();
+    } else {
+      setError("No se ha podido cargar la información del usuario.");
+      setLoading(false);
+    }
+  }, [user, authLoading]);
 
-    fetchCitasPendientes();
-  }, []);
+  const obtenerDatosEmpleado = async () => {
+    if (!paciente?.pacie_ced_pacie) return;
+    try {
+      const response = await api.get(
+        `/api/v1/empleados/${paciente.pacie_ced_pacie}/empresa/${paciente.pacie_cod_empr}`
+      );
+      setDatosEmpleado(
+        response.data || {
+          departamento: "",
+          seccion: "",
+          cargo: "",
+          fechaIngreso: null,
+        }
+      );
+    } catch (error) {
+      console.error("Error al obtener datos del empleado:", error);
+      setSnackbarMessage("No se encontraron datos laborales del empleado");
+      setSnackbarSeverity("info");
+      setSnackbarOpen(true);
+      setDatosEmpleado({
+        departamento: "",
+        seccion: "",
+        cargo: "",
+        fechaIngreso: null,
+      });
+    }
+  };
+
+  const calcularEdad = (fechaNacimiento) => {
+    if (!fechaNacimiento) return 0;
+    const hoy = new Date();
+    const nacimiento = new Date(fechaNacimiento);
+    let edad = hoy.getFullYear() - nacimiento.getFullYear();
+    const mes = hoy.getMonth() - nacimiento.getMonth();
+    if (mes < 0 || (mes === 0 && hoy.getDate() < nacimiento.getDate())) {
+      edad--;
+    }
+    return edad;
+  };
+
+  const handleCancelarCita = async (citaId) => {
+    setCitaParaCancelarId(citaId);
+    setOpenCancelCitaModal(true);
+  };
+
+  const confirmarCancelacionCita = async () => {
+    if (!citaParaCancelarId) return;
+    try {
+      await api.delete(`/api/v1/citas/${citaParaCancelarId}`);
+      setCitasPendientes((prevCitas) =>
+        prevCitas.filter((cita) => cita.cita_cod_cita !== citaParaCancelarId)
+      );
+      setSnackbarMessage("Cita cancelada correctamente.");
+      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
+    } catch (error) {
+      console.error("Error al cancelar la cita:", error);
+      setSnackbarMessage("No se pudo cancelar la cita. Inténtalo de nuevo.");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+    } finally {
+      setOpenCancelCitaModal(false);
+      setCitaParaCancelarId(null);
+    }
+  };
 
   const obtenerDatosPaciente = async (pacienteId) => {
     try {
       const pacienteResponse = await api.get(`/api/v1/pacientes/${pacienteId}`);
       setPaciente(pacienteResponse.data);
-
       const atencionesResponse = await api.get(
         `/api/v1/atenciones/paciente/${pacienteId}/especialidad/${especialidadSeleccionada}`,
         {
@@ -218,7 +302,6 @@ const MedicinaGeneral = () => {
       );
       setAtenciones(atencionesResponse.data.atenciones);
       setTotalAtenciones(atencionesResponse.data.total);
-
       setMostrarEspecialidad(especialidadSeleccionada === "Todas");
     } catch (error) {
       console.error("Error al obtener los datos del paciente:", error);
@@ -235,17 +318,19 @@ const MedicinaGeneral = () => {
     paginaActual,
     registrosPorPagina,
   ]);
+  useEffect(() => {
+    if (paciente) {
+      obtenerDatosEmpleado();
+    }
+  }, [paciente]);
 
   const cambiarPagina = (nuevaPagina) => {
     setPaginaActual(nuevaPagina);
   };
-
   const cambiarRegistrosPorPagina = (e) => {
-    const nuevoRegistrosPorPagina = parseInt(e.target.value, 10);
-    setRegistrosPorPagina(nuevoRegistrosPorPagina);
+    setRegistrosPorPagina(parseInt(e.target.value, 10));
     setPaginaActual(1);
   };
-
   const handleCambiarEspecialidad = (e) => {
     setEspecialidadSeleccionada(e.target.value);
     setPaginaActual(1);
@@ -253,34 +338,39 @@ const MedicinaGeneral = () => {
 
   const verificarTipoAtencion = async (pacienteId) => {
     try {
-      const especialidad = localStorage.getItem("especialidad"); // Obtener la especialidad del localStorage
+      const especialidad = user ? user.especialidad : null;
       if (!especialidad) {
         throw new Error("No se pudo obtener la especialidad del usuario.");
       }
-
       const response = await api.get(
         `/api/v1/atenciones/paciente/${pacienteId}/especialidad/${especialidad}`
       );
-
       const totalAtenciones = parseInt(response.data.total, 10);
       return totalAtenciones === 0 ? "Primera" : "Subsecuente";
     } catch (error) {
       console.error("Error al verificar el tipo de atención:", error);
-      return "Subsecuente"; // Por defecto, asumimos que es subsecuente en caso de error
+      throw error;
     }
   };
 
   const handleAtenderCita = async (cita) => {
-    setSelectedCita(cita);
-    const tipo = await verificarTipoAtencion(cita.cita_cod_pacie);
-    setTipoAtencionAuto(tipo);
-    setTipoAtencionManual(null);
-    setOpenModal(true);
-    buscarProductos("", cita.cita_cod_sucu);
+    try {
+      setSelectedCita(cita);
+      const tipo = await verificarTipoAtencion(cita.cita_cod_pacie);
+      setTipoAtencionAuto(tipo);
+      setTipoAtencionManual(null);
+      setOpenModal(true);
+      buscarProductos("", cita.cita_cod_sucu);
+    } catch (err) {
+      setSnackbarMessage(err.message);
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+    }
   };
 
   const handleCloseModal = () => {
     setOpenModal(false);
+    setAtencionGuardadaId(null);
     setSelectedCita(null);
     setMotivoConsulta("");
     setEnfermedadActual("");
@@ -289,6 +379,7 @@ const MedicinaGeneral = () => {
     setPrescripciones([]);
     setReferencias([]);
     setIndicacionesGenerales([]);
+    setSignosAlarma([]);
     setTipoAtencionPreventiva("");
     setVigilanciaSeleccionada([]);
     setMorbilidadSeleccionada("");
@@ -310,12 +401,9 @@ const MedicinaGeneral = () => {
       },
     ]);
   };
-
   const eliminarDiagnostico = (index) => {
-    const nuevosDiagnosticos = diagnosticos.filter((_, i) => i !== index);
-    setDiagnosticos(nuevosDiagnosticos);
+    setDiagnosticos(diagnosticos.filter((_, i) => i !== index));
   };
-
   const agregarProcedimiento = (indexDiagnostico) => {
     const nuevosDiagnosticos = [...diagnosticos];
     nuevosDiagnosticos[indexDiagnostico].procedimientos.push({
@@ -326,7 +414,6 @@ const MedicinaGeneral = () => {
     });
     setDiagnosticos(nuevosDiagnosticos);
   };
-
   const eliminarProcedimiento = (indexDiagnostico, indexProcedimiento) => {
     const nuevosDiagnosticos = [...diagnosticos];
     nuevosDiagnosticos[indexDiagnostico].procedimientos = nuevosDiagnosticos[
@@ -334,7 +421,6 @@ const MedicinaGeneral = () => {
     ].procedimientos.filter((_, i) => i !== indexProcedimiento);
     setDiagnosticos(nuevosDiagnosticos);
   };
-
   const buscarCie10 = async (query) => {
     try {
       const response = await api.get(`/api/v1/cie10/buscar?query=${query}`);
@@ -343,7 +429,6 @@ const MedicinaGeneral = () => {
       console.error("Error al buscar códigos CIE10:", error);
     }
   };
-
   const handleSelectCie10 = (cie10) => {
     const nuevosDiagnosticos = [...diagnosticos];
     nuevosDiagnosticos[selectedDiagnosticoIndex].diag_cod_cie10 =
@@ -355,7 +440,6 @@ const MedicinaGeneral = () => {
     setDiagnosticos(nuevosDiagnosticos);
     setOpenCie10Modal(false);
   };
-
   const buscarProcedimientos = async (query) => {
     try {
       const response = await api.get(
@@ -366,11 +450,9 @@ const MedicinaGeneral = () => {
       console.error("Error al buscar procedimientos:", error);
     }
   };
-
   const handleSelectProcedimiento = (procedimiento) => {
     const nuevosDiagnosticos = [...diagnosticos];
     const { diagnosticoIndex, procedimientoIndex } = selectedProcedimientoIndex;
-
     nuevosDiagnosticos[diagnosticoIndex].procedimientos[
       procedimientoIndex
     ].proc_cod_cie10 = procedimiento.pro10_cod_pro10;
@@ -380,12 +462,27 @@ const MedicinaGeneral = () => {
     nuevosDiagnosticos[diagnosticoIndex].procedimientos[
       procedimientoIndex
     ].pro10_nom_pro10 = procedimiento.pro10_nom_pro10;
-
     setDiagnosticos(nuevosDiagnosticos);
     setOpenProcedimientoModal(false);
   };
 
-  const validarCampos = () => {
+  const handleGuardarAtencion = async () => {
+    // --- 1. VALIDACIONES INICIALES EN EL FRONTEND ---
+    // Verifica que se haya seleccionado una cita y que los campos clave no estén vacíos.
+    if (!selectedCita || !selectedCita.cita_cod_pacie) {
+      setSnackbarMessage("Error: No se pudo obtener el ID del paciente.");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+      return;
+    }
+    if (!motivoConsulta.trim() || !enfermedadActual.trim()) {
+      setSnackbarMessage(
+        "El motivo de consulta y la enfermedad actual son obligatorios."
+      );
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+      return;
+    }
     for (const diagnostico of diagnosticos) {
       if (!diagnostico.cie10_id_cie10) {
         setSnackbarMessage(
@@ -393,59 +490,21 @@ const MedicinaGeneral = () => {
         );
         setSnackbarSeverity("error");
         setSnackbarOpen(true);
-        return false;
-      }
-
-      for (const procedimiento of diagnostico.procedimientos) {
-        if (!procedimiento.pro10_ide_pro10) {
-          setSnackbarMessage(
-            "Todos los procedimientos deben tener un CIE10 seleccionado."
-          );
-          setSnackbarSeverity("error");
-          setSnackbarOpen(true);
-          return false;
-        }
+        return;
       }
     }
 
-    return true;
-  };
-
-  const handleGuardarAtencion = async () => {
     try {
-      // 1. Validación básica de datos requeridos
-      if (!selectedCita || !selectedCita.cita_cod_pacie) {
-        setSnackbarMessage("Error: No se pudo obtener el ID del paciente.");
-        setSnackbarSeverity("error");
-        setSnackbarOpen(true);
-        return;
+      const secuencialResponse = await api.post("/api/v1/secuencias/receta", {
+        locationId: selectedCita.cita_cod_sucu,
+      });
+      if (!secuencialResponse.data.success) {
+        throw new Error(secuencialResponse.data.message);
       }
+      const numeroReceta = secuencialResponse.data.secuencial;
 
-      // 2. Validar campos obligatorios de la atención (modificado para mostrar solo snackbar)
-      if (!motivoConsulta.trim() || !enfermedadActual.trim()) {
-        setSnackbarMessage(
-          "El motivo de consulta y la enfermedad actual son obligatorios."
-        );
-        setSnackbarSeverity("error");
-        setSnackbarOpen(true);
-        return;
-      }
-
-      // 3. Validar diagnósticos
-      for (const diagnostico of diagnosticos) {
-        if (!diagnostico.cie10_id_cie10) {
-          setSnackbarMessage(
-            "Todos los diagnósticos deben tener un CIE10 seleccionado."
-          );
-          setSnackbarSeverity("error");
-          setSnackbarOpen(true);
-          return;
-        }
-      }
-
-      // 4. Validar prescripciones
+      // Se validan y formatean las prescripciones.
       const prescripcionesValidadas = prescripciones.map((p, index) => {
-        // Validación para prescripciones de Empresa
         if (p.pres_tip_pres === "Empresa" && !p.pres_cod_prod) {
           throw new Error(
             `La prescripción de empresa #${
@@ -453,21 +512,18 @@ const MedicinaGeneral = () => {
             } no tiene producto seleccionado`
           );
         }
-
-        // Validación para prescripciones Externas
         if (p.pres_tip_pres === "Externa" && !p.pres_nom_prod.trim()) {
           throw new Error(
             `La prescripción externa #${index + 1} no tiene nombre de producto`
           );
         }
-
         return {
           pres_cod_empr: p.pres_cod_empr,
           pres_tip_pres: p.pres_tip_pres,
           pres_cod_prod:
             p.pres_tip_pres === "Empresa"
               ? String(p.pres_cod_prod)
-              : p.pres_nom_prod.substring(0, 35), // Asegurar que no exceda 35 caracteres
+              : p.pres_nom_prod.substring(0, 35),
           pres_nom_prod: p.pres_nom_prod,
           pres_can_pres: Math.max(1, Number(p.pres_can_pres) || 1),
           pres_cod_unid: Number(p.pres_cod_unid) || 1,
@@ -484,7 +540,7 @@ const MedicinaGeneral = () => {
             ? p.pres_adm_pres
             : "Oral",
           pres_fre_pres: [
-            "Inmediato",
+            "Stat",
             "Cada 6 horas",
             "Cada 8 horas",
             "Cada 12 horas",
@@ -505,13 +561,13 @@ const MedicinaGeneral = () => {
         };
       });
 
-      // 5. Preparar datos de atención
+      // Se construye el objeto principal de la atención.
       const atencionData = {
         aten_cod_paci: selectedCita.cita_cod_pacie,
         aten_cod_cita: selectedCita.cita_cod_cita,
-        aten_cod_medi: localStorage.getItem("especialista"),
+        aten_cod_medi: user.especialista,
         aten_cod_disu: selectedCita.cita_cod_sucu,
-        aten_esp_aten: localStorage.getItem("especialidad"),
+        aten_esp_aten: user.especialidad,
         aten_fec_aten: new Date().toISOString().split("T")[0],
         aten_hor_aten: new Date().toTimeString().split(" ")[0],
         aten_mot_cons: motivoConsulta,
@@ -519,24 +575,17 @@ const MedicinaGeneral = () => {
         aten_obs_ate: observaciones,
         aten_tip_aten: tipoAtencion,
         aten_cert_aten: certificadoLaboral,
+        aten_num_receta: numeroReceta, // Se incluye el secuencial obtenido.
       };
 
-      // 6. Mostrar datos en consola para depuración
-      console.log("Datos a enviar:", {
-        atencionData,
-        diagnosticos,
-        prescripciones: prescripcionesValidadas,
-        referencias,
-        indicacionesGenerales,
-      });
-
-      // 7. Enviar datos al backend
+      // --- PASO 3: Registrar la atención completa CON el secuencial ---
       const response = await api.post("/api/v1/atenciones/registrar-atencion", {
         atencionData,
         diagnosticos,
         prescripciones: prescripcionesValidadas,
         referencias,
         indicacionesGenerales,
+        signosAlarma,
         tipoAtencionPreventiva,
         vigilanciaSeleccionada,
         morbilidadSeleccionada,
@@ -544,61 +593,57 @@ const MedicinaGeneral = () => {
         tiposAccidente,
       });
 
-      // 8. Manejar respuesta exitosa
+      // --- PASO 4: Manejar la respuesta exitosa ---
       if (response.data) {
+        const atencionCreada = response.data.atencion; // Asumiendo que el backend la devuelve
         setSnackbarMessage("Atención registrada correctamente.");
         setSnackbarSeverity("success");
         setSnackbarOpen(true);
-        handleCloseModal();
-
-        // Opcional: Recargar datos si es necesario
-        const medicoId = localStorage.getItem("especialista");
-        const responseCitas = await api.get(
-          `/api/v1/atenciones/citas-pendientes/${medicoId}`
-        );
-        setCitasPendientes(responseCitas.data);
+        // --- SE GUARDA EL ID DE LA ATENCIÓN CREADA ---
+        setAtencionGuardadaId(atencionCreada.aten_cod_aten);
       }
     } catch (error) {
-      // 9. Manejo detallado de errores
-      console.error("Error completo:", error);
-
+      // --- MANEJO DE ERRORES ---
+      console.error("Error completo al guardar la atención:", error);
       let errorMessage = "Error al guardar la atención";
       if (error.response?.data?.error) {
         errorMessage = error.response.data.error;
       } else if (error.message) {
         errorMessage = error.message;
       }
-
       setSnackbarMessage(errorMessage);
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
     }
   };
+  const agregarSignoAlarma = () => {
+    setSignosAlarma([...signosAlarma, { signa_des_signa: "" }]);
+  };
+
+  const eliminarSignoAlarma = (index) => {
+    const nuevosSignos = signosAlarma.filter((_, i) => i !== index);
+    setSignosAlarma(nuevosSignos);
+  };
+
+  const handleSignoAlarmaChange = (index, value) => {
+    const nuevosSignos = [...signosAlarma];
+    nuevosSignos[index].signa_des_signa = value;
+    setSignosAlarma(nuevosSignos);
+  };
 
   const handleCloseSnackbar = () => {
     setSnackbarOpen(false);
   };
-
   const handleConfirmCancel = () => {
     setOpenConfirmCancelModal(true);
   };
-
   const handleCancelAtencion = () => {
     setOpenConfirmCancelModal(false);
     handleCloseModal();
   };
-
   const handleCloseConfirmCancelModal = () => {
     setOpenConfirmCancelModal(false);
   };
-
-  if (loading) {
-    return <Typography>Cargando citas pendientes...</Typography>;
-  }
-
-  if (error) {
-    return <Typography color="error">{error}</Typography>;
-  }
 
   // Funciones para manejar las prescripciones
   const agregarPrescripcion = (tipo = "Empresa") => {
@@ -617,7 +662,7 @@ const MedicinaGeneral = () => {
       pres_fre_pres: "Cada 8 horas",
       pres_dur_pres: 1,
       pres_ind_pres: "",
-      pres_cod_bode: bodega, 
+      pres_cod_bode: bodega,
       // Campos visuales (no se envían al backend)
       _siglas_unid: tipo === "Empresa" ? "UN" : "",
       disponible: 0,
@@ -764,495 +809,55 @@ const MedicinaGeneral = () => {
 
   const getColorByUrgency = (nivelUrgencia) => {
     switch (nivelUrgencia?.toUpperCase()) {
-      case "ROJO":
-        return "#ffcdd2"; // Rojo claro
-      case "NARANJA":
-        return "#ffe0b2"; // Naranja claro
-      case "AMARILLO":
-        return "#fff9c4"; // Amarillo claro
-      case "VERDE":
-        return "#c8e6c9"; // Verde claro
-      case "AZUL":
-        return "#bbdefb"; // Azul claro
+      case "REANIMACIÓN":
+        return "#f44336"; // Rojo Sólido
+      case "EMERGENCIA":
+        return "#FF9800"; // Naranja Sólido
+      case "URGENCIA":
+        return "#FFC107"; // Amarillo/Ámbar Sólido
+      case "URGENCIA MENOR":
+        return "#4CAF50"; // Verde Sólido
+      case "SIN URGENCIA":
+        return "#2196F3"; // Azul Sólido
       default:
-        return "#f5f5f5"; // Gris claro por defecto
+        return "#9E9E9E"; // Gris Sólido por defecto
     }
   };
 
   // Maneja la impresión de la receta médica
   const handlePrintReceta = () => {
-    if (!paciente) {
-      setSnackbarMessage("No hay datos del paciente para imprimir");
+    if (atencionGuardadaId) {
+      setImprimiendoReceta(true);
+    } else {
+      setSnackbarMessage("Debe guardar la atención antes de imprimir.");
       setSnackbarSeverity("warning");
       setSnackbarOpen(true);
-      return;
     }
-
-    const printWindow = window.open("", "_blank");
-
-    // Función para convertir números a letras
-    const numeroALetras = (num) => {
-      const unidades = [
-        "",
-        "uno",
-        "dos",
-        "tres",
-        "cuatro",
-        "cinco",
-        "seis",
-        "siete",
-        "ocho",
-        "nueve",
-      ];
-      const decenas = [
-        "",
-        "diez",
-        "veinte",
-        "treinta",
-        "cuarenta",
-        "cincuenta",
-        "sesenta",
-        "setenta",
-        "ochenta",
-        "noventa",
-      ];
-      const especiales = [
-        "once",
-        "doce",
-        "trece",
-        "catorce",
-        "quince",
-        "dieciséis",
-        "diecisiete",
-        "dieciocho",
-        "diecinueve",
-      ];
-
-      num = parseInt(num) || 1;
-      if (num < 1) num = 1;
-      if (num > 99) num = 99;
-
-      if (num < 10) return unidades[num];
-      if (num >= 11 && num <= 19) return especiales[num - 11];
-
-      const decena = Math.floor(num / 10);
-      const unidad = num % 10;
-
-      if (unidad === 0) return decenas[decena];
-      if (decena === 1) return "dieci" + unidades[unidad];
-      if (decena === 2) return "veinti" + unidades[unidad];
-
-      return decenas[decena] + " y " + unidades[unidad];
-    };
-
-    // Función para formatear fecha
-    const formatDate = () => {
-      const options = { day: "numeric", month: "long", year: "numeric" };
-      return new Date().toLocaleDateString("es-ES", options);
-    };
-
-    // Separar prescripciones
-    const prescripcionesEmpresa = prescripciones.filter(
-      (p) => p.pres_tip_pres === "Empresa"
-    );
-    const prescripcionesExterna = prescripciones.filter(
-      (p) => p.pres_tip_pres === "Externa"
-    );
-
-    //Capitalizar el nombre del paciente
-    function capitalize(str) {
-      return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-    }
-
-    printWindow.document.write(`
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>Receta Médica - ${paciente.pacie_nom_pacie} ${
-      paciente.pacie_ape_pacie
-    }</title>
-          <style>
-            @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&display=swap');
-            
-            body {
-              font-family: 'Montserrat', sans-serif;
-              margin: 0;
-              padding: 0;
-              background-color: #f9f9f9;
-              font-size: 13pt;
-            }
-            
-            .page-container {
-              width: 21cm;
-              min-height: 29.7cm;
-              margin: 0 auto;
-              display: grid;
-              grid-template-columns: 10.45cm 1px 10.45cm;
-              gap: 0.2cm;
-            }
-            
-            .column {
-              width: 10.45cm;
-              padding: 0.7cm;
-              position: relative;
-              box-sizing: border-box;
-            }
-            
-            .divider {
-              background: repeating-linear-gradient(
-                to bottom,
-                #ccc,
-                #ccc 1px,
-                transparent 1px,
-                transparent 10px
-              );
-              width: 1px;
-            }
-            
-            .header-container {
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              gap: 15px;
-              margin-bottom: 0.8rem;
-            }
-            
-            .logo {
-              height: 22px;
-              width: auto;
-              object-fit: contain;
-            }
-            
-            .header-text {
-              text-align: center;
-              flex-grow: 1;
-            }
-            
-            .clinic-name {
-              font-weight: 700;
-              font-size: 11pt;
-              margin: 0;
-            }
-            
-            .clinic-type {
-              font-weight: 500;
-              font-size: 10pt;
-              margin: 0.1rem 0 0.3rem;
-            }
-            
-            .date {
-              font-size: 9pt;
-              margin-bottom: 0.8rem;
-              text-align: center;
-            }
-            
-            .section-title {
-              font-weight: 600;
-              font-size: 10pt;
-              margin: 0.6rem 0 0.3rem;
-              padding-bottom: 0.1rem;
-              border-bottom: 1px solid #ddd;
-            }
-            
-            .patient-data {
-              font-size: 9pt;
-              line-height: 1.3;
-              margin-bottom: 0.6rem;
-            }
-            
-            .patient-data strong {
-              font-weight: 600;
-            }
-            
-            .diagnosticos-list, 
-            .indicaciones-list, 
-            .referencias-list,
-            .prescripciones-list {
-              font-size: 9pt;
-              margin: 0.3rem 0;
-              padding-left: 0.8rem;
-            }
-            
-            .prescripcion-item {
-              margin-bottom: 0.2rem;
-            }
-            
-            .med-group-title {
-              font-weight: 600;
-              font-size: 9.5pt;
-              margin: 0.6rem 0 0.3rem;
-              color: #4a90e2;
-            }
-            
-            .indicacion-farmacologica {
-              font-size: 8.5pt;
-              margin-bottom: 0.3rem;
-              display: flex;
-              flex-wrap: wrap;
-              gap: 0.5rem;
-              align-items: center;
-              line-height: 1.2;
-            }
-            
-            .med-name {
-              font-weight: 600;
-              width: 100%;
-              margin-bottom: 0.1rem;
-            }
-            
-            .signature {
-              position: absolute;
-              bottom: 0.6cm;
-              width: calc(100% - 1.2cm);
-              text-align: center;
-              font-size: 9pt;
-            }
-            
-            .signature-line {
-              border-top: 1px solid #333;
-              width: 80%;
-              margin: 0 auto 0.1rem;
-            }
-            
-            .doctor-name {
-              font-weight: 600;
-            }
-            
-            @media print {
-              body {
-                background: none;
-                margin: 0;
-                padding: 0;
-              }
-              
-              .page-container {
-                gap: 0.2cm;
-              }
-              
-              .column {
-                padding: 0.5cm;
-              }
-              
-              .logo {
-                height: 16px;
-              }
-            }
-          </style>
-        </head>
-        <body>
-          <div class="page-container">
-            <!-- Columna Izquierda -->
-            <div class="column">
-              <div class="header-container">
-                <img src="/provefrut.jpg" class="logo" alt="Logo Provefrut">
-                <div class="header-text">
-                  <p class="clinic-name">CENTRO DE SALUD TIPO B</p>
-                  <p class="clinic-type">PROVEFRUT - NINTANGA</p>
-                </div>
-                <img src="/nintanga.jpg" class="logo" alt="Logo Nintanga">
-              </div>
-              
-              <div class="date">Guaytacama, ${formatDate()}</div>
-              
-              <div class="section-title">Datos del paciente:</div>
-              <div class="patient-data">
-                <strong>Nombre:</strong> ${capitalize(
-                  paciente.pacie_nom_pacie
-                )} ${capitalize(paciente.pacie_ape_pacie)}<br>
-                <strong>Cédula:</strong> ${paciente.pacie_ced_pacie}<br>
-                <strong>Edad:</strong> ${calcularEdad(
-                  paciente.pacie_fec_nac
-                )} años<br>
-                <strong>Sexo:</strong> ${capitalize(paciente.sexo_nom_sexo)}
-              </div>
-              
-              ${
-                diagnosticos.length > 0
-                  ? `
-                <div class="section-title">Diagnóstico(s):</div>
-                <ul class="diagnosticos-list">
-                  ${diagnosticos
-                    .map(
-                      (d) => `
-                    <li>${d.cie10_id_cie10} - ${d.cie10_nom_cie10}</li>
-                  `
-                    )
-                    .join("")}
-                </ul>
-              `
-                  : ""
-              }
-              
-              <div class="section-title">Receta:</div>
-              
-              ${
-                prescripcionesEmpresa.length > 0
-                  ? `
-                <div class="med-group-title">MEDICACIÓN INTERNA (EMPRESA)</div>
-                <div class="prescripciones-list">
-                  ${prescripcionesEmpresa
-                    .map((p) => {
-                      const cantidad = p.pres_can_pres || 1;
-                      return `
-                      <div class="prescripcion-item">
-                        • ${capitalize(
-                          p.pres_nom_prod
-                        )} - # ${cantidad} (${numeroALetras(cantidad)}) ${
-                        p._siglas_unid || "UN"
-                      }
-                      </div>
-                    `;
-                    })
-                    .join("")}
-                </div>
-              `
-                  : ""
-              }
-              
-              ${
-                prescripcionesExterna.length > 0
-                  ? `
-                <div class="med-group-title">MEDICACIÓN EXTERNA (FARMACIA)</div>
-                <div class="prescripciones-list">
-                  ${prescripcionesExterna
-                    .map((p) => {
-                      const cantidad = p.pres_can_pres || 1;
-                      return `
-                      <div class="prescripcion-item">
-                        • ${capitalize(
-                          p.pres_nom_prod
-                        )} - # ${cantidad} (${numeroALetras(cantidad)}) ${
-                        p._siglas_unid || "UN"
-                      }
-                      </div>
-                    `;
-                    })
-                    .join("")}
-                </div>
-              `
-                  : ""
-              }          
-            </div>
-            
-            <!-- Línea divisoria punteada -->
-            <div class="divider"></div>
-            
-            <!-- Columna Derecha -->
-            <div class="column">
-              <div class="header-container">
-                <img src="/provefrut.jpg" class="logo" alt="Logo Provefrut">
-                <div class="header-text">
-                  <p class="clinic-name">CENTRO DE SALUD TIPO B</p>
-                  <p class="clinic-type">PROVEFRUT - NINTANGA</p>
-                </div>
-                <img src="/nintanga.jpg" class="logo" alt="Logo Nintanga">
-              </div>
-              
-              <div class="date">Guaytacama, ${formatDate()}</div>
-              
-              <div class="section-title">Datos del paciente:</div>
-              <div class="patient-data">
-                <strong>Nombre:</strong> ${capitalize(
-                  paciente.pacie_nom_pacie
-                )} ${capitalize(paciente.pacie_ape_pacie)}<br>
-                <strong>Cédula:</strong> ${paciente.pacie_ced_pacie}<br>
-                <strong>Edad:</strong> ${calcularEdad(
-                  paciente.pacie_fec_nac
-                )} años<br>
-                <strong>Sexo:</strong> ${capitalize(paciente.sexo_nom_sexo)}
-              </div>
-              
-              ${
-                prescripciones.length > 0
-                  ? `
-                <div class="section-title">Indicaciones Farmacológicas:</div>
-                <div class="prescripciones-list">
-                  ${prescripciones
-                    .map(
-                      (p) => `
-                    <div class="indicacion-farmacologica">
-                      <div class="med-name">${capitalize(p.pres_nom_prod)}</div>
-                      ${
-                        p.pres_dos_pres
-                          ? `<span>Dosis: ${p.pres_dos_pres}</span>`
-                          : ""
-                      }
-                      <span>Vía: ${capitalize(p.pres_adm_pres || "Oral")}</span>
-                      <span>Frecuencia: ${
-                        p.pres_fre_pres || "Cada 8 horas"
-                      }</span>
-                      ${
-                        p.pres_dur_pres
-                          ? `<span>Duración: ${p.pres_dur_pres} día(s)</span>`
-                          : ""
-                      }
-                      ${
-                        p.pres_ind_pres
-                          ? `<span style="width:100%;">Indicaciones: ${p.pres_ind_pres}</span>`
-                          : ""
-                      }
-                    </div>
-                  `
-                    )
-                    .join("")}
-                </div>
-              `
-                  : ""
-              }
-              
-              ${
-                indicacionesGenerales.length > 0
-                  ? `
-                <div class="section-title">Indicaciones Generales:</div>
-                <ul class="indicaciones-list">
-                  ${indicacionesGenerales
-                    .map(
-                      (ind) => `
-                    <li>${ind.indi_des_indi}</li>
-                  `
-                    )
-                    .join("")}
-                </ul>
-              `
-                  : ""
-              }
-              
-              ${
-                referencias.length > 0
-                  ? `
-                <div class="section-title">Referencias:</div>
-                <ul class="referencias-list">
-                  ${referencias
-                    .map(
-                      (ref) => `
-                    <li>${ref.refe_des_refe}</li>
-                  `
-                    )
-                    .join("")}
-                </ul>
-              `
-                  : ""
-              }              
-            </div>
-          </div>
-          
-          <script>
-            window.onload = function() {
-              setTimeout(function() {
-                window.print();
-                window.close();
-              }, 300);
-            };
-          </script>
-        </body>
-      </html>
-    `);
-
-    printWindow.document.close();
   };
+
+  if (authLoading || loading) {
+    return (
+      <Container>
+        <Typography>Cargando...</Typography>
+      </Container>
+    );
+  }
+  if (error) {
+    return (
+      <Container>
+        <Typography color="error">{error}</Typography>
+      </Container>
+    );
+  }
 
   return (
     <Container className={styles.container}>
+      {imprimiendoReceta && atencionGuardadaId && (
+        <RecetaMedicaPrint
+          atencionId={atencionGuardadaId}
+          onPrintFinish={() => setImprimiendoReceta(false)}
+        />
+      )}
       <Typography variant="h4" gutterBottom className={styles.title}>
         Citas Pendientes
       </Typography>
@@ -1274,9 +879,7 @@ const MedicinaGeneral = () => {
             {citasPendientes.map((cita) => (
               <TableRow key={cita.cita_cod_cita} className={styles.tableRow}>
                 <TableCell>{cita.cita_cod_cita}</TableCell>
-                <TableCell>
-                  {new Date(cita.cita_fec_cita).toLocaleDateString()}
-                </TableCell>
+                <TableCell>{formatDateDDMMYYYY(cita.cita_fec_cita)}</TableCell>
                 <TableCell>{cita.cita_hor_cita}</TableCell>
                 <TableCell>{`${cita.pacie_nom_pacie} ${cita.pacie_ape_pacie}`}</TableCell>
                 <TableCell>
@@ -1289,6 +892,13 @@ const MedicinaGeneral = () => {
                     onClick={() => handleAtenderCita(cita)}
                   >
                     Atender
+                  </Button>
+                  <Button
+                    className={`${styles.button} ${styles.cancelButton}`}
+                    onClick={() => handleCancelarCita(cita.cita_cod_cita)}
+                    sx={{ ml: 1 }}
+                  >
+                    Cancelar
                   </Button>
                 </TableCell>
               </TableRow>
@@ -1377,57 +987,93 @@ const MedicinaGeneral = () => {
 
           {/* Mostrar datos del paciente */}
           {paciente && (
-            <Box
-              sx={{ mb: 3, border: "1px solid #ccc", p: 2, borderRadius: 1 }}
-            >
-              <Typography variant="h6" gutterBottom>
-                Datos del Paciente
-              </Typography>
-              <Grid container spacing={2}>
-                <Grid item xs={12} md={6}>
-                  <Typography>
-                    <strong>Nombre:</strong> {paciente.pacie_nom_pacie}{" "}
-                    {paciente.pacie_ape_pacie}
+            <Card className={styles.patientCard}>
+              <CardHeader
+                avatar={<AssignmentInd color="primary" />}
+                title="Datos del Paciente"
+                titleTypographyProps={{ variant: "h6", fontWeight: "bold" }}
+              />
+              <CardContent className={styles.patientCardContent}>
+                {/* --- COLUMNA IZQUIERDA (CON EL BOTÓN AHORA INCLUIDO) --- */}
+                <div className={styles.mainInfo}>
+                  <Typography variant="h5" className={styles.patientName}>
+                    {paciente.pacie_nom_pacie} {paciente.pacie_ape_pacie}
                   </Typography>
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <Typography>
-                    <strong>Cédula:</strong> {paciente.pacie_ced_pacie}
-                  </Typography>
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <Typography>
-                    <strong>Sexo:</strong> {paciente.sexo_nom_sexo}
-                  </Typography>
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <Typography>
-                    <strong>Fecha de Nacimiento:</strong>{" "}
-                    {new Date(paciente.pacie_fec_nac).toLocaleDateString()}
-                  </Typography>
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <Typography>
-                    <strong>Edad:</strong>{" "}
-                    {calcularEdad(paciente.pacie_fec_nac)} años
-                  </Typography>
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <Typography>
-                    <strong>Dirección:</strong> {paciente.pacie_dir_pacie}
-                  </Typography>
-                </Grid>
-              </Grid>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={() => setOpenHistoriaClinicaModal(true)}
-                sx={{ mt: 2 }}
-              >
-                Historia Clínica
-              </Button>
-            </Box>
+
+                  <div className={styles.demographicGrid}>
+                    <div className={styles.infoItem}>
+                      <strong>Cédula</strong>
+                      <span>{paciente.pacie_ced_pacie}</span>
+                    </div>
+                    <div className={styles.infoItem}>
+                      <strong>Edad</strong>
+                      <span>{calcularEdad(paciente.pacie_fec_nac)} años</span>
+                    </div>
+                    <div className={styles.infoItem}>
+                      <strong>Sexo</strong>
+                      <span>{paciente.sexo_nom_sexo}</span>
+                    </div>
+                    <div className={styles.infoItem}>
+                      <strong>Nacimiento</strong>
+                      <span>{formatDateDDMMYYYY(paciente.pacie_fec_nac)}</span>
+                    </div>
+                  </div>
+
+                  {/* --- CAMBIO PRINCIPAL: El botón se mueve aquí --- */}
+                  {/* Se coloca el botón directamente en la columna izquierda, después de la cuadrícula de datos. */}
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => setOpenHistoriaClinicaModal(true)}
+                    startIcon={<MedicalServices />}
+                    // Se añade un margen superior para separarlo de los datos.
+                    sx={{ mt: 3 }}
+                  >
+                    Historia Clínica
+                  </Button>
+                </div>
+
+                {/* --- COLUMNA DERECHA (sin cambios) --- */}
+                <div className={styles.workInfo}>
+                  <div className={styles.infoItem}>
+                    <strong>Departamento:</strong>
+                    <span>
+                      {datosEmpleado?.departamento || "No disponible"}
+                    </span>
+                  </div>                  
+                  <div className={styles.infoItem}>
+                    <strong>Sección:</strong>
+                    <span>{datosEmpleado?.seccion || "No disponible"}</span>
+                  </div>
+                  <div className={styles.infoItem}>
+                    <strong>Cargo:</strong>
+                    <span>{datosEmpleado?.cargo || "No disponible"}</span>
+                  </div>
+                  <div className={styles.infoItem}>
+                    <strong>Fecha de Ingreso:</strong>
+                    <span>
+                      {datosEmpleado?.fechaIngreso
+                        ? formatDateDDMMYYYY(datosEmpleado.fechaIngreso)
+                        : "No disponible"}
+                    </span>
+                  </div>
+                </div>
+              </CardContent>
+
+              {/* El contenedor <CardActions> se ha eliminado por completo. */}
+            </Card>
           )}
+          <div className="my-8">
+            {paciente && (
+              <div className={styles.pacienteInfo}>
+                {/* Información del paciente */}
+                <AntecedentesCompletos
+                  pacienteId={paciente.pacie_cod_pacie}
+                  sexo={paciente.pacie_cod_sexo}
+                />
+              </div>
+            )}
+          </div>
 
           {/* Mostrar datos del triaje si existen */}
           {selectedCita?.triaj_niv_urge && (
@@ -1485,24 +1131,24 @@ const MedicinaGeneral = () => {
 
                 <Grid item xs={12} sm={6} md={3}>
                   <Box sx={{ display: "flex", alignItems: "center" }}>
-                    <AirIcon color="info" fontSize="small" sx={{ mr: 1 }} />
+                    <SpeedIcon color="info" fontSize="small" sx={{ mr: 1 }} />
                     <Typography variant="body2">
-                      <strong>Frec. Respiratoria:</strong>{" "}
-                      {selectedCita.triaj_fre_triaj || "--"} rpm
+                      <strong>Presión Arterial:</strong>{" "}
+                      {selectedCita.triaj_par_triaj || "--"} mmHg
                     </Typography>
                   </Box>
                 </Grid>
 
                 <Grid item xs={12} sm={6} md={3}>
                   <Box sx={{ display: "flex", alignItems: "center" }}>
-                    <SpeedIcon
+                    <StraightenIcon
                       color="primary"
                       fontSize="small"
                       sx={{ mr: 1 }}
                     />
                     <Typography variant="body2">
                       <strong>Per. Abdominal:</strong>{" "}
-                      {selectedCita.triaj_par_triaj || "--"} mmHg
+                      {selectedCita.triaj_pab_triaj || "--"} cm
                     </Typography>
                   </Box>
                 </Grid>
@@ -1574,6 +1220,15 @@ const MedicinaGeneral = () => {
                     <Typography variant="body2">
                       <strong>SpO₂:</strong>{" "}
                       {selectedCita.triaj_sat_triaj || "--"}%
+                    </Typography>
+                  </Box>
+                </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                  <Box sx={{ display: "flex", alignItems: "center" }}>
+                    <AirIcon color="success" fontSize="small" sx={{ mr: 1 }} />
+                    <Typography variant="body2">
+                      <strong>Frec. Respiratoria:</strong>{" "}
+                      {selectedCita.triaj_fre_triaj || "--"} rpm
                     </Typography>
                   </Box>
                 </Grid>
@@ -2165,96 +1820,11 @@ const MedicinaGeneral = () => {
                   label="Estado del Diagnóstico"
                 >
                   <MenuItem value="Presuntivo">Presuntivo</MenuItem>
-                  <MenuItem value="Confirmado">Confirmado</MenuItem>
+                  <MenuItem value="Definitivo">Definitivo</MenuItem>
                 </Select>
               </FormControl>
 
               {/* Lista de procedimientos */}
-              <Typography
-                variant="subtitle2"
-                gutterBottom
-                style={{ marginTop: "20px" }}
-              >
-                Procedimientos
-              </Typography>
-              {diagnostico.procedimientos.map(
-                (procedimiento, indexProcedimiento) => (
-                  <Box
-                    key={indexProcedimiento}
-                    sx={{
-                      mb: 2,
-                      border: "1px solid #eee",
-                      p: 2,
-                      borderRadius: 1,
-                    }}
-                  >
-                    <Grid container spacing={2} alignItems="center">
-                      <Grid item xs={12} md={8}>
-                        <TextField
-                          label="Código del Procedimiento"
-                          fullWidth
-                          value={
-                            procedimiento.pro10_ide_pro10
-                              ? `${procedimiento.pro10_ide_pro10} - ${procedimiento.pro10_nom_pro10}`
-                              : ""
-                          }
-                          margin="normal"
-                          disabled
-                        />
-                      </Grid>
-                      <Grid item xs={12} md={4}>
-                        <Button
-                          variant="outlined"
-                          startIcon={<Search />}
-                          onClick={() => {
-                            setSelectedProcedimientoIndex({
-                              diagnosticoIndex: indexDiagnostico,
-                              procedimientoIndex: indexProcedimiento,
-                            });
-                            setOpenProcedimientoModal(true);
-                          }}
-                          fullWidth
-                        >
-                          Buscar Procedimiento
-                        </Button>
-                      </Grid>
-                    </Grid>
-                    <TextField
-                      label="Observación del Procedimiento"
-                      fullWidth
-                      multiline
-                      value={procedimiento.proc_obs_proc}
-                      onChange={(e) => {
-                        const nuevosDiagnosticos = [...diagnosticos];
-                        nuevosDiagnosticos[indexDiagnostico].procedimientos[
-                          indexProcedimiento
-                        ].proc_obs_proc = e.target.value;
-                        setDiagnosticos(nuevosDiagnosticos);
-                      }}
-                      margin="normal"
-                    />
-                    <IconButton
-                      color="error"
-                      onClick={() =>
-                        eliminarProcedimiento(
-                          indexDiagnostico,
-                          indexProcedimiento
-                        )
-                      }
-                    >
-                      <Delete />
-                    </IconButton>
-                  </Box>
-                )
-              )}
-              <Button
-                variant="outlined"
-                startIcon={<Add />}
-                onClick={() => agregarProcedimiento(indexDiagnostico)}
-                style={{ marginTop: "10px" }}
-              >
-                Agregar Procedimiento
-              </Button>
 
               {/* Botón para eliminar diagnóstico */}
               <IconButton
@@ -2549,7 +2119,7 @@ const MedicinaGeneral = () => {
                           }}
                           sx={{ fontSize: "0.875rem" }}
                         >
-                          <MenuItem value="Inmediato">Inmediato</MenuItem>
+                          <MenuItem value="Stat">Stat</MenuItem>
                           <MenuItem value="Cada 6 horas">Cada 6 horas</MenuItem>
                           <MenuItem value="Cada 8 horas">Cada 8 horas</MenuItem>
                           <MenuItem value="Cada 12 horas">
@@ -2708,7 +2278,7 @@ const MedicinaGeneral = () => {
                       <TableCell>
                         <TextField
                           fullWidth
-                          multiline                          
+                          multiline
                           value={indicacion.indi_des_indi}
                           onChange={(e) =>
                             handleIndicacionGeneralChange(index, e.target.value)
@@ -2755,6 +2325,78 @@ const MedicinaGeneral = () => {
             Agregar Indicación General
           </Button>
 
+          <Typography variant="h6" gutterBottom>
+            Signos de Alarma
+          </Typography>
+          <TableContainer component={Paper} sx={{ mb: 3 }}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell
+                    sx={{ fontWeight: "bold", backgroundColor: "#f5f5f5" }}
+                  >
+                    Descripción
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      fontWeight: "bold",
+                      backgroundColor: "#f5f5f5",
+                      width: "120px",
+                    }}
+                  >
+                    Acciones
+                  </TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {signosAlarma.length > 0 ? (
+                  signosAlarma.map((signo, index) => (
+                    <TableRow key={index}>
+                      <TableCell>
+                        <TextField
+                          fullWidth
+                          multiline
+                          value={signo.signa_des_signa}
+                          onChange={(e) =>
+                            handleSignoAlarmaChange(index, e.target.value)
+                          }
+                          placeholder="Especifique un signo de alarma (ej. Fiebre persistente)"
+                          variant="outlined"
+                          size="small"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <IconButton
+                          color="error"
+                          onClick={() => eliminarSignoAlarma(index)}
+                        >
+                          <Delete />
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell
+                      colSpan={2}
+                      sx={{ textAlign: "center", color: "text.secondary" }}
+                    >
+                      No hay signos de alarma agregados
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+          <Button
+            variant="outlined"
+            startIcon={<Add />}
+            onClick={agregarSignoAlarma}
+            sx={{ mb: 3 }}
+          >
+            Agregar Signo de Alarma
+          </Button>
+
           {/* Sección de Referencias*/}
           <Typography variant="h6" gutterBottom>
             Referencias
@@ -2786,7 +2428,7 @@ const MedicinaGeneral = () => {
                       <TableCell>
                         <TextField
                           fullWidth
-                          multiline                          
+                          multiline
                           value={referencia.refe_des_refe}
                           onChange={(e) =>
                             handleReferenciaChange(index, e.target.value)
@@ -2842,31 +2484,44 @@ const MedicinaGeneral = () => {
               marginTop: "20px",
             }}
           >
-            <Button
-              variant="contained"
-              color="error"
-              onClick={handleConfirmCancel}
-              className={styles.button}
-            >
-              Cancelar
-            </Button>
-            <Button
-              variant="outlined"
-              color="secondary"
-              onClick={handlePrintReceta}
-              startIcon={<PrintIcon />}
-              className={styles.button}
-            >
-              Imprimir Receta
-            </Button>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleGuardarAtencion}
-              className={styles.button}
-            >
-              Guardar Atención
-            </Button>
+            {atencionGuardadaId ? (
+              // VISTA POST-GUARDADO
+              <>
+                <Button
+                  variant="outlined"
+                  color="secondary"
+                  onClick={handlePrintReceta}
+                  startIcon={<PrintIcon />}
+                >
+                  Imprimir Receta
+                </Button>
+                <Button
+                  variant="contained"
+                  color="success"
+                  onClick={handleCloseModal}
+                >
+                  Finalizar
+                </Button>
+              </>
+            ) : (
+              // VISTA ANTES DE GUARDAR
+              <>
+                <Button
+                  variant="contained"
+                  color="error"
+                  onClick={handleConfirmCancel}
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={handleGuardarAtencion}
+                >
+                  Guardar Atención
+                </Button>
+              </>
+            )}
           </Box>
         </Box>
       </Modal>
@@ -2876,37 +2531,118 @@ const MedicinaGeneral = () => {
         <Box
           sx={{
             position: "absolute",
-            top: "50%",
+            top: "15%",
             left: "50%",
             transform: "translate(-50%, -50%)",
-            width: 400,
+            width: 1400,
+            maxWidth: "90vw",
             bgcolor: "background.paper",
             boxShadow: 24,
             p: 4,
             borderRadius: 2,
+            maxHeight: "90vh",
+            overflow: "hidden",
+            display: "flex",
+            flexDirection: "column",
           }}
         >
           <Typography variant="h6" gutterBottom>
             Buscar CIE10
           </Typography>
+
           <Autocomplete
             options={cie10Options}
             getOptionLabel={(option) =>
               `${option.cie10_id_cie10} - ${option.cie10_nom_cie10}`
             }
             onInputChange={(_, value) => buscarCie10(value)}
+            onChange={(_, value) => {
+              if (value) {
+                handleSelectCie10(value);
+                setOpenCie10Modal(false);
+              }
+            }}
             renderInput={(params) => (
               <TextField
                 {...params}
                 label="Buscar CIE10"
                 fullWidth
                 autoFocus
-                inputRef={cie10SearchRef}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    padding: "8px 12px",
+                  },
+                }}
               />
             )}
-            onChange={(_, value) => handleSelectCie10(value)}
+            componentsProps={{
+              popper: {
+                modifiers: [
+                  {
+                    name: "offset",
+                    options: {
+                      offset: [0, 4],
+                    },
+                  },
+                ],
+                sx: {
+                  minWidth: "fit-content !important",
+                  width: "100%",
+                  zIndex: 9999,
+                  "& .MuiAutocomplete-paper": {
+                    width: "100% !important",
+                    maxHeight: "150vh",
+                    overflow: "hidden",
+                    boxShadow: "0px 5px 15px rgba(0,0,0,0.2)",
+                    marginTop: "4px !important",
+                    border: "1px solid #e0e0e0",
+                  },
+                  "& .MuiAutocomplete-listbox": {
+                    padding: 0,
+                    maxHeight: "none",
+                  },
+                },
+              },
+            }}
+            ListboxProps={{
+              style: {
+                maxHeight: "500px",
+                overflow: "auto",
+              },
+            }}
+            renderOption={(props, option) => (
+              <li
+                {...props}
+                style={{
+                  padding: "8px 12px",
+                  borderBottom: "1px solid #f0f0f0",
+                  margin: 0,
+                  width: "100%",
+                  cursor: "pointer",
+                  "&:hover": {
+                    backgroundColor: "#f5f5f5",
+                  },
+                }}
+              >
+                <div>
+                  <span
+                    style={{
+                      fontWeight: 500,
+                      color: "#1976d2",
+                      display: "inline-block",
+                      width: "100px",
+                    }}
+                  >
+                    {option.cie10_id_cie10}
+                  </span>
+                  <span>{option.cie10_nom_cie10}</span>
+                </div>
+              </li>
+            )}
             freeSolo
             autoHighlight
+            noOptionsText="No se encontraron resultados"
+            blurOnSelect
           />
         </Box>
       </Modal>
@@ -2951,6 +2687,55 @@ const MedicinaGeneral = () => {
             freeSolo
             autoHighlight
           />
+        </Box>
+      </Modal>
+
+      {/* Modal de confirmación para cancelar la cita */}
+      <Modal
+        open={openCancelCitaModal}
+        onClose={() => setOpenCancelCitaModal(false)}
+      >
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: 400,
+            bgcolor: "background.paper",
+            boxShadow: 24,
+            p: 4,
+            borderRadius: 2,
+          }}
+        >
+          <Typography variant="h6" gutterBottom>
+            ¿Estás seguro de cancelar la cita?
+          </Typography>
+          <Typography variant="body1" gutterBottom>
+            Esta acción no se puede deshacer.
+          </Typography>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "flex-end",
+              gap: 2,
+              marginTop: "20px",
+            }}
+          >
+            <Button
+              variant="outlined"
+              onClick={() => setOpenCancelCitaModal(false)}
+            >
+              No, volver
+            </Button>
+            <Button
+              variant="contained"
+              color="error"
+              onClick={confirmarCancelacionCita}
+            >
+              Sí, cancelar
+            </Button>
+          </Box>
         </Box>
       </Modal>
 
@@ -3059,7 +2844,7 @@ const MedicinaGeneral = () => {
                 <Grid item xs={12} md={6}>
                   <Typography>
                     <strong>Fecha de Nacimiento:</strong>{" "}
-                    {new Date(paciente.pacie_fec_nac).toLocaleDateString()}
+                    {formatDateDDMMYYYY(paciente.pacie_fec_nac)}
                   </Typography>
                 </Grid>
                 <Grid item xs={12} md={6}>
@@ -3073,6 +2858,30 @@ const MedicinaGeneral = () => {
                     <strong>Dirección:</strong> {paciente.pacie_dir_pacie}
                   </Typography>
                 </Grid>
+                <Grid item xs={12} md={6}>
+                  <Typography>
+                    <strong>Departamento:</strong> {datosEmpleado.departamento}
+                  </Typography>
+                </Grid>
+                <Grid item xs={12} md={4}>
+                  <Typography>
+                    <strong>Sección:</strong> {datosEmpleado.seccion}
+                  </Typography>
+                </Grid>
+                <Grid item xs={12} md={4}>
+                  <Typography>
+                    <strong>Cargo:</strong> {datosEmpleado.cargo}
+                  </Typography>
+                </Grid>
+                <Grid item xs={12} md={4}></Grid>
+                {datosEmpleado.fechaIngreso && (
+                  <Grid item xs={12} md={6}>
+                    <Typography>
+                      <strong>Fecha de Ingreso:</strong>{" "}
+                      {formatDateDDMMYYYY(datosEmpleado.fechaIngreso)}
+                    </Typography>
+                  </Grid>
+                )}
               </Grid>
             </Box>
           )}

@@ -9,7 +9,16 @@ import {
   actualizarEstadoCita,
   getAtencionesByMedicoAndDates,  // ¡Esta es la función que falta!
   countAtencionesByMedicoAndDates,
-  getEstadisticasAtenciones
+  getEstadisticasAtenciones,
+  getMorbilidadByAtencionId,
+  getPreventivaByAtencionId,
+  getVigilanciasByAtencionId,
+  getPrescripcionesByAtencionId,
+  getAtencionesPorFechas,
+  countAtencionesPorFechas,
+  getIndicacionesByAtencionId,
+  getReferenciasByAtencionId,
+  getTriajeByAtencionId,
 } from "../models/atencion.model.js";
 import { getPacienteById } from "../models/pacientes.model.js";
 import { registrarDiagnostico } from "../models/diagnostico.model.js"; // Importación agregada
@@ -21,6 +30,7 @@ import { registrarPreventiva } from "../models/preventiva.model.js";
 import { registrarVigilancias } from "../models/vigilancia.model.js";
 import { registrarMorbilidad, registrarSistemasAfectados } from "../models/morbilidad.model.js";
 import { registrarTerapias } from "../models/fisioterapia.model.js";
+import { registrarSignoAlarma } from "../models/signosAlarma.model.js"; 
 
 // Obtener todas las atenciones de un paciente
 export const obtenerAtencionesPorPaciente = async (req, res) => {
@@ -47,20 +57,31 @@ export const obtenerAtencionesPorPaciente = async (req, res) => {
 export const obtenerAtencionPorId = async (req, res) => {
   const { atencionId } = req.params;
 
-  // Validación mejorada
   if (!atencionId || isNaN(Number(atencionId))) {
-    return res.status(400).json({ 
-      error: "El ID de la atención debe ser un número válido.",
-      received: atencionId // Para debug
-    });
+    return res.status(400).json({ error: "ID de atención inválido" });
   }
 
   try {
-    const atencion = await getAtencionById(Number(atencionId)); // Asegurar número
+    const atencion = await getAtencionById(Number(atencionId));
     if (!atencion) {
-      return res.status(404).json({ error: "Atención no encontrada." });
+      return res.status(404).json({ error: "Atención no encontrada" });
     }
-    res.status(200).json(atencion);
+
+    // Obtener datos adicionales
+    const [preventiva, vigilancias, morbilidad, prescripciones] = await Promise.all([
+      getPreventivaByAtencionId(atencionId),
+      getVigilanciasByAtencionId(atencionId),
+      getMorbilidadByAtencionId(atencionId),
+      getPrescripcionesByAtencionId(atencionId),
+    ]);
+
+    res.status(200).json({
+      ...atencion,
+      preventiva,
+      vigilancias,
+      morbilidad,
+      prescripciones
+    });
   } catch (error) {
     res.status(500).json({ 
       error: "Error al obtener la atención",
@@ -144,150 +165,58 @@ export const validarCitaYMostrarPaciente = async (req, res) => {
 // Registrar una atención
 export const registrarAtencionController = async (req, res) => {
   const {
-    atencionData,
-    diagnosticos,
-    prescripciones,
-    referencias,
-    indicacionesGenerales,
-    tipoAtencionPreventiva,
-    vigilanciaSeleccionada,
-    morbilidadSeleccionada,
-    sistemasAfectados,
-    tiposAccidente
+    atencionData, diagnosticos, prescripciones, referencias,
+    indicacionesGenerales, signosAlarma, tipoAtencionPreventiva,
+    vigilanciaSeleccionada, morbilidadSeleccionada, sistemasAfectados, tiposAccidente
   } = req.body;
 
   if (!atencionData || !diagnosticos || !prescripciones) {
-    return res
-      .status(400)
-      .json({
-        error:
-          "Los campos 'atencionData', 'diagnosticos' y 'prescripciones' son requeridos.",
-      });
+    return res.status(400).json({
+      error: "Los campos 'atencionData', 'diagnosticos' y 'prescripciones' son requeridos.",
+    });
   }
 
   try {
-    // 1. Registrar la atención
+    // 1. Registrar la atención principal y obtener el objeto completo de vuelta.
     const atencion = await registrarAtencion(atencionData);
     const atencionId = atencion.aten_cod_aten;
 
-    // 2. Registrar datos de atención preventiva si existe
-    if (tipoAtencionPreventiva) {
-      await registrarPreventiva({
-        prev_cod_aten: atencionId,
-        prev_tip_prev: tipoAtencionPreventiva
-      });
-    }
-
-     // 3. Registrar vigilancia epidemiológica si existe
-     if (vigilanciaSeleccionada && vigilanciaSeleccionada.length > 0) {
-      const vigilanciaData = vigilanciaSeleccionada.map(vigi => ({
-        vigi_cod_aten: atencionId,
-        vigi_tip_vigi: vigi
-      }));
-      await registrarVigilancias(vigilanciaData);
-    }
-
-    // 4. Registrar morbilidad si existe
+    // 2. Registrar todos los datos secundarios asociados a la atención.
+    // (Preventiva, Vigilancia, Morbilidad, Diagnósticos, Prescripciones, etc.)
+    if (tipoAtencionPreventiva) { await registrarPreventiva({ prev_cod_aten: atencionId, prev_tip_prev: tipoAtencionPreventiva }); }
+    if (vigilanciaSeleccionada && vigilanciaSeleccionada.length > 0) { const vigiData = vigilanciaSeleccionada.map(v => ({ vigi_cod_aten: atencionId, vigi_tip_vigi: v })); await registrarVigilancias(vigiData); }
     if (morbilidadSeleccionada) {
-      const morbilidad = await registrarMorbilidad({
-        morb_cod_aten: atencionId,
-        morb_tip_morb: morbilidadSeleccionada
-      });
-
-      // Registrar sistemas afectados si es enfermedad general
-      if (morbilidadSeleccionada === 'Atención Enfermedad General' && 
-          sistemasAfectados && sistemasAfectados.length > 0) {
-        await registrarSistemasAfectados(sistemasAfectados, morbilidad.morb_cod_morb);
-      }
-
-      // Registrar sistemas afectados si es accidente de trabajo
-      if (morbilidadSeleccionada === 'Valoración por Accidente de Trabajo' && 
-        tiposAccidente && tiposAccidente.length > 0) {
-      await registrarSistemasAfectados(tiposAccidente, morbilidad.morb_cod_morb);
+      const morbilidad = await registrarMorbilidad({ morb_cod_aten: atencionId, morb_tip_morb: morbilidadSeleccionada });
+      if (morbilidadSeleccionada === 'Atención Enfermedad General' && sistemasAfectados?.length > 0) { await registrarSistemasAfectados(sistemasAfectados, morbilidad.morb_cod_morb); }
+      if (morbilidadSeleccionada === 'Valoración por Accidente de Trabajo' && tiposAccidente?.length > 0) { await registrarSistemasAfectados(tiposAccidente, morbilidad.morb_cod_morb); }
     }
-      
-    }
-    
-    // 2. Registrar los diagnósticos y sus procedimientos
     for (const diagnostico of diagnosticos) {
-      const diagnosticoData = {
-        diag_cod_aten: atencionId,
-        diag_cod_cie10: diagnostico.diag_cod_cie10,
-        diag_obs_diag: diagnostico.diag_obs_diag,
-        diag_est_diag: diagnostico.diag_est_diag,
-      };
-
-      const diagnosticoId = await registrarDiagnostico(diagnosticoData);
-
-      // Verificar si es atención de fisioterapia (tiene terapias)
-      if (diagnostico.terapias) {
-        // Registrar terapias para fisioterapia
-        for (const [terapia, seleccionada] of Object.entries(diagnostico.terapias)) {
-          if (seleccionada) {
-            const tecnicas = Object.entries(diagnostico.tecnicasSeleccionadas[terapia] || {})
-              .filter(([_, sel]) => sel)
-              .map(([tecnica, _]) => tecnica);
-            
-            await registrarTerapias({
-              diag_cod_diag: diagnosticoId,
-              nombre: terapia,
-              tecnicas
-            });
-          }
-        }
-      }
-      // Verificar si es atención de medicina general (tiene procedimientos)
-      else if (diagnostico.procedimientos && Array.isArray(diagnostico.procedimientos)) {
-        // Registrar procedimientos para medicina general
-        for (const procedimiento of diagnostico.procedimientos) {
-          await registrarProcedimiento({
-            proc_cod_diag: diagnosticoId,
-            proc_cod_cie10: procedimiento.proc_cod_cie10,
-            proc_obs_proc: procedimiento.proc_obs_proc,
-          });
-        }
-      }
+      const diagData = { diag_cod_aten: atencionId, ...diagnostico };
+      await registrarDiagnostico(diagData);
     }
-
-    // 3. Registrar las prescripciones
     for (const prescripcion of prescripciones) {
-      const prescripcionData = {
-        pres_cod_aten: atencionId,
-        ...prescripcion,
-      };
-      await registrarPrescripcion(prescripcionData)
+      const presData = { pres_cod_aten: atencionId, ...prescripcion };
+      await registrarPrescripcion(presData);
     }
-
-      // 4. Registrar referencias asociadas a esta prescripción
-      if (referencias && referencias.length > 0) {
-        for (const referencia of referencias) {
-          await registrarReferencia({
-            refe_cod_aten: atencionId,
-            refe_des_refe: referencia.refe_des_refe,
-          });
-        }
-      }
-
-      // 5. Registrar indicaciones generales asociadas a esta prescripción
-      if (indicacionesGenerales && indicacionesGenerales.length > 0) {
-        for (const indicacion of indicacionesGenerales) {
-          await registrarIndicacionGeneral({
-            indi_cod_aten: atencionId,
-            indi_des_indi: indicacion.indi_des_indi,
-          });
-        }
-      }
-          // 2. Actualizar el estado de la cita a 'AT' (Atendida)
+    if (referencias?.length > 0) { for (const ref of referencias) { if(ref.refe_des_refe) await registrarReferencia({ refe_cod_aten: atencionId, refe_des_refe: ref.refe_des_refe }); } }
+    if (indicacionesGenerales?.length > 0) { for (const ind of indicacionesGenerales) { if(ind.indi_des_indi) await registrarIndicacionGeneral({ indi_cod_aten: atencionId, indi_des_indi: ind.indi_des_indi }); } }
+    if (signosAlarma?.length > 0) { for (const signo of signosAlarma) { if(signo.signa_des_signa) await registrarSignoAlarma({ signa_cod_aten: atencionId, signa_des_signa: signo.signa_des_signa }); } }
+    
+    // 3. Actualizar el estado de la cita si aplica.
     if (atencionData.aten_cod_cita) {
       await actualizarEstadoCita(atencionData.aten_cod_cita, 'AT');
     }
-  
+ 
+    // --- CAMBIO CLAVE ---
+    // Se devuelve un mensaje de éxito Y el objeto de la atención recién creada.
+    res.status(201).json({
+      message: "Atención registrada correctamente.",
+      atencion: atencion // <--- Esta es la línea que soluciona el problema.
+    });
 
-    res.status(201).json({ message: "Atención registrada correctamente." });
   } catch (error) {
-    res
-      .status(500)
-      .json({ error: "Error al registrar la atención: " + error.message });
+    console.error("Error al registrar la atención:", error);
+    res.status(500).json({ error: "Error al registrar la atención: " + error.message });
   }
 };
 
@@ -361,27 +290,21 @@ export const obtenerAtencionesPorMedicoYFechas = async (req, res) => {
 export const obtenerAtencionesPorFechas = async (req, res) => {
   const { fechaInicio, fechaFin, medicoId, page = 1, limit = 10 } = req.query;
 
-  // Validaciones
-  if (!fechaInicio || !fechaFin) {
-    return res.status(400).json({ error: "Se requieren fechaInicio y fechaFin" });
-  }
-
   try {
     const offset = (page - 1) * limit;
     
-    // Asegúrate de usar el nombre correcto de la función
-    const atenciones = await getAtencionesByMedicoAndDates(
-      medicoId ? parseInt(medicoId) : null,
-      fechaInicio,
-      fechaFin,
-      parseInt(limit),
-      parseInt(offset)
+    const atenciones = await getAtencionesPorFechas(
+      fechaInicio,  // Primer parámetro: fechaInicio
+      fechaFin,     // Segundo parámetro: fechaFin
+      medicoId ? parseInt(medicoId) : null, // Tercer parámetro: medicoId
+      parseInt(limit),  // Cuarto parámetro: limit
+      parseInt(offset)  // Quinto parámetro: offset
     );
     
-    const total = await countAtencionesByMedicoAndDates(
-      medicoId ? parseInt(medicoId) : null,
+    const total = await countAtencionesPorFechas(
       fechaInicio,
-      fechaFin
+      fechaFin,
+      medicoId ? parseInt(medicoId) : null
     );
 
     res.status(200).json({
@@ -395,6 +318,83 @@ export const obtenerAtencionesPorFechas = async (req, res) => {
     res.status(500).json({
       error: "Error al obtener atenciones",
       details: process.env.NODE_ENV === 'development' ? error.message : null
+    });
+  }
+};
+
+export const obtenerPreventivaPorAtencion = async (req, res) => {
+  try {
+    const { atencionId } = req.params;
+    const response = await getPreventivaByAtencionId(atencionId);
+    res.status(200).json(response ? [response] : []);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const obtenerVigilanciasPorAtencion = async (req, res) => {
+  try {
+    const { atencionId } = req.params;
+    const response = await getVigilanciasByAtencionId(atencionId);
+    res.status(200).json(response);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const obtenerMorbilidadPorAtencion = async (req, res) => {
+  try {
+    const { atencionId } = req.params;
+    const response = await getMorbilidadByAtencionId(atencionId);
+    res.status(200).json(response ? [response] : []);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const obtenerPrescripcionesPorAtencion = async (req, res) => {
+  try {
+    const { atencionId } = req.params;
+    const response = await getPrescripcionesByAtencionId(atencionId);
+    res.status(200).json(response ? [response] : []);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const obtenerIndicacionesPorAtencion = async (req, res) => {
+  try {
+    const { atencionId } = req.params;
+    const response = await getIndicacionesByAtencionId(atencionId);
+    res.status(200).json(response || []);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const obtenerReferenciasPorAtencion = async (req, res) => {
+  try {
+    const { atencionId } = req.params;
+    const response = await getReferenciasByAtencionId(atencionId);
+    res.status(200).json(response || []);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const obtenerTriajePorAtencion = async (req, res) => {
+  try {
+    const { atencionId } = req.params;
+    const triaje = await getTriajeByAtencionId(atencionId);
+    // Es normal que no haya triaje, devolvemos null y el frontend lo manejará.
+    if (!triaje) {
+      return res.status(200).json(null);
+    }
+    res.status(200).json(triaje);
+  } catch (error) {
+    res.status(500).json({ 
+      error: "Error al obtener datos de triaje", 
+      details: error.message 
     });
   }
 };

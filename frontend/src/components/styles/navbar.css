@@ -1,36 +1,167 @@
+/* src/components/styles/Navbar.css (Código Completo y Corregido) */
+/* ==============================================================================
+ * @summary: Hoja de estilos completa para la barra de navegación lateral.
+ * - Soluciona el problema del scroll añadiendo 'overflow-y: auto'.
+ * - Corrige el color de las opciones del selector de ubicación.
+ * - Mejora la apariencia general de los enlaces y submenús.
+ * ==============================================================================
+*/
+
+/* Contenedor principal de la barra lateral */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh; /* Ocupa toda la altura de la pantalla */
+  width: 260px;  /* Ancho de la barra lateral */
+  background-color: #2c3e50; /* Un color de fondo oscuro y profesional */
+  color: white;
+  padding: 1.5rem 1rem;
+  box-sizing: border-box;
+  transform: translateX(-100%); /* Comienza oculto fuera de la pantalla */
+  transition: transform 0.3s ease-in-out;
+  z-index: 1000; /* Asegura que esté por encima del contenido principal */
+  
+  /* --- CORRECCIÓN DEL SCROLL --- */
+  /* Muestra una barra de scroll vertical solo si el contenido es más alto que la pantalla */
+  overflow-y: auto;
+}
+
+/* Estilo para cuando la barra lateral está abierta */
+.sidebar.open {
+  transform: translateX(0);
+}
+
+.sidebar h1 {
+  font-size: 1.5rem;
+  text-align: center;
+  margin-top: 0;
+  margin-bottom: 2rem;
+  color: #ecf0f1;
+}
+
+/* Contenedor de todos los enlaces de navegación */
+.sidebar nav {
+  display: flex;
+  flex-direction: column;
+  height: 100%; /* Ocupa el espacio disponible para empujar el logout al final */
+}
+
+/* Estilos para los enlaces principales */
+.sidebar nav a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 10px;
+  color: #bdc3c7;
+  text-decoration: none;
+  border-radius: 5px;
+  transition: background-color 0.2s, color 0.2s;
+  font-weight: 500;
+}
+
+.sidebar nav a:hover {
+  background-color: #34495e;
+  color: white;
+}
+
+/* Información del usuario logueado */
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid #34495e;
+  font-weight: bold;
+}
+
+/* --- ESTILOS CORREGIDOS PARA EL SELECTOR DE UBICACIÓN --- */
+.location-selector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px;
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 5px;
+  margin-bottom: 1rem;
+  color: #ecf0f1;
+}
+
+.location-selector select {
+  flex-grow: 1; /* Ocupa el espacio disponible */
+  background: transparent;
+  border: none;
+  color: white; /* Color del texto visible en la barra */
+  font-size: 0.9rem;
+  font-weight: bold;
+  cursor: pointer;
+  outline: none;
+}
+
+/* --- CORRECCIÓN DEL TEXTO EN BLANCO --- */
+/* Estilo específico para las opciones desplegables */
+.location-selector select option {
+  color: black; /* Texto negro para que sea visible */
+  background-color: white; /* Fondo blanco estándar */
+}
+
+/* Estilos para los submenús */
+.submenu-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 10px;
+  background: none;
+  border: none;
+  color: #bdc3c7;
+  font-size: 1rem; /* Mismo tamaño que los enlaces */
+  font-family: inherit; /* Hereda la fuente de la app */
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+}
+.submenu {
+  padding-left: 2rem;
+}
+
+/* Botón para cerrar sesión */
 .logout-button {
-    background: #007BFF; /* Azul moderno */
-    border: none;
-    color: white; /* Texto blanco para mejor contraste */
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 20px; /* Ajuste de padding para mejor apariencia */
-    width: 100%;
-    text-align: left;
-    border-radius: 5px; /* Bordes redondeados para un look moderno */
-    transition: background 0.3s ease; /* Transición suave para el hover */
+  margin-top: auto; /* Empuja el botón al final de la barra lateral */
+  padding: 12px 10px;
+  width: 100%;
+  background-color: rgba(231, 76, 60, 0.8);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: background-color 0.2s;
 }
 
 .logout-button:hover {
-    background: #0056b3; /* Azul más oscuro al pasar el cursor */
+  background-color: #e74c3c;
 }
 
-  .user-info {
-    padding: 10px;
-    margin-bottom: 10px;
-    background-color: rgba(0, 123, 255, 0.1); /* Azul claro con transparencia */
-    border-radius: 5px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: #007BFF; /* Texto azul para mejor contraste */
-    font-weight: bold; /* Texto en negrita para resaltar */
-    transition: background 0.3s ease, color 0.3s ease; /* Transición suave para el hover */
-}
-
-.user-info:hover {
-    background-color: rgba(0, 123, 255, 0.2); /* Azul más oscuro al pasar el cursor */
-    color: #0056b3; /* Texto azul más oscuro al pasar el cursor */
+/* Botón para abrir/cerrar el menú en móviles */
+.menu-button {
+  position: fixed;
+  top: 15px;
+  left: 15px;
+  z-index: 1001; /* Debe estar por encima de la barra lateral */
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }

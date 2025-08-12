@@ -1,168 +1,183 @@
-import { useState, useEffect } from "react"; // Solo importa lo que necesitas
-import api from "../api"; // Importar la instancia de Axios
+// src/pages/Login.jsx (Versión Definitiva con Tema Dinámico y Prop 'sx')
+// ==============================================================================
+// @summary: Se utiliza la prop 'sx' en el componente Button para garantizar
+//           que el color de fondo se actualice dinámicamente. La prop 'sx'
+//           tiene una mayor especificidad y es la forma recomendada en MUI v5+
+//           para aplicar estilos que dependen del estado o del tema.
+// ==============================================================================
+
+// --- 1. IMPORTACIONES ---
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Container, TextField, Button, Typography, Box, InputAdornment, IconButton } from "@mui/material";
-import { AccountCircle, Lock, Input, Visibility, VisibilityOff } from "@mui/icons-material";
+import { useAuth } from "../components/context/AuthContext";
+import { COMPANY_GROUPS } from '../config/companyGroups.js';
+import { Container, TextField, Button, Typography, Box, InputAdornment, IconButton, Select, MenuItem, FormControl, InputLabel } from "@mui/material";
+import { AccountCircle, Lock, Visibility, VisibilityOff, Business } from "@mui/icons-material";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: '#4caf50',
-    },
-  },
-  components: {
-    MuiOutlinedInput: {
-      styleOverrides: {
-        root: {
-          '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-            borderColor: '#4caf50',
+// --- 2. DEFINICIÓN DEL COMPONENTE ---
+export default function Login() {
+  // --- ESTADOS LOCALES ---
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [selectedGroup, setSelectedGroup] = useState('PROVEFRUT'); // El valor por defecto es 'PROVEFRUT' (verde)
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
+  
+  const navigate = useNavigate();
+  const { login, isAuthenticated } = useAuth();
+
+  // --- TEMA DINÁMICO ---
+  // Esta lógica sigue siendo correcta y necesaria para los estilos globales y de los TextField.
+  const theme = useMemo(() => {
+    const primaryColor = selectedGroup === 'PROCONGELADOS' 
+      ? '#0D47A1' // Azul oscuro para Procongelados
+      : '#1B5E20'; // Verde oscuro para Provefrut / Nintanga
+
+    return createTheme({
+      palette: {
+        primary: {
+          main: primaryColor,
+        },
+      },
+      components: {
+        MuiOutlinedInput: {
+          styleOverrides: {
+            root: {
+              '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                borderColor: primaryColor,
+              },
+            },
           },
         },
       },
-    },
-  },
-});
+    });
+  }, [selectedGroup]);
 
-export default function Login() {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState("");
-  const navigate = useNavigate();
-
-  // Verificar si el usuario ya está autenticado
+  // EFECTO DE REDIRECCIÓN (sin cambios)
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      navigate("/home"); // Redirigir a /home si ya está autenticado
+    if (isAuthenticated) {
+      navigate("/home");
     }
-  }, [navigate]);
+  }, [isAuthenticated, navigate]);
 
+  // MANEJADOR DEL ENVÍO DEL FORMULARIO (sin cambios)
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    setError("");
     try {
-        // Hacer la solicitud de login al backend
-        const { data } = await api.post("/api/v1/users/login", { username, password });
-        //console.log(data);
-  
-        if (data.ok) {
-            // Guardar el token y el rol en localStorage
-            localStorage.setItem("token", data.msg.token);
-            localStorage.setItem("role", data.msg.role_id);
-            localStorage.setItem("username", data.msg.username);
-            localStorage.setItem("especialista", data.msg.especialista);
-            localStorage.setItem("especialidad", data.msg.especialidad);
-
-            console.log(data.msg.token, data.msg.role_id, data.msg.username, data.msg.especialista, data.msg.especialidad);
-
-            // Redirigir a /home
-            navigate("/Home");
-        } else {
-            setError(data.msg || "Error during login.");
-        }
-    } catch {
-        setError("Invalid credentials. Please try again.");
+      await login(username, password, selectedGroup);
+      navigate("/home");
+    } catch (err) {
+      if (err.response && err.response.data && err.response.data.msg) {
+        // Si el backend envió un mensaje (ej. "Usuario o contraseña incorrectos"), lo mostramos.
+        setError(err.response.data.msg);
+      } else {
+        // Si no, es probablemente un error de red y mostramos el mensaje genérico.
+        setError(err.message || "Error de conexión. Inténtalo de nuevo.");
+      }
     }
-};
-
-  const handleMouseDownPassword = () => {
-    setShowPassword(true);
   };
 
-  const handleMouseUpPassword = () => {
-    setShowPassword(false);
+  // MANEJADOR DE VISIBILIDAD DE CONTRASEÑA (sin cambios)
+  const handleTogglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
   };
 
+  // --- 3. RENDERIZADO DEL COMPONENTE (JSX) ---
   return (
     <ThemeProvider theme={theme}>
-    <div style={{ minHeight: '100vh', background: 'rgba(76, 175, 80, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', boxSizing: 'border-box', margin: 0 }}>
-      <Container maxWidth="sm" style={{ backgroundColor: 'white', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)', padding: '32px' }}>
-        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <Typography component="h1" variant="h5" style={{ marginBottom: '16px', fontWeight: 'bold', color: '#333' }}>
-            Dispensario Médico 
-            </Typography>
-            <Typography style={{ marginBottom: '24px', color: '#666' }}>
-              Inicia sesión en tu cuenta
+      <div style={{ minHeight: '100vh', background: '#f4f6f8', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Container maxWidth="sm" style={{ backgroundColor: 'white', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)', padding: '32px' }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <Typography component="h1" variant="h5" style={{ marginBottom: '16px', fontWeight: 'bold' }}>
+              Dispensario Médico
             </Typography>
             <Box component="form" onSubmit={handleSubmit} sx={{ width: '100%' }}>
-            <TextField
+              
+              <FormControl fullWidth margin="normal" variant="outlined">
+                <InputLabel id="group-select-label">Dispensario</InputLabel>
+                <Select
+                  labelId="group-select-label"
+                  id="group-select"
+                  value={selectedGroup}
+                  onChange={(e) => setSelectedGroup(e.target.value)}
+                  label="Dispensario"
+                  startAdornment={
+                    <InputAdornment position="start">
+                      <Business />
+                    </InputAdornment>
+                  }
+                >
+                  {Object.keys(COMPANY_GROUPS).map((key) => (
+                    <MenuItem key={key} value={key}>
+                      {COMPANY_GROUPS[key].name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+
+              <TextField
                 margin="normal"
                 required
                 fullWidth
-                id="username"
                 label="Nombre de usuario"
-                name="username"
-                autoComplete="username"
-                autoFocus
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                slotProps={{
-                  input: {
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <AccountCircle />
-                      </InputAdornment>
-                    ),
-                  },
+                InputProps={{
+                  startAdornment: (<InputAdornment position="start"><AccountCircle /></InputAdornment>),
                 }}
-                variant="outlined"
-                style={{ marginBottom: '16px' }}
               />
               <TextField
                 margin="normal"
                 required
                 fullWidth
-                name="password"
                 label="Contraseña"
                 type={showPassword ? "text" : "password"}
-                id="password"
-                autoComplete="current-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                slotProps={{
-                  input: {
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <Lock />
-                      </InputAdornment>
-                    ),
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton
-                          aria-label="toggle password visibility"
-                          onMouseDown={handleMouseDownPassword}
-                          onMouseUp={handleMouseUpPassword}
-                          onMouseLeave={handleMouseUpPassword}
-                          edge="end"
-                        >
-                          {showPassword ? <VisibilityOff /> : <Visibility />}
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  },
+                InputProps={{
+                  startAdornment: (<InputAdornment position="start"><Lock /></InputAdornment>),
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton onClick={handleTogglePasswordVisibility} edge="end">
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
                 }}
-                variant="outlined"
-                style={{ marginBottom: '24px' }}
               />
               {error && (
-                <Typography color="error" style={{ marginBottom: '16px' }}>
+                <Typography color="error" align="center" style={{ margin: '16px 0' }}>
                   {error}
                 </Typography>
               )}
-              <Button
-                type="submit"
-                fullWidth
-                variant="contained"
+              
+              {/* --- CORRECCIÓN DEFINITIVA AQUÍ --- */}
+              <Button 
+                type="submit" 
+                fullWidth 
+                variant="contained" 
+                // La prop 'color' sigue siendo importante para la semántica y estilos base.
                 color="primary"
-                startIcon={<Input />}
-                style={{ padding: '12px 0', fontWeight: 'bold', backgroundColor: '#4caf50', color: 'white' }}
+                // La prop 'sx' aplica estilos directos con acceso al tema.
+                // Esto garantiza que el backgroundColor sea el color primario dinámico.
+                sx={{ 
+                    padding: '12px 0', 
+                    fontWeight: 'bold', 
+                    marginTop: '16px',
+                    // 'primary.main' hace referencia al color definido en la paleta del tema.
+                    backgroundColor: 'primary.main', 
+                    // Opcional: define un color más oscuro para el hover.
+                    '&:hover': {
+                        backgroundColor: 'primary.dark',
+                    }
+                }}
               >
                 Iniciar sesión
               </Button>
-              </Box>
-              </Box>
+            </Box>
+          </Box>
         </Container>
       </div>
     </ThemeProvider>

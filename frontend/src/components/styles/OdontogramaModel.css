@@ -1,0 +1,10 @@
+/* Agrega esto en tu archivo de estilos */
+.polygon {
+    transition: all 0.2s ease;
+  }
+  
+  .polygon:hover {
+    opacity: 0.9 !important;
+    stroke-width: 2px !important;
+    stroke: #ff5722 !important;
+  }

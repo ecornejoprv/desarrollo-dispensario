@@ -1,23 +1,50 @@
 import { ProductosModel } from '../models/productosModel.js';
 
-// Buscar productos
 export const buscarProductosController = async (req, res) => {
   const { bodega, empresa, sucursal, filtro } = req.query;
 
-  // Validar parámetros requeridos
-  if (!bodega, !empresa || !sucursal || !filtro) {
-    return res.status(400).json({ error: "Los parámetros bodega, empresa, sucursal y filtro son requeridos." });
+  // Validación mejorada de parámetros
+  const errors = [];
+  if (!bodega) errors.push('El parámetro bodega es requerido');
+  if (!empresa) errors.push('El parámetro empresa es requerido');
+  if (!sucursal) errors.push('El parámetro sucursal es requerido');
+  if (!filtro) errors.push('El parámetro filtro es requerido');
+  
+  if (errors.length > 0) {
+    return res.status(400).json({ 
+      error: 'Parámetros incompletos',
+      detalles: errors
+    });
   }
+  
+    try {
+    console.log('Iniciando búsqueda de productos con:', {
+      bodega, empresa, sucursal, filtro: filtro.substring(0, 20) + (filtro.length > 20 ? '...' : '')
+    });
 
-  try {
-    // Llamar al modelo para buscar productos
-    const resultados = await ProductosModel.buscarProductos({ bodega, empresa, sucursal, filtro });
+    // Truncar el filtro a 100 caracteres
+    const filtroTruncado = filtro.toString().substring(0, 100).toUpperCase();
 
-    // Devolver los resultados en formato JSON
+    const resultados = await ProductosModel.buscarProductos({
+      bodega: parseInt(bodega),
+      empresa: parseInt(empresa),
+      sucursal: parseInt(sucursal),
+      filtro: filtro.toString()
+    });
+
     res.status(200).json(resultados);
   } catch (error) {
-    // Manejar errores
-    console.error('Error en el controlador de búsqueda de productos:', error);
-    res.status(500).json({ error: "Error al buscar productos: " + error.message });
+    console.error('Error en buscarProductosController:', {
+      error: error.message,
+      params: { bodega, empresa, sucursal },
+      stack: error.stack
+    });
+
+    const statusCode = error.message.includes('timeout') ? 504 : 500;
+    res.status(statusCode).json({ 
+      error: 'Error al buscar productos',
+      mensaje: error.message,
+      ...(process.env.NODE_ENV === 'development' && { stack: error.stack })
+    });
   }
 };

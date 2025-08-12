@@ -8,6 +8,13 @@ import {
   obtenerCitasPendientesPorMedico,
   obtenerAtencionesPorMedicoYFechas,
   obtenerAtencionesPorFechas,
+  obtenerPreventivaPorAtencion,
+  obtenerVigilanciasPorAtencion,
+  obtenerMorbilidadPorAtencion,
+  obtenerPrescripcionesPorAtencion,
+  obtenerIndicacionesPorAtencion,
+  obtenerReferenciasPorAtencion,
+  obtenerTriajePorAtencion,
 } from '../controllers/atencion.controller.js';
 import { verifyToken } from '../middlewares/jwt.middleware.js';
 
@@ -26,5 +33,13 @@ router.get('/:atencionId', verifyToken, obtenerAtencionPorId);
 
 // Ruta para registrar atención
 router.post('/registrar-atencion', verifyToken, registrarAtencionController);
+
+router.get('/:atencionId/preventiva', verifyToken, obtenerPreventivaPorAtencion);
+router.get('/:atencionId/vigilancias', verifyToken, obtenerVigilanciasPorAtencion);
+router.get('/:atencionId/morbilidad', verifyToken, obtenerMorbilidadPorAtencion);
+router.get('/:atencionId/prescripciones', verifyToken, obtenerPrescripcionesPorAtencion);
+router.get('/:atencionId/indicaciones', verifyToken, obtenerIndicacionesPorAtencion);
+router.get('/:atencionId/referencias', verifyToken, obtenerReferenciasPorAtencion);
+router.get('/:atencionId/triaje', verifyToken, obtenerTriajePorAtencion);
 
 export default router;

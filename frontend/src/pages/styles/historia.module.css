@@ -1,86 +1,100 @@
+/* styles/historia.module.css */
+
 .historiaClinicaContainer {
-  max-width: 800px;
+  max-width: 1200px; /* Usando el valor del segundo bloque */
   margin: 0 auto;
   padding: 20px;
+  font-family: Arial, sans-serif; /* Usando el valor del segundo bloque */
 }
 
 .form {
-  display: flex;
+  display: flex; /* Manteniendo del primer bloque, ya que el segundo no lo define */
   flex-direction: column;
   gap: 10px;
+  margin-bottom: 20px; /* Usando el valor del segundo bloque */
 }
 
 .filaBusqueda {
   display: flex;
   gap: 10px;
-  align-items: center;
+  align-items: center; /* Manteniendo del primer bloque */
+  margin-bottom: 15px; /* Usando el valor del segundo bloque */
 }
 
 .input {
-  flex: 1;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  font-size: 16px;
+  flex: 1; /* Manteniendo del primer bloque */
+  padding: 8px 12px; /* Usando el valor del segundo bloque */
+  border: 1px solid #ddd; /* Usando el valor del segundo bloque */
+  border-radius: 4px; /* Usando el valor del segundo bloque */
+  font-size: 16px; /* Manteniendo del primer bloque, ya que el segundo no lo define */
 }
 
-.select {
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  font-size: 16px;
+.select { /* Estilo general para selects */
+  padding: 8px 12px; /* Usando el valor del segundo bloque */
+  border: 1px solid #ddd; /* Usando el valor del segundo bloque */
+  border-radius: 4px; /* Usando el valor del segundo bloque */
+  background-color: white; /* Usando el valor del segundo bloque */
+  font-size: 16px; /* Manteniendo del primer bloque, ya que el segundo no lo define */
 }
 
-.button {
-  padding: 10px 20px;
-  background-color: #007bff;
+.button { /* Estilo general para botones (como el de Buscar) */
+  padding: 8px 16px; /* Usando el valor del segundo bloque */
+  background-color: #4CAF50; /* Usando el color verde del segundo bloque */
   color: white;
   border: none;
-  border-radius: 5px;
+  border-radius: 4px;
   cursor: pointer;
-  font-size: 16px;
+  transition: background-color 0.3s;
+  font-size: 16px; /* Manteniendo del primer bloque */
 }
 
 .button:hover {
-  background-color: #0056b3;
+  background-color: #45a049; /* Usando el hover verde del segundo bloque */
+}
+
+.button:disabled {
+  background-color: #cccccc; /* Usando el disabled del segundo bloque */
+  cursor: not-allowed;
 }
 
 .tablaResultados {
   width: 100%;
   border-collapse: collapse;
   margin-top: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  border-radius: 5px;
-  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Del primer bloque, me parece bueno */
+  border-radius: 5px; /* Del primer bloque */
+  overflow: hidden; /* Del primer bloque */
 }
 
 .tablaResultados th,
 .tablaResultados td {
-  padding: 12px;
+  padding: 12px; /* Del primer bloque, más padding */
   text-align: left;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid #ddd; /* Del primer bloque */
+  /* border: 1px solid #ddd;  Ya no es necesario si usamos border-bottom y el contenedor tiene overflow:hidden */
 }
 
 .tablaResultados th {
-  background-color: #007bff;
+  background-color: #007bff; /* Cabecera azul del primer bloque, más distintiva */
   color: white;
 }
 
 .filaResultado {
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: background-color 0.2s; /* Del primer bloque */
 }
 
 .filaResultado:hover {
-  background-color: #f0f0f0;
+  background-color: #f0f0f0; /* Del primer bloque */
 }
 
 .pacienteInfo {
-  margin-top: 20px;
-  padding: 15px;
-  background-color: #f9f9f9;
-  border: 1px solid #ddd;
-  border-radius: 5px;
+  margin-top: 20px; /* Del primer bloque */
+  padding: 15px; /* Del primer bloque */
+  background-color: #f9f9f9; /* Del primer bloque */
+  border: 1px solid #ddd; /* Del primer bloque */
+  border-radius: 5px; /* Del primer bloque */
+  margin-bottom: 20px; /* Agregado para separar de la lista de atenciones */
 }
 
 .pacienteInfo h2 {
@@ -102,7 +116,7 @@
 
 .tablaPaciente td:first-child {
   font-weight: bold;
-  width: 30%;
+  width: 30%; /* Ajusta según necesites, 30% es bastante */
 }
 
 /* Estilos para las pestañas horizontales */
@@ -112,152 +126,274 @@
 
 .tabsHeader {
   display: flex;
-  gap: 10px;
-  border-bottom: 2px solid #007bff;
+  gap: 10px; /* Espacio entre botones de tab */
+  border-bottom: 2px solid #007bff; /* Línea azul debajo de los tabs */
+  margin-bottom: 0; /* Para que el contenido se pegue bien */
 }
 
 .tabButton {
   padding: 10px 20px;
-  background-color: #f0f0f0;
-  border: none;
-  border-radius: 5px 5px 0 0;
+  background-color: #f0f0f0; /* Gris claro para inactivos */
+  border: none; /* Quitamos borde por defecto */
+  border-top-left-radius: 5px; /* Redondeo superior */
+  border-top-right-radius: 5px;
   cursor: pointer;
   font-size: 14px;
+  font-weight: 500; /* Un poco de peso */
+  color: #333; /* Color de texto para inactivos */
   transition: background-color 0.2s, color 0.2s;
+  position: relative; /* Para el "efecto" de continuidad con el borde inferior */
+  bottom: -2px; /* Para que se solape ligeramente con el borde azul del .tabsHeader */
 }
 
 .tabButton.active {
-  background-color: #007bff;
-  color: white;
+  background-color: white; /* Fondo blanco para el tab activo */
+  color: #007bff; /* Texto azul */
+  border: 2px solid #007bff; /* Borde azul alrededor */
+  border-bottom-color: white; /* El borde inferior se hace blanco para que se funda con el contenido */
+  font-weight: 600;
 }
 
-.tabButton:hover {
-  background-color: #ddd;
+.tabButton:not(.active):hover {
+  background-color: #e0e0e0; /* Hover más oscuro para inactivos */
+  color: #007bff;
 }
 
 .tabsContent {
-  padding: 15px;
-  border: 1px solid #ddd;
-  border-top: none;
-  border-radius: 0 0 5px 5px;
-  background-color: #f9f9f9;
+  padding: 20px; /* Más padding */
+  border: 2px solid #007bff; /* Borde azul consistente con header */
+  border-top: none; /* Ya lo maneja el header y el tab activo */
+  border-radius: 0 0 5px 5px; /* Redondeo inferior */
+  background-color: white; /* Fondo blanco para el contenido */
+  min-height: 200px; /* Para que tenga algo de altura incluso si el contenido es poco */
 }
 
 .tabContent {
   font-size: 14px;
 }
 
+/* --- INICIO DE ESTILOS DE PAGINACIÓN MODIFICADOS --- */
 .paginacion {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 20px;
+  margin-top: 24px;
+  padding: 12px 5px; /* Ajusta el padding horizontal si es necesario */
+  /* border-top: 1px solid #e9ecef; /* Opcional: línea divisoria */
 }
 
-.paginacion select {
-  padding: 5px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-}
-
-.paginacion button {
-  padding: 5px 10px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-.paginacion button:disabled {
-  background-color: #ccc;
-  cursor: not-allowed;
-}
-
-.errorMessage {
-  color: red;
-  margin-top: 10px;
-}
-.historiaClinicaContainer {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
-  font-family: Arial, sans-serif;
-}
-
-.form {
-  margin-bottom: 20px;
-}
-
-.filaBusqueda {
+.navegacionControles {
   display: flex;
-  gap: 10px;
-  margin-bottom: 15px;
+  align-items: center;
+  gap: 10px; /* Espacio entre botones y texto */
 }
 
-.input {
-  padding: 8px 12px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  flex-grow: 1;
+.textoPagina {
+  font-size: 0.9rem;
+  color: #495057;
+  margin: 0 4px;
+  white-space: nowrap;
 }
 
-.select {
+/* Reutiliza .select si el estilo es el mismo o crea .selectPaginacion si necesitas diferenciar */
+/* .selectPaginacion (si quieres un estilo específico para el select de paginación) */
+.selectPaginacion {
   padding: 8px 12px;
   border: 1px solid #ddd;
   border-radius: 4px;
   background-color: white;
+  font-size: 0.9rem; /* Un poco más pequeño para paginación */
+  line-height: 1.5;
+  cursor: pointer;
+}
+.selectPaginacion:focus {
+  outline: none;
+  border-color: #80bdff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
 }
 
-.button {
+
+/* Estilos para los botones de paginación (Anterior/Siguiente) */
+/* Puedes usar una clase nueva .buttonPaginacion o adaptar .button */
+.buttonPaginacion {
   padding: 8px 16px;
-  background-color: #4CAF50;
+  border-radius: 4px;
+  font-size: 0.9rem; /* Un poco más pequeño para paginación */
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, color 0.15s ease-in-out;
+  border: 1px solid #ced4da; /* Borde gris por defecto */
+  line-height: 1.5;
+  white-space: nowrap;
+  background-color: #fff; /* Fondo blanco para el botón "Anterior" activo */
+  color: #212529; /* Texto oscuro */
+}
+
+.buttonPaginacion:hover:not(:disabled) {
+  background-color: #e9ecef; /* Gris claro en hover */
+  border-color: #adb5bd;
+}
+
+.buttonPaginacion:disabled {
+  background-color: #e9ecef; /* Color deshabilitado como el de la imagen de referencia */
+  color: #adb5bd;
+  border-color: #dee2e6;
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
+/* Botón "Siguiente" específico cuando está activo */
+.buttonSiguiente:not(:disabled) { /* Asegúrate de que esta clase esté en el botón "Siguiente" en el JSX */
+  background-color: #007bff; /* Azul primario */
+  color: white;
+  border-color: #007bff;
+}
+
+.buttonSiguiente:not(:disabled):hover {
+  background-color: #0056b3; /* Azul más oscuro en hover */
+  border-color: #0056b3;
+}
+/* --- FIN DE ESTILOS DE PAGINACIÓN MODIFICADOS --- */
+
+
+.errorMessage {
+  color: #d32f2f; /* Del segundo bloque */
+  margin: 10px 0;
+}
+
+/* Estilos para componentes dentro de los TABS (Antecedentes) */
+.tablaAntecedentes {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 15px;
+  font-size: 0.85rem; /* Un poco más pequeño para tablas internas */
+}
+
+.tablaAntecedentes th,
+.tablaAntecedentes td {
+  padding: 8px 10px;
+  text-align: left;
+  border: 1px solid #e0e0e0;
+}
+
+.tablaAntecedentes th { /* Th Normal */
+  background-color: #f8f9fa; /* Fondo claro para cabeceras de tablas internas */
+  font-weight: 600;
+  color: #495057;
+}
+
+.agregarFila { /* Para AntecedentesPersonales, Accidentes, Extralaborales */
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-top: 15px;
+}
+
+.agregarFila .input { /* Input dentro de agregarFila */
+  flex-grow: 1;
+  font-size: 0.9rem; /* Ajusta si el .input general es muy grande */
+}
+
+.botonAgregar { /* Botón con el "+" o "Agregar" */
+  padding: 8px 12px; /* O ajusta para que el "+" quede bien */
+  background-color: #28a745; /* Verde para agregar */
   color: white;
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  transition: background-color 0.3s;
+  font-size: 0.9rem;
+  min-width: 40px; /* Para que el "+" tenga buen tamaño */
+  text-align: center;
+}
+.botonAgregar:hover {
+  background-color: #218838;
 }
 
-.button:hover {
-  background-color: #45a049;
+/* Formularios más complejos como Gineco, Laboral, Habitos */
+.formularioGineco,
+.formularioLaboral,
+.formularioHabitos {
+  margin-top: 20px;
+  padding: 15px;
+  border: 1px solid #e0e0e0;
+  border-radius: 5px;
+  background-color: #fdfdfd; /* Un blanco ligeramente apagado */
 }
 
-.button:disabled {
-  background-color: #cccccc;
-  cursor: not-allowed;
+.formularioGineco h4,
+.formularioLaboral h4,
+.formularioHabitos h4 {
+  font-size: 1rem;
+  color: #007bff;
+  margin-top: 15px;
+  margin-bottom: 10px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid #e0e0e0;
+}
+.formularioGineco h4:first-child,
+.formularioLaboral h4:first-child,
+.formularioHabitos h4:first-child {
+  margin-top: 0; /* El primer h4 no necesita tanto margen superior */
 }
 
-.tablaResultados {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 10px;
+
+.filaFormulario {
+  display: flex;
+  flex-wrap: wrap; /* Para que se ajusten en pantallas pequeñas */
+  gap: 15px; /* Espacio entre label-input pairs y entre inputs */
+  align-items: center;
+  margin-bottom: 15px;
 }
 
-.tablaResultados th, 
-.tablaResultados td {
-  border: 1px solid #ddd;
-  padding: 8px;
-  text-align: left;
+.filaFormulario label {
+  font-weight: 500;
+  color: #495057;
+  margin-right: 5px;
+  min-width: 120px; /* Para alinear un poco los inputs */
+  text-align: right; /* Opcional: alinear texto de label a la derecha */
 }
 
-.tablaResultados th {
-  background-color: #f2f2f2;
+.filaFormulario .input,
+.filaFormulario .select { /* Inputs y selects dentro de estos formularios */
+  flex: 1; /* Para que ocupen el espacio disponible */
+  min-width: 150px; /* Para que no se hagan demasiado pequeños */
+  font-size: 0.9rem;
 }
 
-.filaResultado {
+.riesgosContainer {
+  margin-top: 15px;
+  margin-bottom: 15px;
+}
+
+.checkboxGroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px; /* Espacio entre checkboxes */
+  margin-top: 8px;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 5px; /* Espacio entre el checkbox y su texto */
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+.checkboxLabel input[type="checkbox"] {
+  margin-right: 5px;
   cursor: pointer;
 }
 
-.filaResultado:hover {
-  background-color: #f5f5f5;
+/* Contenedor para la lista de resultados de búsqueda con scroll */
+.resultadosContainer {
+  max-height: 450px; /* Altura máxima para aprox. 15 registros. ¡Puedes ajustar este valor! */
+  overflow-y: auto;  /* Muestra el scroll vertical SÓLO si es necesario */
+  border: 1px solid #ddd; /* Un borde sutil para delimitar el área */
+  border-radius: 4px;   /* Bordes redondeados consistentes con el diseño */
+  margin-top: 10px;     /* Espacio para separarlo de la barra de búsqueda */
 }
 
-.errorMessage {
-  color: #d32f2f;
-  margin: 10px 0;
-}
-
-.pacienteInfo {
-  margin-bottom: 20px;
+/* Ajuste opcional para la tabla dentro del contenedor */
+.tablaResultados {
+  margin-bottom: 0; /* Asegurarse de que no haya margen inferior que afecte el scroll */
 }

@@ -1,0 +1,28 @@
+.container {
+    padding: 20px;
+  }
+  
+  .title {
+    color: #2d3748;
+    font-weight: 600;
+  }
+  
+  .filterContainer {
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  
+  .tableHeaderCell {
+    background-color: #f8fafc;
+    font-weight: 600;
+    color: #4a5568;
+    border-bottom: 2px solid #e2e8f0;
+  }
+  
+  /* Estilos responsivos */
+  @media (max-width: 768px) {
+    .filterContainer {
+      flex-direction: column;
+      gap: 15px;
+    }
+  }

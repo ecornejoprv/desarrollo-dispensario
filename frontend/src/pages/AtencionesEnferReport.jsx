@@ -1,420 +1,329 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import {
-  Box, Typography, Grid, Card, CardContent,
-  TextField, MenuItem, Select, FormControl,
-  InputLabel, Button, Table, TableBody,
-  TableCell, TableContainer, TableHead,
-  TableRow, Paper, Pagination, CircularProgress,
-  Alert, IconButton, Tooltip
-} from '@mui/material';
-import { 
-  PictureAsPdf as PdfIcon, 
-  GridOn as ExcelIcon,
-  FilterAlt as FilterIcon,
-  Refresh as RefreshIcon,
-  Summarize as StatsIcon
-} from '@mui/icons-material';
-import { DatePicker } from '@mui/x-date-pickers';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { BarChart, PieChart } from '@mui/x-charts';
-import { format, parseISO } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { useNavigate } from 'react-router-dom';
+import styles from './styles/reporteActividades.module.css';
 
-const AtencionesEnferReport = () => {
-  // Estados para los datos
-  const [data, setData] = useState({
-    atenciones: [],
-    estadisticas: [],
-    medicos: [],
-    actividades: []
-  });
-  const [loading, setLoading] = useState(true);
+const ReporteActividades = () => {
+  const [actividades, setActividades] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  
-  // Estados para filtros
   const [filters, setFilters] = useState({
-    searchTerm: '',
-    page: 1,
-    limit: 10,
+    fechaDesde: '',
+    fechaHasta: '',
     medicoId: '',
-    actividadId: '',
-    fechaDesde: null,
-    fechaHasta: null
+    pacienteId: '',
+    tipoActividad: 'POSTCONSULTA'
   });
+  const navigate = useNavigate();
 
-  // Obtener datos iniciales
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        
-        const params = {
-          page: filters.page,
-          limit: filters.limit,
-          searchTerm: filters.searchTerm || undefined,
-          medicoId: filters.medicoId || undefined,
-          actividadId: filters.actividadId || undefined,
-          fechaDesde: filters.fechaDesde ? format(filters.fechaDesde, 'yyyy-MM-dd') : undefined,
-          fechaHasta: filters.fechaHasta ? format(filters.fechaHasta, 'yyyy-MM-dd') : undefined
-        };
+  // Función para cargar las actividades
+  const fetchActividades = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const params = new URLSearchParams();
+      if (filters.fechaDesde) params.append('fechaDesde', filters.fechaDesde);
+      if (filters.fechaHasta) params.append('fechaHasta', filters.fechaHasta);
+      if (filters.medicoId) params.append('medicoId', filters.medicoId);
+      if (filters.pacienteId) params.append('pacienteId', filters.pacienteId);
+      if (filters.tipoActividad) params.append('tipoActividad', filters.tipoActividad);
 
-        // Eliminar parámetros undefined
-        Object.keys(params).forEach(key => params[key] === undefined && delete params[key]);
-
-        const [medicosRes, actividadesRes, atencionesRes, estadisticasRes] = await Promise.all([
-          axios.get('/api/v1/medicos'),
-          axios.get('/api/v1/tiposactividades?tipo=POSTCONSULTA'),
-          axios.get('/api/v1/atenciones', { params }),
-          axios.get('/api/v1/atenciones/estadisticas', { params })
-        ]);
-
-        setData({
-          medicos: medicosRes.data.data || [],
-          actividades: actividadesRes.data.data || [],
-          atenciones: atencionesRes.data.data || [],
-          estadisticas: estadisticasRes.data.data || []
-        });
-      } catch (err) {
-        console.error('Error fetching data:', err);
-        setError(err.response?.data?.message || 'Error al cargar los datos');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [filters.page, filters.limit, filters.searchTerm, filters.medicoId, filters.actividadId, filters.fechaDesde, filters.fechaHasta]);
-
-  // Resto del código permanece igual...
-  // Manejar cambios en filtros
-  const handleFilterChange = (name, value) => {
-    setFilters(prev => ({
-      ...prev,
-      [name]: value,
-      page: 1 // Resetear a primera página al cambiar filtros
-    }));
+      const { data } = await axios.get(`/api/v1/atenciones?${params.toString()}`);
+      setActividades(data.data);
+    } catch (err) {
+      console.error('Error al obtener actividades:', err);
+      setError(err.response?.data?.error || err.message || 'Error al cargar el reporte');
+    } finally {
+      setLoading(false);
+    }
   };
-
-  // Resetear filtros
-  const handleResetFilters = () => {
-    setFilters({
-      searchTerm: '',
-      page: 1,
-      limit: 10,
-      medicoId: '',
-      actividadId: '',
-      fechaDesde: null,
-      fechaHasta: null
-    });
-  };
-
-  // Formatear fechas
-  const formatDate = (dateStr) => {
-    if (!dateStr || dateStr === 'N/A') return 'N/A';
-    return format(parseISO(dateStr), 'dd/MM/yyyy', { locale: es });
-  };
-
-  // Exportar a Excel
   const exportToExcel = () => {
-    // Implementar lógica de exportación a Excel
-    console.log('Exportar a Excel', data.atenciones);
-    alert('Funcionalidad de exportación a Excel en desarrollo');
+    if (actividades.length === 0) return;
+  
+    // Crear libro de Excel
+    const wb = XLSX.utils.book_new();
+    
+    // Preparar datos
+    const excelData = actividades.map(actividad => ({
+      'Fecha Actividad': formatDate(actividad.post_fec_post),
+      'Actividad': actividad.acti_nom_acti,
+      'Paciente': `${actividad.paciente_nombre || ''} ${actividad.paciente_apellido || ''}`.trim(),
+      'Médico': actividad.medico_nombre || 'N/A',
+      'Fecha Cita': formatDate(actividad.fecha_cita),
+      'Hora Cita': actividad.hora_cita || 'N/A',
+      'Especialidad': actividad.especialidad || 'N/A',
+      'Sucursal': actividad.sucursal || 'N/A',
+      'Observaciones': actividad.post_obs_post || '-'
+    }));
+  
+    // Convertir a hoja de cálculo
+    const ws = XLSX.utils.json_to_sheet(excelData);
+    
+    // Añadir hoja al libro
+    XLSX.utils.book_append_sheet(wb, ws, "Reporte Actividades");
+    
+    // Estilos de columnas (ancho automático)
+    ws['!cols'] = [
+      { wch: 15 }, // Fecha Actividad
+      { wch: 25 }, // Actividad
+      { wch: 30 }, // Paciente
+      { wch: 25 }, // Médico
+      { wch: 15 }, // Fecha Cita
+      { wch: 10 }, // Hora Cita
+      { wch: 20 }, // Especialidad
+      { wch: 20 }, // Sucursal
+      { wch: 40 }  // Observaciones
+    ];
+    
+    // Generar archivo
+    const fileName = `Reporte_Actividades_${new Date().toISOString().split('T')[0]}.xlsx`;
+    XLSX.writeFile(wb, fileName);
+  };
+  // Manejar cambios en los filtros
+  const handleFilterChange = (e) => {
+    const { name, value } = e.target;
+    setFilters(prev => ({ ...prev, [name]: value }));
   };
 
-  // Exportar a PDF
+  // Aplicar filtros
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    fetchActividades();
+  };
+
+  // Cargar datos iniciales
+  useEffect(() => {
+    fetchActividades();
+  }, []);
+
   const exportToPDF = () => {
-    // Implementar lógica de exportación a PDF
-    console.log('Exportar a PDF', data.atenciones);
-    alert('Funcionalidad de exportación a PDF en desarrollo');
+    if (actividades.length === 0) return;
+    
+    // Crear contenido HTML para el PDF
+    const htmlContent = `
+      <html>
+        <head>
+          <title>Reporte de Actividades</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            h1 { color: #333; text-align: center; }
+            .report-info { margin-bottom: 20px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            th { background-color: #f2f2f2; }
+            tr:nth-child(even) { background-color: #f9f9f9; }
+            .footer { margin-top: 20px; text-align: right; font-size: 12px; }
+          </style>
+        </head>
+        <body>
+          <h1>Reporte de Actividades Postconsulta</h1>
+          <div class="report-info">
+            <p>Total de actividades: <strong>${actividades.length}</strong></p>
+            ${filters.fechaDesde && filters.fechaHasta ? 
+              `<p>Período: ${formatDate(filters.fechaDesde)} - ${formatDate(filters.fechaHasta)}</p>` : ''}
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Fecha Actividad</th>
+                <th>Actividad</th>
+                <th>Paciente</th>
+                <th>Médico</th>
+                <th>Fecha Cita</th>
+                <th>Hora Cita</th>
+                <th>Especialidad</th>
+                <th>Sucursal</th>
+                <th>Observaciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${actividades.map(actividad => `
+                <tr>
+                  <td>${formatDate(actividad.post_fec_post)}</td>
+                  <td>${actividad.acti_nom_acti}</td>
+                  <td>${actividad.paciente_nombre || 'N/A'} ${actividad.paciente_apellido ? actividad.paciente_apellido : ''}</td>
+                  <td>${actividad.medico_nombre || 'N/A'}</td>
+                  <td>${formatDate(actividad.fecha_cita)}</td>
+                  <td>${actividad.hora_cita || 'N/A'}</td>
+                  <td>${actividad.especialidad || 'N/A'}</td>
+                  <td>${actividad.sucursal || 'N/A'}</td>
+                  <td>${actividad.post_obs_post || '-'}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+          <div class="footer">
+            Generado el ${new Date().toLocaleDateString()} a las ${new Date().toLocaleTimeString()}
+          </div>
+        </body>
+      </html>
+    `;
+    
+    // Abrir ventana para imprimir (el usuario puede guardar como PDF)
+    const win = window.open('', '_blank');
+    win.document.write(htmlContent);
+    win.document.close();
+    win.focus();
+    setTimeout(() => {
+      win.print();
+    }, 500);
   };
 
-  if (loading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
-
-  if (error) {
-    return (
-      <Box sx={{ p: 3 }}>
-        <Alert severity="error" sx={{ mb: 2 }}>
-          {error}
-        </Alert>
-        <Button variant="contained" onClick={() => window.location.reload()}>
-          Reintentar
-        </Button>
-      </Box>
-    );
-  }
+  // Formatear fecha
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('es-ES');
+  };
 
   return (
-    <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={es}>
-      <Box sx={{ p: 3 }}>
-        {/* Encabezado */}
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-          <Typography variant="h4">Reporte de Atenciones de Enfermería</Typography>
-          <Box>
-            <Tooltip title="Exportar a Excel">
-              <IconButton onClick={exportToExcel} color="primary">
-                <ExcelIcon />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Exportar a PDF">
-              <IconButton onClick={exportToPDF} color="error" sx={{ ml: 1 }}>
-                <PdfIcon />
-              </IconButton>
-            </Tooltip>
-          </Box>
-        </Box>
+    <div className={styles.container}>
+      <h1>Reporte de Actividades Postconsulta</h1>
+      
+      {/* Filtros */}
+      <form onSubmit={handleSubmit} className={styles.filterForm}>
+        <div className={styles.filterRow}>
+          <div className={styles.filterGroup}>
+            <label>Fecha Desde:</label>
+            <input
+              type="date"
+              name="fechaDesde"
+              value={filters.fechaDesde}
+              onChange={handleFilterChange}
+            />
+          </div>
+          
+          <div className={styles.filterGroup}>
+            <label>Fecha Hasta:</label>
+            <input
+              type="date"
+              name="fechaHasta"
+              value={filters.fechaHasta}
+              onChange={handleFilterChange}
+            />
+          </div>
+        </div>
 
-        {/* Filtros */}
-        <Card sx={{ mb: 3 }}>
-          <CardContent>
-            <Typography variant="h6" gutterBottom>
-              Filtros
-            </Typography>
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={6} md={3}>
-                <TextField
-                  fullWidth
-                  label="Buscar paciente o médico"
-                  value={filters.searchTerm}
-                  onChange={(e) => handleFilterChange('searchTerm', e.target.value)}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6} md={3}>
-                <FormControl fullWidth>
-                  <InputLabel>Médico</InputLabel>
-                  <Select
-                    value={filters.medicoId}
-                    onChange={(e) => handleFilterChange('medicoId', e.target.value)}
-                    label="Médico"
-                  >
-                    <MenuItem value="">Todos los médicos</MenuItem>
-                    {data.medicos.map(medico => (
-                      <MenuItem key={medico.medic_cod_medic} value={medico.medic_cod_medic}>
-                        {medico.medic_nom_medic} {medico.medic_ape_medic}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={12} sm={6} md={3}>
-                <FormControl fullWidth>
-                  <InputLabel>Actividad</InputLabel>
-                  <Select
-                    value={filters.actividadId}
-                    onChange={(e) => handleFilterChange('actividadId', e.target.value)}
-                    label="Actividad"
-                  >
-                    <MenuItem value="">Todas las actividades</MenuItem>
-                    {data.actividades.map(actividad => (
-                      <MenuItem key={actividad.acti_cod_acti} value={actividad.acti_cod_acti}>
-                        {actividad.acti_nom_acti}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={12} sm={6} md={3}>
-                <DatePicker
-                  label="Fecha desde"
-                  value={filters.fechaDesde}
-                  onChange={(date) => handleFilterChange('fechaDesde', date)}
-                  renderInput={(params) => <TextField {...params} fullWidth />}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6} md={3}>
-                <DatePicker
-                  label="Fecha hasta"
-                  value={filters.fechaHasta}
-                  onChange={(date) => handleFilterChange('fechaHasta', date)}
-                  minDate={filters.fechaDesde}
-                  renderInput={(params) => <TextField {...params} fullWidth />}
-                />
-              </Grid>
-              <Grid item xs={12} sx={{ display: 'flex', gap: 2 }}>
-                <Button
-                  variant="contained"
-                  startIcon={<FilterIcon />}
-                  onClick={() => window.location.reload()} // Forzar recarga con nuevos filtros
-                >
-                  Aplicar Filtros
-                </Button>
-                <Button
-                  variant="outlined"
-                  startIcon={<RefreshIcon />}
-                  onClick={handleResetFilters}
-                >
-                  Limpiar Filtros
-                </Button>
-              </Grid>
-            </Grid>
-          </CardContent>
-        </Card>
+        <div className={styles.filterRow}>
+          <div className={styles.filterGroup}>
+            <label>ID Médico:</label>
+            <input
+              type="text"
+              name="medicoId"
+              value={filters.medicoId}
+              onChange={handleFilterChange}
+              placeholder="Filtrar por ID médico"
+            />
+          </div>
+          
+          <div className={styles.filterGroup}>
+            <label>ID Paciente:</label>
+            <input
+              type="text"
+              name="pacienteId"
+              value={filters.pacienteId}
+              onChange={handleFilterChange}
+              placeholder="Filtrar por ID paciente"
+            />
+          </div>
+        </div>
 
-        {/* Estadísticas */}
-        <Grid container spacing={3} sx={{ mb: 3 }}>
-          <Grid item xs={12} md={4}>
-            <Card>
-              <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                  <StatsIcon color="primary" sx={{ mr: 1 }} />
-                  <Typography variant="h6">Total Atenciones</Typography>
-                </Box>
-                <Typography variant="h4" align="center">
-                  {data.estadisticas.map(stat => stat.total_atenciones)}
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-          <Grid item xs={12} md={4}>
-            <Card>
-              <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                  <StatsIcon color="primary" sx={{ mr: 1 }} />
-                  <Typography variant="h6">Pacientes Únicos</Typography>
-                </Box>
-                <Typography variant="h4" align="center">
-                  {[...new Set(data.atenciones.map(a => a.paciente_nombre))].length}
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-          <Grid item xs={12} md={4}>
-            <Card>
-              <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                  <StatsIcon color="primary" sx={{ mr: 1 }} />
-                  <Typography variant="h6">Médicos Involucrados</Typography>
-                </Box>
-                <Typography variant="h4" align="center">
-                  {data.estadisticas.map(stat => stat.medico_nombre).length}
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-        </Grid>
+        <div className={styles.filterActions}>
+          <button type="submit" className={styles.applyButton}>
+            Aplicar Filtros
+          </button>
+          <button 
+            type="button" 
+            className={styles.resetButton}
+            onClick={() => {
+              setFilters({
+                fechaDesde: '',
+                fechaHasta: '',
+                medicoId: '',
+                pacienteId: '',
+                tipoActividad: 'POSTCONSULTA'
+              });
+            }}
+          >
+            Limpiar Filtros
+          </button>
+        </div>
+      </form>
 
-        {/* Gráficos */}
-        <Grid container spacing={3} sx={{ mb: 3 }}>
-          <Grid item xs={12} md={6}>
-            <Card>
-              <CardContent>
-                <Typography variant="h6" gutterBottom>
-                  Atenciones por Médico
-                </Typography>
-                <Box sx={{ height: 300 }}>
-                  <BarChart
-                    xAxis={[{
-                      scaleType: 'band',
-                      data: data.estadisticas.map(stat => stat.medico_nombre),
-                      label: 'Médicos'
-                    }]}
-                    series={[{
-                      data: data.estadisticas.map(stat => stat.total_atenciones),
-                      color: '#36A2EB'
-                    }]}
-                  />
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <Card>
-              <CardContent>
-                <Typography variant="h6" gutterBottom>
-                  Distribución por Actividad
-                </Typography>
-                <Box sx={{ height: 300 }}>
-                  <PieChart
-                    series={[{
-                      data: data.estadisticas.map((stat, index) => ({
-                        value: stat.total_atenciones,
-                        label: stat.tipo_atencion,
-                        color: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'][index % 5]
-                      })),
-                      highlightScope: { faded: 'global', highlighted: 'item' },
-                      faded: { innerRadius: 30, additionalRadius: -30, color: 'gray' },
-                    }]}
-                  />
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-        </Grid>
+      {/* Estado de carga y errores */}
+      {loading && <div className={styles.loading}>Cargando reporte...</div>}
+      {error && <div className={styles.error}>{error}</div>}
 
-        {/* Tabla de Atenciones */}
-        <Card>
-          <CardContent>
-            <Typography variant="h6" gutterBottom>
-              Detalle de Atenciones ({data.atenciones.length})
-            </Typography>
-            <TableContainer component={Paper}>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Fecha</TableCell>
-                    <TableCell>Paciente</TableCell>
-                    <TableCell>Médico</TableCell>
-                    <TableCell>Actividad</TableCell>
-                    <TableCell>Especialidad</TableCell>
-                    <TableCell>Sucursal</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {data.atenciones.length > 0 ? (
-                    data.atenciones
-                      .slice((filters.page - 1) * filters.limit, filters.page * filters.limit)
-                      .map((atencion) => (
-                        <TableRow key={atencion.post_cod_post}>
-                          <TableCell>{formatDate(atencion.post_fec_post)}</TableCell>
-                          <TableCell>
-                            {atencion.pacie_nom_pacie} {atencion.pacie_ape_pacie}
-                          </TableCell>
-                          <TableCell>
-                            {atencion.medic_nom_medic} 
-                          </TableCell>
-                          <TableCell>{atencion.acti_nom_acti}</TableCell>
-                          <TableCell>{atencion.especialidad}</TableCell>
-                          <TableCell>{atencion.sucursal}</TableCell>
-                        </TableRow>
-                      ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={6} align="center">
-                        No se encontraron atenciones con los filtros seleccionados
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </TableContainer>
+      {/* Resultados */}
+      <div className={styles.resultsContainer}>
+        <div className={styles.summary}>
+          <p>Total de actividades: <strong>{actividades.length}</strong></p>
+          {filters.fechaDesde && filters.fechaHasta && (
+            <p>Período: {formatDate(filters.fechaDesde)} - {formatDate(filters.fechaHasta)}</p>
+          )}
+        </div>
 
-            {/* Paginación */}
-            {data.atenciones.length > 0 && (
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2 }}>
-                <Typography variant="body2">
-                  Mostrando {(filters.page - 1) * filters.limit + 1}-
-                  {Math.min(filters.page * filters.limit, data.atenciones.length)} de {data.atenciones.length} registros
-                </Typography>
-                <Pagination
-                  count={Math.ceil(data.atenciones.length / filters.limit)}
-                  page={filters.page}
-                  onChange={(e, value) => handleFilterChange('page', value)}
-                />
-              </Box>
-            )}
-          </CardContent>
-        </Card>
-      </Box>
-    </LocalizationProvider>
+        {actividades.length > 0 ? (
+          <div className={styles.tableContainer}>
+            <table className={styles.activitiesTable}>
+              <thead>
+                <tr>
+                  <th>Fecha Actividad</th>
+                  <th>Actividad</th>
+                  <th>Paciente</th>
+                  <th>Médico</th>
+                  <th>Fecha Cita</th>
+                  <th>Hora Cita</th>
+                  <th>Especialidad</th>
+                  <th>Sucursal</th>
+                  <th>Observaciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {actividades.map((actividad) => (
+                  <tr key={actividad.post_cod_post}>
+                    <td>{formatDate(actividad.post_fec_post)}</td>
+                    <td>{actividad.acti_nom_acti}</td>
+                    <td>
+                      {actividad.paciente_nombre || 'N/A'}
+                      {actividad.paciente_apellido && ` ${actividad.paciente_apellido}`}
+                    </td>
+                    <td>{actividad.medico_nombre || 'N/A'}</td>
+                    <td>{formatDate(actividad.fecha_cita)}</td>
+                    <td>{actividad.hora_cita || 'N/A'}</td>
+                    <td>{actividad.especialidad || 'N/A'}</td>
+                    <td>{actividad.sucursal || 'N/A'}</td>
+                    <td>{actividad.post_obs_post || '-'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            
+          </div>
+          
+        ) : (
+          !loading && <p className={styles.noResults}>No se encontraron actividades con los filtros seleccionados</p>
+        )}
+        <div className={styles.exportButtons}>
+  <button 
+    onClick={exportToExcel}
+    className={styles.exportButton}
+    disabled={actividades.length === 0}
+  >
+    Exportar a Excel
+  </button>
+  
+  <button 
+    onClick={exportToPDF}
+    className={styles.exportButton}
+    disabled={actividades.length === 0}
+  >
+    Exportar a PDF
+  </button>
+</div>
+      </div>
+    </div>
   );
 };
 
-export default AtencionesEnferReport;
+export default ReporteActividades;

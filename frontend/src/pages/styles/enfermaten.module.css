@@ -1,278 +1,242 @@
-/* enfermaten.module.css */
+/*
+ * src/pages/styles/enfermaten.module.css (Versión Profesional Refactorizada)
+ * ==============================================================================
+ * @summary: Hoja de estilos modernizada para la vista de atención/triaje.
+ * Introduce un sistema de diseño basado en variables CSS para una
+ * consistencia, legibilidad y mantenibilidad superiores.
+ * ==============================================================================
+ */
+
+/* --- 1. Sistema de Diseño (Variables) --- */
+/* Definimos todos los valores de diseño aquí. Esto crea una única fuente de
+   verdad. Si el cliente pide cambiar el color azul, lo cambias en una
+   sola línea y toda la aplicación se actualiza. */
 :root {
-  --primary-color: #2A5C82;       /* Azul profesional */
-  --secondary-color: #5DA8A3;     /* Verde/azul suave */
-  --accent-color: #FF7E67;        /* Coral para acentos */
-  --background-light: #F8F9FA;    /* Fondo claro */
-  --text-dark: #2C3E50;           /* Texto oscuro */
-  --text-light: #FFFFFF;          /* Texto claro */
-  --success-color: #28A745;       /* Verde éxito */
-  --error-color: #DC3545;         /* Rojo error */
+  /* ... (variables sin cambios) ... */
+  --color-primary: #3b82f6;
+  --color-primary-hover: #2563eb;
+  --color-danger: #ef4444;
+  --color-danger-hover: #dc2626;
+  --color-background-page: #f9fafb;
+  --color-surface: #ffffff;
+  --color-surface-alt: #f8f9fa;
+  --color-border: #e5e7eb;
+  --color-text-primary: #1f2937;
+  --color-text-secondary: #6b7280;
+  --color-text-muted: #9ca3af;
+  --font-family-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
   --border-radius: 8px;
-  --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  --transition: all 0.3s ease;
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  --transition-fast: 150ms ease-in-out;
 }
 
-/* Estructura principal */
+/* --- 2. Estructura y Contenedores Principales --- */
+
 .aten-enfer-container {
+  padding: 2rem;
   max-width: 1200px;
   margin: 2rem auto;
-  padding: 2rem;
-  font-family: 'Segoe UI', system-ui, sans-serif;
-  background: var(--background-light);
-  border-radius: var(--border-radius);
-  box-shadow: var(--box-shadow);
+  font-family: var(--font-family-sans);
+  background-color: var(--color-background-page); /* Usamos el fondo de página */
 }
 
-/* Encabezados */
-.aten-enfer-container h1 {
-  color: var(--primary-color);
-  text-align: center;
-  font-size: 2.5rem;
-  margin-bottom: 2rem;
-  position: relative;
-  padding-bottom: 0.5rem;
-}
-
-.aten-enfer-container h1::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 120px;
-  height: 3px;
-  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
-}
-
-.aten-enfer-container h2 {
-  color: var(--primary-color);
-  font-size: 1.8rem;
-  margin: 2rem 0 1.5rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 2px solid var(--secondary-color);
-}
-
-/* Información de la cita */
 .cita-info {
-  background: white;
-  padding: 2rem;
+  display: flex;
+  flex-wrap: wrap; /* Permite que los elementos se reordenen en pantallas pequeñas */
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1.5rem;
+  padding: 1.5rem 2rem;
+  background-color: var(--color-surface);
   border-radius: var(--border-radius);
-  box-shadow: var(--box-shadow);
   margin-bottom: 2rem;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--color-border); /* Borde sutil */
+  box-shadow: var(--shadow-sm);
+}
+
+.cita-info h2 {
+  margin-top: 0;
+  color: var(--color-text-primary);
+  font-size: 1.5rem;
+  font-weight: 700;
 }
 
 .cita-info p {
-  margin: 0.8rem 0;
-  font-size: 1.1rem;
-  color: var(--text-dark);
+  margin: 0.5rem 0;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
 }
 
-/* Formulario principal */
+/* --- 3. Formulario de Triaje --- */
+
 .aten-enfer-form {
-  background: white;
+  margin-top: 2rem;
   padding: 2rem;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-radius: var(--border-radius);
-  box-shadow: var(--box-shadow);
+  box-shadow: var(--shadow-md);
+}
+
+.aten-enfer-form h2 {
+  margin-top: 0;
   margin-bottom: 2rem;
-  border: 1px solid #e0e0e0;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .form-group {
   margin-bottom: 1.5rem;
-  position: relative;
+  display: flex;
+  flex-direction: column;
 }
 
 .form-group label {
-  display: block;
   margin-bottom: 0.5rem;
   font-weight: 600;
-  color: var(--primary-color);
-  font-size: 1rem;
+  font-size: 0.875rem;
+  color: var(--color-text-primary);
 }
 
-.form-group input,
-.form-group textarea,
-.form-group select {
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group select,
+.form-group textarea {
   width: 100%;
-  max-width: 400px;
-  padding: 0.8rem 1rem;
-  border: 2px solid #e0e0e0;
-  border-radius: var(--border-radius);
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
   font-size: 1rem;
-  transition: var(--transition);
-  background: #fff;
+  font-family: var(--font-family-sans);
+  background-color: var(--color-surface);
+  color: var(--color-text-primary);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  box-sizing: border-box;
 }
 
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+  color: var(--color-text-muted);
+}
+
+/* Estado de foco mejorado: vital para la usabilidad y accesibilidad */
 .form-group input:focus,
-.form-group textarea:focus,
-.form-group select:focus {
-  border-color: var(--secondary-color);
+.form-group select:focus,
+.form-group textarea:focus {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(93, 168, 163, 0.2);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
 }
 
-/* Checkboxes y radio buttons */
-.form-group input[type="checkbox"] {
-  width: auto;
-  margin-right: 0.5rem;
-  transform: scale(1.2);
+.form-group label > input[type="checkbox"] {
+  margin-right: 0.75rem;
+  width: 16px;
+  height: 16px;
+  accent-color: var(--color-primary); /* Moderniza el color del check */
 }
 
-/* Secciones condicionales */
-.conditional-section {
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1.5rem;
+  background-color: var(--color-surface-alt);
   padding: 1.5rem;
-  background: #f8fafc;
   border-radius: var(--border-radius);
-  margin: 1.5rem 0;
-  border-left: 4px solid var(--secondary-color);
+  border: 1px solid var(--color-border);
+  margin-top: 1rem;
 }
 
-/* Botones */
-button {
-  padding: 0.8rem 1.5rem;
-  border: none;
-  border-radius: var(--border-radius);
-  font-weight: 600;
-  cursor: pointer;
-  transition: var(--transition);
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-button[type="submit"] {
-  background: var(--primary-color);
-  color: var(--text-light);
-  box-shadow: var(--box-shadow);
-}
-
-button[type="submit"]:hover {
-  background: #1d4661;
-  transform: translateY(-2px);
-}
-
-/* Modal */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(3px);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
-.modal-content {
-  background: white;
-  padding: 2rem;
-  border-radius: var(--border-radius);
-  width: 90%;
-  max-width: 600px;
-  max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-}
-
-.modal-content h2 {
-  color: var(--primary-color);
-  margin-bottom: 1.5rem;
-}
-
-/* Actividades de postconsulta */
-.actividad-item {
-  padding: 1rem;
-  margin: 0.5rem 0;
-  background: #fff;
-  border: 2px solid #e0e0e0;
-  border-radius: var(--border-radius);
-  transition: var(--transition);
-}
-
-.actividad-item:hover {
-  border-color: var(--secondary-color);
-  transform: translateX(5px);
-}
-
-.actividad-item label {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  cursor: pointer;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .aten-enfer-container {
-    padding: 1rem;
-  }
-  
-  .aten-enfer-form,
-  .cita-info {
-    padding: 1.5rem;
-  }
-  
-  .form-group input,
-  .form-group textarea,
-  .form-group select {
-    max-width: 100%;
-  }
-}
-
-@media (max-width: 480px) {
-  .aten-enfer-container h1 {
-    font-size: 2rem;
-  }
-  
-  .aten-enfer-container h2 {
-    font-size: 1.5rem;
-  }
-  
-  button {
-    width: 100%;
-    justify-content: center;
-  }
-}
-
-/* Mejoras adicionales */
-textarea {
-  resize: vertical;
-  min-height: 100px;
-}
-
-input[type="number"]::-webkit-inner-spin-button,
-input[type="number"]::-webkit-outer-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-input[type="number"] {
-  -moz-appearance: textfield;
-}
-
-.error-message {
-  color: var(--error-color);
-  background: #fee;
-  padding: 1rem;
-  border-radius: var(--border-radius);
-  margin: 1rem 0;
-  border: 2px solid var(--error-color);
+.select-urgencia {
+  font-weight: bold;
 }
 
 .success-message {
-  color: var(--success-color);
-  background: #e8f5e9;
+  margin-top: 1rem;
   padding: 1rem;
+  background-color: #d1fae5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
   border-radius: var(--border-radius);
-  margin: 1rem 0;
-  border: 2px solid var(--success-color);
+  font-weight: 500;
 }
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+
+/* --- 4. Sistema de Botones --- */
+
+.post-consulta-actions {
+  flex-shrink: 0;
+  text-align: right;
+}
+
+.post-consulta-actions h4 {
+  margin: 0 0 1rem 0;
+  color: var(--color-text-secondary);
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.action-buttons-container {
+  display: flex;
+  justify-content: flex-end; /* Alinea los botones a la derecha */
+  gap: 0.75rem;
+}
+
+.action-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--color-border);
+  background-color: var(--color-surface);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all var(--transition-fast);
+}
+
+.action-button:hover {
+  color: var(--color-text-primary);
+  border-color: #d1d5db;
+  background-color: #f9fafb;
+}
+
+.btn-primary {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: var(--color-primary-hover);
+  border-color: var(--color-primary-hover);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-danger {
+  background-color: var(--color-danger);
+  border-color: var(--color-danger);
+  color: white;
+}
+
+.btn-danger:hover {
+  background-color: var(--color-danger-hover);
+  border-color: var(--color-danger-hover);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.formSubmitButton {
+  /* Esta clase es para personalizar el botón de submit del formulario. */
+  padding: 12px 24px;
+  font-size: 1rem;
+  width: auto; /* No ocupa todo el ancho */
+  align-self: flex-end; /* Se alinea a la derecha del formulario */
+  margin-top: 1rem;
 }

@@ -1,6 +1,7 @@
 import { getProcedimientosByDiagnosticoId } from '../models/procedimiento.model.js';
 import { registrarProcedimiento } from "../models/procedimiento.model.js";
 import { buscarProcedimientos } from '../models/procedimiento.model.js';
+import { obtenerTodosProcedimientos } from '../models/procedimiento.model.js';
 
 // Obtener todos los procedimientos de un diagnóstico
 export const obtenerProcedimientosPorDiagnostico = async (req, res) => {
@@ -29,14 +30,27 @@ export const registrarProcedimientoController = async (req, res) => {
 export const buscarProcedimientosController = async (req, res) => {
   const { query } = req.query;
 
-  if (!query) {
-    return res.status(400).json({ error: "El parámetro de búsqueda es requerido." });
-  }
-
   try {
+    // Si no hay query, devolvemos todos los procedimientos
+    if (!query) {
+      const resultados = await obtenerTodosProcedimientos();
+      return res.status(200).json(resultados);
+    }
+    
+    // Si hay query, filtramos
     const resultados = await buscarProcedimientos(query);
     res.status(200).json(resultados);
   } catch (error) {
     res.status(500).json({ error: "Error al buscar procedimientos: " + error.message });
+  }
+};
+
+
+export const obtenerTodosProcedimientosController = async (req, res) => {
+  try {
+    const procedimientos = await obtenerTodosProcedimientos();
+    res.status(200).json(procedimientos);
+  } catch (error) {
+    res.status(500).json({ error: "Error al obtener todos los procedimientos: " + error.message });
   }
 };

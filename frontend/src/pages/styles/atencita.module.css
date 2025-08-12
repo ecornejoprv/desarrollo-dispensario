@@ -1,226 +1,223 @@
-/* Estilos base y contenedor principal */
+/*
+ * src/pages/styles/atencita.module.css
+ * ==============================================================================
+ * @summary: Hoja de estilos para el componente Atencita. Contiene los estilos
+ * para la página principal, la lista de citas, y el modal de actividades
+ * de enfermería, incluyendo el layout responsivo en formato de cuadrícula.
+ * ==============================================================================
+*/
+
+/* Contenedor principal de la página */
 .atencita-container {
+  padding: 2rem;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  color: #333;
 }
 
-/* Título principal */
-.atencita-container h1 {
-  color: #2c3e50;
-  text-align: center;
-  margin-bottom: 2rem;
-  font-size: 2rem;
-  font-weight: 600;
-}
-
-/* Botón de actividades administrativas */
+/* Botón principal para abrir el modal de actividades */
 .administrativas-button {
-  background-color: #3498db;
+  background-color: #007bff;
   color: white;
   border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
+  padding: 10px 20px;
+  border-radius: 5px;
   cursor: pointer;
-  margin: 0 auto 2rem;
-  display: block;
   font-size: 1rem;
-  font-weight: 500;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+  transition: background-color 0.3s;
 }
 
 .administrativas-button:hover {
-  background-color: #2980b9;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  background-color: #0056b3;
 }
 
-/* Mensaje cuando no hay citas */
-.atencita-container > p {
-  text-align: center;
-  color: #7f8c8d;
-  font-size: 1.1rem;
-  margin-top: 2rem;
-}
-
-/* Lista de citas */
+/* Estilos para la lista de citas pendientes */
 .cita-list {
   list-style: none;
   padding: 0;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 1.5rem;
 }
 
-/* Ítem de cita */
 .cita-item {
-  background-color: white;
-  border-radius: 10px;
-  padding: 1.5rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  border: 1px solid #e0e0e0;
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  padding: 1rem;
+  border-radius: 5px;
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
 }
 
-.cita-item:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+.cita-icon {
+  font-size: 1.5rem;
+  margin-right: 1rem;
 }
 
-/* Contenido de la cita */
-.cita-item > div:first-child {
-  margin-bottom: 1.5rem;
-}
-
-.cita-item strong {
-  color: #2c3e50;
-  font-weight: 600;
-}
-
-/* Botón de registrar atención */
 .registrar-button {
-  background-color: #2ecc71;
+  background-color: #28a745;
   color: white;
   border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
+  padding: 8px 16px;
+  border-radius: 5px;
   cursor: pointer;
-  font-size: 1rem;
-  font-weight: 500;
-  width: 100%;
-  transition: all 0.3s ease;
+  transition: background-color 0.3s;
 }
 
 .registrar-button:hover {
-  background-color: #27ae60;
+  background-color: #218838;
 }
 
-/* Modal */
+/* --- ESTILOS PARA EL MODAL Y SU CONTENIDO --- */
+
+/* Capa oscura que cubre toda la pantalla detrás del modal */
 .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
-  backdrop-filter: blur(3px);
 }
 
+/* Contenedor principal del modal */
 .modal-content {
-  background-color: white;
-  padding: 2rem;
-  border-radius: 12px;
-  width: 500px;
-  max-width: 90%;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-  animation: modalFadeIn 0.3s ease-out;
-}
-
-@keyframes modalFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 800px; /* Ancho máximo del modal */
+  max-height: 90vh; /* Altura máxima del modal */
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  display: flex; /* Habilita Flexbox */
+  flex-direction: column; /* Organiza los elementos en una columna */
 }
 
 .modal-content h3 {
-  color: #2c3e50;
   margin-top: 0;
-  margin-bottom: 1.5rem;
-  font-size: 1.5rem;
-  text-align: center;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 1rem;
+  flex-shrink: 0; /* Evita que el encabezado se encoja */
 }
 
-/* Grupo de checkboxes */
-.checkbox-group {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1rem;
-  max-height: 60vh;
+/* Nueva clase para el área central del modal que tendrá scroll */
+.modal-scrollable-content {
+  flex-grow: 1; /* Hace que este div ocupe todo el espacio vertical disponible */
+  overflow-y: auto; /* Muestra una barra de scroll vertical SOLO si el contenido es más alto */
+  padding: 1rem 0.5rem;
+}
+
+/* Estilos para el buscador de pacientes (similar a Citas) */
+.patient-search-section {
+  margin-bottom: 1.5rem;
+  position: relative;
+}
+.paciente-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.search-input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+.search-results {
+  list-style: none;
+  padding: 0;
+  margin: 4px 0 0 0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  position: absolute;
+  background: white;
+  width: 100%;
+  z-index: 1001;
+  max-height: 200px;
   overflow-y: auto;
-  padding-right: 10px;
+}
+.patient-result {
+  padding: 10px;
+  cursor: pointer;
+  border-bottom: 1px solid #eee;
+}
+.patient-result:hover {
+  background-color: #f0f0f0;
+}
+.selected-patient {
+  margin-top: 10px;
+  padding: 10px;
+  background-color: #e9f5ff;
+  border: 1px solid #b3d7ff;
+  border-radius: 4px;
+  color: #004085;
+}
+
+/* Cuadrícula (grid) para las actividades */
+.checkbox-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
 }
 
 .checkbox-label {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 0.75rem;
-  border-radius: 8px;
-  transition: background-color 0.2s ease;
-}
-
-.checkbox-label:hover {
-  background-color: #f5f5f5;
+  gap: 8px;
+  cursor: pointer;
 }
 
 .checkbox-label input {
   width: 18px;
   height: 18px;
-  accent-color: #3498db;
 }
 
-/* Botones del modal */
+/* Contenedor para el área de observaciones */
+.observations-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 1.5rem;
+}
+.observations-container textarea {
+  width: 100%;
+  min-height: 80px;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+/* Contenedor para los botones de acción del modal (pie de página) */
 .modal-buttons {
   display: flex;
   justify-content: flex-end;
   gap: 1rem;
-  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #eee;
+  flex-shrink: 0; /* Evita que el pie de página se encoja */
 }
 
 .modal-button {
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
+  padding: 10px 20px;
+  border-radius: 5px;
+  border: 1px solid transparent;
   cursor: pointer;
-  font-size: 1rem;
-  font-weight: 500;
-  transition: all 0.3s ease;
+  font-weight: bold;
 }
-
-.modal-button:first-child {
-  background-color: #3498db;
+.modal-button.primary {
+  background-color: #007bff;
   color: white;
-  border: none;
 }
-
-.modal-button:first-child:hover {
-  background-color: #2980b9;
-}
-
-.modal-button:last-child {
-  background-color: transparent;
-  color: #7f8c8d;
-  border: 1px solid #ddd;
-}
-
-.modal-button:last-child:hover {
-  background-color: #f5f5f5;
-}
-
-/* Mensajes de error y carga */
-.error {
-  color: #e74c3c;
-  text-align: center;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .cita-list {
-    grid-template-columns: 1fr;
-  }
-  
-  .atencita-container {
-    padding: 1rem;
-  }
+.modal-button.secondary {
+  background-color: #6c757d;
+  color: white;
 }

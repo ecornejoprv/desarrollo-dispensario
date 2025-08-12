@@ -54,51 +54,55 @@ const register = async (req, res) => {
 
 const login = async (req, res) => {
     try {
-      const { username, password } = req.body;
-  
-      if (!username || !password) {
-        return res.status(400).json({ error: 'username and password are required' });
-      }
-  
-      const user = await UserModel.findOneByUserName(username);
-      if (!user) {
-        return res.status(404).json({ ok: false, msg: 'username not found' });
-      }
-  
-      const isMatch = await bcryptjs.compare(password, user.usua_pass_usua);
-      if (!isMatch) {
-        return res.status(401).json({ ok: false, msg: 'invalid password' });
-      }
-  
-      // Obtener la especialidad del médico
-      const especialidad = await UserModel.getEspecialidadByMedicoId(user.usua_cod_medic);
-  
-      const token = jwt.sign(
-        { 
-          username: user.usua_nom_usua, 
-          role_id: user.role_id, 
-          especialista: user.usua_cod_medic,
-          especialidad, // Incluir la especialidad en el token
-        }, 
-        process.env.JWT_SECRET,
-        { expiresIn: "1h" }
-      );
-  
-      return res.json({ 
-        ok: true, 
-        msg: { 
-          token, 
-          role_id: user.role_id, 
-          username: user.usua_nom_usua, 
-          especialista: user.usua_cod_medic,
-          especialidad, // Devolver la especialidad en la respuesta
-        },       
-      });
+        const { username, password } = req.body;
+
+        if (!username || !password) {
+            return res.status(400).json({ error: 'username and password are required' });
+        }
+
+        const user = await UserModel.findOneByUserName(username);
+        if (!user) {
+            return res.status(404).json({ ok: false, msg: 'Usuario o contraseña incorrectos' }); // Mensaje más genérico
+        }
+
+        const isMatch = await bcryptjs.compare(password, user.usua_pass_usua);
+        if (!isMatch) {
+            return res.status(401).json({ ok: false, msg: 'Usuario o contraseña incorrectos' }); // Mensaje más genérico
+        }
+
+        // --- CAMBIO CLAVE AQUÍ ---
+        // El payload del token ahora solo contiene el identificador único del usuario.
+        const payload = {
+            uid: user.usua_cod_usua
+        };
+
+        const token = jwt.sign(
+            payload,
+            process.env.JWT_SECRET,
+            { expiresIn: "10h" }
+        );
+
+        // La respuesta al frontend sigue siendo la misma, enviando los datos que necesita la UI.
+        // La diferencia es que 'empresas_acceso' ya no está DENTRO del token.
+        const especialidad = await UserModel.getEspecialidadByMedicoId(user.usua_cod_medic);
+
+        return res.json({
+            ok: true,
+            msg: {
+                token,
+                role_id: user.role_id,
+                username: user.usua_nom_usua,
+                nombre_completo: user.usua_nombre_completo,
+                especialista: user.usua_cod_medic,
+                especialidad,
+                empresas_acceso: user.empresas_acceso || [],
+            },
+        });
     } catch (error) {
-      console.log(error);
-      return res.status(500).json({ ok: false, msg: 'Internal server error' });
+        console.log(error);
+        return res.status(500).json({ ok: false, msg: 'Internal server error' });
     }
-  };
+};
 
 const logout = async (req, res) => {
     try {
@@ -167,10 +171,44 @@ const updateRoleMed = async (req, res) => {
     }
 }
 
+// NUEVO CONTROLADOR: Obtiene los permisos actuales de un usuario
+const getUserPermissions = async (req, res) => {
+    try {
+        const { uid } = req.params;
+        const permissions = await UserModel.findPermissionsByUid(uid);
+        return res.json({ ok: true, permissions });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ ok: false, msg: 'Error al obtener permisos.' });
+    }
+};
+
+// NUEVO CONTROLADOR: Actualiza la lista de permisos de un usuario
+const updateUserPermissions = async (req, res) => {
+    try {
+        const { uid } = req.params;
+        const { companyIds } = req.body; // Espera un array de IDs de empresa, ej: [182, 222]
+
+        if (!Array.isArray(companyIds)) {
+            return res.status(400).json({ ok: false, msg: 'companyIds debe ser un array.' });
+        }
+
+        await UserModel.updatePermissionsForUser(uid, companyIds);
+        
+        return res.json({ ok: true, msg: 'Permisos actualizados correctamente.' });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ ok: false, msg: 'Error al actualizar permisos.' });
+    }
+};
+
+
 export const UserController = {
     register, 
     login,
     profile,
     findAll,
-    updateRoleMed
+    updateRoleMed,
+    getUserPermissions,     
+    updateUserPermissions
 }

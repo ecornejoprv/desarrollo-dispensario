@@ -1,0 +1,262 @@
+/*
+ * src/components/styles/antecedentes.module.css (Versión Profesional Refactorizada)
+ * ==============================================================================
+ * @summary: Hoja de estilos completa para el componente de Antecedentes.
+ * Introduce un sistema de diseño con variables CSS y un layout de "Acordeón"
+ * para una interfaz más limpia, moderna y mantenible.
+ * ==============================================================================
+ */
+
+/* --- 1. Sistema de Diseño (Variables) --- */
+/*
+ * Centralizamos todos los valores de diseño aquí. Esto crea una única fuente de
+ * verdad para colores, bordes, sombras y fuentes.
+ */
+:root {
+  /* Paleta de Colores */
+  --color-primary: #007bff;        /* Azul principal para elementos activos */
+  --color-primary-hover: #0056b3;
+  --color-success: #28a745;        /* Verde para acciones de 'agregar' o 'guardar' */
+  --color-success-hover: #218838;
+  --color-danger: #dc3545;         /* Rojo para acciones de 'eliminar' */
+  --color-danger-hover: #c82333;
+  --color-secondary: #6c757d;      /* Gris para acciones secundarias como 'cancelar' */
+  --color-secondary-hover: #5a6268;
+  --color-background-light: #f8f9fa;/* Fondo sutil para cabeceras y secciones */
+  --color-surface: #ffffff;        /* Blanco para el fondo principal de la tarjeta */
+  --color-border: #dee2e6;         /* Borde sutil y claro */
+  --color-text-primary: #212529;     /* Texto principal oscuro */
+  --color-text-secondary: #495057;  /* Texto secundario gris */
+  
+  /* Tipografía */
+  --font-family-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  
+  /* Bordes y Sombras */
+  --border-radius: 8px;
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+
+  /* Transiciones */
+  --transition-fast: 150ms ease-in-out;
+}
+
+/* --- 2. Layout de Acordeón y Pestañas --- */
+
+/* Estilo de la "Tarjeta" contenedora que aísla visualmente toda la sección. */
+.antecedentesCard {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-md);
+  overflow: hidden; /* Necesario para que el borde redondeado funcione correctamente */
+  margin-bottom: 2rem;
+}
+
+/* Cabecera que contiene los botones de las pestañas. */
+.tabsHeader {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background-color: var(--color-background-light);
+  border-bottom: 1px solid var(--color-border);
+}
+
+/* Cuando el contenido se abre, el borde inferior se oculta para unirse al contenido. */
+.antecedentesCard:has(.tabsContent) .tabsHeader {
+  border-bottom: none;
+}
+
+/* Estilo base para cada botón de pestaña. */
+.tabButton {
+  padding: 8px 16px;
+  background-color: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  transition: all var(--transition-fast);
+}
+
+.tabButton:hover {
+  background-color: rgba(0, 0, 0, 0.04);
+  color: var(--color-text-primary);
+}
+
+/* Estilo para el botón de la pestaña que está activa (abierta). */
+.tabButton.active {
+  background-color: var(--color-primary);
+  color: var(--color-surface);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+/* Contenedor del contenido que se expande y colapsa. */
+.tabsContent {
+  padding: 1.5rem;
+  border-top: 1px solid var(--color-border);
+  animation: fadeIn 0.4s ease-in-out; /* Animación de entrada */
+}
+
+/* Animación para que el contenido aparezca suavemente. */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- 3. Estilos del Contenido Interno (Tablas, Formularios) --- */
+
+/* Estilo base para las tablas dentro de los tabs. */
+.tablaAntecedentes {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+}
+
+.tablaAntecedentes th,
+.tablaAntecedentes td {
+  padding: 10px 12px;
+  text-align: left;
+  border: 1px solid var(--color-border);
+}
+
+.tablaAntecedentes th {
+  background-color: var(--color-background-light);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+/* Fila para agregar nuevos registros simples. */
+.agregarFila {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  margin-top: 1.5rem;
+}
+
+.agregarFila .input {
+  flex-grow: 1;
+}
+
+/* Contenedor para formularios más complejos (Gineco, Laboral, etc.). */
+.formularioGineco,
+.formularioLaboral,
+.formularioHabitos,
+.formularioAccidentes {
+  margin-top: 1.5rem;
+  padding: 1.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  background-color: var(--color-background-light);
+}
+
+.formularioGineco h3,
+.formularioLaboral h3,
+.formularioHabitos h3,
+.formularioAccidentes h3 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+
+.seccionFormulario {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px dashed var(--color-border);
+}
+.seccionFormulario:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
+
+.filaFormulario {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem 1.5rem; /* Espacio vertical y horizontal */
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.filaFormulario label {
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+}
+
+.filaFormulario .input,
+.filaFormulario .select {
+  flex: 1;
+  min-width: 180px;
+}
+
+.riesgosContainer {
+  margin: 1.5rem 0;
+}
+
+.checkboxGroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin-top: 0.5rem;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+/* --- 4. Botones Internos Estandarizados --- */
+/* Unificamos el estilo de los botones de acción dentro de los formularios. */
+.botonGuardar, .botonEditar, .botonEliminar, .botonCancelar, .botonAgregar {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: all var(--transition-fast);
+}
+
+.botonGuardar, .botonAgregar {
+  background-color: var(--color-success);
+  color: var(--color-surface);
+}
+.botonGuardar:hover, .botonAgregar:hover {
+  background-color: var(--color-success-hover);
+}
+
+.botonEditar {
+  background-color: var(--color-primary);
+  color: var(--color-surface);
+}
+.botonEditar:hover {
+  background-color: var(--color-primary-hover);
+}
+
+.botonEliminar {
+  background-color: var(--color-danger);
+  color: var(--color-surface);
+}
+.botonEliminar:hover {
+  background-color: var(--color-danger-hover);
+}
+
+.botonCancelar {
+  background-color: var(--color-secondary);
+  color: var(--color-surface);
+}
+.botonCancelar:hover {
+  background-color: var(--color-secondary-hover);
+}
+
+.botonesFormulario {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}

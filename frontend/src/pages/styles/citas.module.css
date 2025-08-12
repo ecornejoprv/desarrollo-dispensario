@@ -1,536 +1,175 @@
-/* Estilos específicos para el componente Citas */
-.citas-root {
-    --citas-primary: #4361ee;
-    --citas-primary-light: #5a75f1;
-    --citas-secondary: #3f37c9;
-    --citas-accent: #4cc9f0;
-    --citas-accent-light: #6fd4f3;
-    --citas-success: #28a745;
-    --citas-success-light: #34ce57;
-    --citas-info: #17a2b8;
-    --citas-info-light: #1fc0d8;
-    --citas-light: #f8f9fa;
-    --citas-dark: #212529;
-    --citas-danger: #dc3545;
-    --citas-danger-light: #e4606d;
-    --citas-warning: #ffc107;
-    --citas-warning-light: #ffca2c;
-    --citas-radius: 12px;
-    --citas-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    --citas-transition: all 0.3s ease;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
+/* src/pages/styles/citas.module.css (Código Completo y Corregido para <table>) */
 
-/* Contenedor principal */
 .citas-container {
-    max-width: 1200px;
-    margin: 2rem auto;
-    padding: 2rem;
-    color: var(--citas-dark);
-    background-color: #f8fafc;
-    border-radius: var(--citas-radius);
+  padding: 2rem;
 }
-
-/* Encabezados */
 .citas-title {
-    color: var(--citas-primary);
-    margin-bottom: 1.5rem;
-    font-weight: 700;
-    text-align: center;
-    font-size: 2.5rem;
-    position: relative;
-    padding-bottom: 0.5rem;
+  margin-bottom: 1.5rem;
 }
-
-.citas-title::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 120px;
-    height: 4px;
-    background: linear-gradient(90deg, var(--citas-primary), var(--citas-accent));
-    border-radius: 2px;
-}
-
-.citas-subtitle {
-    color: var(--citas-primary);
-    font-size: 1.8rem;
-    margin: 2rem 0 1.5rem;
-    font-weight: 600;
-    padding-bottom: 0.5rem;
-    border-bottom: 2px solid #eee;
-}
-
-/* Formulario */
 .citas-form {
-    background: white;
-    padding: 1.5rem;
-    border-radius: var(--citas-radius);
-    box-shadow: var(--citas-shadow);
-    margin-bottom: 3rem;
-    transition: var(--citas-transition);
-    border: 1px solid #e9ecef;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+  background-color: #f8f9fa;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
 }
-
-.citas-form:hover {
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+.citas-subtitle {
+  margin-top: 0;
 }
-
+.citas-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+}
 .citas-form-group {
-    margin-bottom: 1.3rem;
-    position: relative;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+  display: flex;
+  flex-direction: column;
 }
-
 .citas-label {
-    display: block;
-    margin-bottom: 0.75rem;
-    font-weight: 600;
-    color: var(--citas-dark);
-    font-size: 1.05rem;
-    width: 80%;
-    text-align: left;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
 }
-
-.citas-input,
-.citas-select {
-    width: 80%;
-    padding: 0.7rem 1rem;
-    border: 1px solid #ced4da;
-    border-radius: var(--citas-radius);
-    font-size: 0.8rem;
-    transition: var(--citas-transition);
-    background-color: white;
-    color: var(--citas-dark);
-    box-sizing: border-box;
-    height: 40px;
-    line-height: 1;
-    font-family: inherit;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
+.citas-input, .citas-select {
+  width: 100%;
+  padding: 10px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  box-sizing: border-box;
 }
-
-.citas-select {
-    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-    background-repeat: no-repeat;
-    background-position: right 0.8rem center;
-    background-size: 1rem;
-    padding-right: 2.5rem;
+.citas-paciente-input-wrapper {
+  position: relative;
 }
-
-.citas-input:focus,
-.citas-select:focus {
-    outline: none;
-    border-color: var(--citas-primary);
-    box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
-}
-
-.citas-input[readonly] {
-    background-color: #f8f9fa;
-    cursor: pointer;
-}
-
-/* BOTONES */
-.citas-btn {
-    padding: 0.7rem 1.5rem;
-    border: none;
-    border-radius: var(--citas-radius);
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: var(--citas-transition);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    min-width: 100px;
-    color: rgb(255, 255, 255);
-}
-
-.citas-btn:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
-    background-color: #cccccc !important;
-}
-
-.citas-btn-primary {
-    background-color: var(--citas-primary);
-    box-shadow: 0 4px 6px rgba(67, 97, 238, 0.2);
-}
-
-.citas-btn-primary:hover:not(:disabled) {
-    background-color: var(--citas-secondary);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 10px rgba(67, 97, 238, 0.3);
-}
-
-.citas-btn-secondary {
-    background-color: var(--citas-info);
-    background-color: #3a86ff !important;
-    box-shadow: 0 4px 6px rgba(23, 162, 184, 0.2);
-}
-
-.citas-btn-secondary:hover {
-    background-color: var(--citas-info-light);
-    background-color: #2667d6 !important;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 10px rgba(23, 162, 184, 0.3);
-}
-
-.citas-btn-warning {
-    background-color: var(--citas-success) !important;
-    background-color: #28a745 !important;
-    box-shadow: 0 4px 6px rgba(40, 167, 69, 0.2) !important;
-    border: none !important;
-}
-
-.citas-btn-warning:hover {
-    background-color: var(--citas-success-light) !important;
-    background-color: #218838 !important;
-    transform: translateY(-2px) !important;
-    box-shadow: 0 6px 10px rgba(40, 167, 69, 0.3) !important;
-}
-
-.citas-btn-danger {
-    background-color: var(--citas-danger) !important;
-    background-color: #dc3545 !important;
-    box-shadow: 0 4px 6px rgba(220, 53, 69, 0.2) !important;
-    border: none !important;
-}
-
-.citas-btn-danger:hover {
-    background-color: var(--citas-danger-light) !important;
-    background-color: #c82333 !important;
-    transform: translateY(-2px) !important;
-    box-shadow: 0 6px 10px rgba(220, 53, 69, 0.3) !important;
-}
-
-/* Lista de pacientes */
 .citas-pacientes-list {
-    list-style: none;
-    padding: 0;
-    margin-top: 0.5rem;
-    border: 1px solid #ddd;
-    border-radius: var(--citas-radius);
-    max-height: 200px;
-    overflow-y: auto;
-    box-shadow: var(--citas-shadow);
-    position: absolute;
-    width: 100%;
-    z-index: 10;
-    background: white;
+  list-style: none;
+  padding: 0;
+  margin: 4px 0 0 0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  position: absolute;
+  background: white;
+  width: 100%;
+  z-index: 100;
+  max-height: 200px;
+  overflow-y: auto;
 }
-
 .citas-pacientes-item {
-    padding: 0.9rem 1.2rem;
-    cursor: pointer;
-    border-bottom: 1px solid #eee;
-    transition: var(--citas-transition);
-    font-size: 0.95rem;
+  padding: 10px;
+  cursor: pointer;
+  border-bottom: 1px solid #eee;
 }
-
 .citas-pacientes-item:hover {
-    background-color: #f0f7ff;
+  background-color: #f0f0f0;
+}
+.citas-paciente-info {
+  margin-top: 10px;
+  padding: 10px;
+  background-color: #e9f5ff;
+  border-radius: 4px;
+}
+.citas-clear-btn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.5rem;
+  color: #888;
+}
+.form-button-container {
+  grid-column: 1 / -1; 
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+.citas-btn {
+  padding: 10px 15px; /* Ajuste para botones de acciones */
+  border-radius: 5px;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 0.85rem; /* Letra un poco más pequeña en los botones */
+  white-space: nowrap; /* Evita que el texto del botón se parta */
+}
+.citas-btn-primary {
+  background-color: #007bff;
+  color: white;
+}
+.citas-btn-warning {
+  background-color: #ffc107;
+  color: #212529;
+}
+.citas-btn-info {
+  background-color: #17a2b8;
+  color: white;
+}
+.citas-btn-danger {
+  background-color: #dc3545;
+  color: white;
 }
 
-.citas-pacientes-item:last-child {
-    border-bottom: none;
+/* --- ESTILOS CORREGIDOS PARA LA TABLA --- */
+.citas-table-container {
+  margin-top: 2rem;
+  width: 100%;
+  overflow-x: auto; /* Añade scroll horizontal en pantallas muy pequeñas */
 }
 
-/* Modal */
-.citas-modal {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: white;
-    padding: 1.5rem;
-    border-radius: var(--citas-radius);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-    width: auto;
-    min-width: 600px;
-    max-width: 90vw;
-    max-height: 80vh;
-    overflow-y: auto;
-    outline: none;
-    border: 1px solid #e9ecef;
+.citas-table {
+  width: 100%;
+  border-collapse: collapse; /* Une los bordes de las celdas */
 }
 
-.citas-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 1000;
-    backdrop-filter: blur(3px);
+.citas-table th, .citas-table td {
+  padding: 12px 15px;
+  border-bottom: 1px solid #e0e0e0;
+  vertical-align: middle; /* Centra verticalmente el contenido */
 }
 
-/* Tabla de horarios */
-.citas-horarios-table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0.3rem;
-    margin: 1.5rem 0;
+.citas-table thead th {
+  background-color: #f8f9fa;
+  font-weight: bold;
+  color: #343a40;
+  border-bottom: 2px solid #dee2e6;
+  text-align: center; /* Centra todos los títulos */
 }
 
-.citas-horarios-header {
-    background-color: var(--citas-primary);
-    color: white;
-    padding: 1rem;
-    font-weight: 600;
-    border-radius: var(--citas-radius);
-    text-align: center;
-    min-width: 100px;
+.citas-table tbody tr:nth-child(even) {
+  background-color: #f8f9fa;
 }
 
-.citas-horarios-cell {
-    padding: 1rem;
-    text-align: center;
-    border-radius: var(--citas-radius);
-    cursor: pointer;
-    transition: var(--citas-transition);
-    font-weight: 500;
-    font-size: 0.95rem;
+.citas-table tbody tr:hover {
+  background-color: #e9ecef;
 }
 
-.citas-cell-disponible {
-    background-color: #e6f7ee;
-    color: var(--citas-success);
-    border: 1px solid #c8e6d1;
+/* Definición del ancho y alineación de cada columna */
+.col-fecha, .col-hora {
+  width: 8%;
+  text-align: center;
 }
-
-.citas-cell-disponible:hover {
-    background-color: #d4f1e3;
-    transform: scale(1.05);
-    box-shadow: 0 4px 8px rgba(75, 181, 67, 0.2);
+.col-paciente {
+  width: 25%;
+  text-align: left;
 }
-
-.citas-cell-ocupada {
-    background-color: #ffebee;
-    color: var(--citas-danger);
-    cursor: not-allowed;
-    border: 1px solid #ffcdd2;
+.col-especialidad, .col-medico, .col-creado {
+  width: 13%;
+  text-align: left;
 }
-
-.citas-cell-pasada {
-    background-color: #f5f5f5;
-    color: #9e9e9e;
-    cursor: not-allowed;
-    border: 1px solid #e0e0e0;
-}
-
-/* Navegación de semanas */
-.citas-week-nav {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.5rem;
-    padding: 0.5rem 0;
-}
-
-.citas-week-nav-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 1.5rem;
-    color: var(--citas-primary);
-    padding: 0.5rem 1rem;
-    border-radius: 50%;
-    transition: var(--citas-transition);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.citas-week-nav-btn:hover {
-    background-color: #f0f7ff;
-    transform: scale(1.1);
-}
-
-.citas-week-nav-title {
-    font-weight: 600;
-    color: var(--citas-dark);
-    font-size: 1.1rem;
-}
-
-/* Lista de citas */
-.citas-list-container {
-    margin-top: 3rem;
-    background: white;
-    padding: 2rem;
-    border-radius: var(--citas-radius);
-    box-shadow: var(--citas-shadow);
-    border: 1px solid #e9ecef;
-}
-
-.citas-list {
-    list-style: none;
-    padding: 0;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-    gap: 1.5rem;
-}
-
-.citas-list-item {
-    background: white;
-    padding: 1.5rem;
-    border-radius: var(--citas-radius);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    transition: var(--citas-transition);
-    display: flex;
-    flex-direction: column;
-    gap: 1.2rem;
-    border: 1px solid #e9ecef;
-}
-
-.citas-list-item:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-}
-
-.citas-info-container {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-
-.citas-info-item {
-    flex: 1;
-    font-size: 1rem;
-    line-height: 1.5;
-}
-
-.citas-info-item strong {
-    color: var(--citas-primary);
-    font-weight: 600;
+.col-acciones {
+  width: 20%;
+  text-align: center;
 }
 
 .citas-actions {
-    display: flex;
-    gap: 1rem;
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.citas-error, .citas-success {
     margin-top: 1rem;
-}
-
-/* Mensajes */
-.citas-error {
-    color: var(--citas-danger);
-    background-color: #ffebee;
-    padding: 1.2rem;
-    border-radius: var(--citas-radius);
-    margin-bottom: 1.5rem;
     text-align: center;
-    font-weight: 600;
-    border: 1px solid #ffcdd2;
 }
-
-.citas-empty {
-    text-align: center;
-    color: #666;
-    padding: 2rem;
-    background: white;
-    border-radius: var(--citas-radius);
-    box-shadow: var(--citas-shadow);
-    grid-column: 1 / -1;
-    font-size: 1.1rem;
-}
-
-/* Modal close button */
-.citas-modal-close {
-    position: absolute;
-    top: 1.5rem;
-    right: 1.5rem;
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    cursor: pointer;
-    color: #666;
-    transition: var(--citas-transition);
-}
-
-.citas-modal-close:hover {
-    color: var(--citas-danger);
-    transform: rotate(90deg);
-}
-
-/* Responsive */
-@media (max-width: 992px) {
-    .citas-modal {
-        min-width: 90%;
-        padding: 1.5rem;
-    }
-    
-    .citas-horarios-table {
-        font-size: 0.9rem;
-    }
-    
-    .citas-horarios-header,
-    .citas-horarios-cell {
-        padding: 0.7rem;
-        font-size: 0.85rem;
-    }
-}
-
-@media (max-width: 768px) {
-    .citas-container {
-        padding: 0 1.5rem;
-    }
-    
-    .citas-form {
-        padding: 1.5rem;
-    }
-    
-    .citas-list {
-        grid-template-columns: 1fr;
-    }
-    
-    .citas-modal {
-        min-width: 90%;
-        padding: 1rem;
-    }
-    
-    .citas-horarios-table {
-        display: block;
-        overflow-x: auto;
-        white-space: nowrap;
-    }
-}
-
-@media (max-width: 576px) {
-    .citas-title {
-        font-size: 2rem;
-    }
-    
-    .citas-subtitle {
-        font-size: 1.5rem;
-    }
-    
-    .citas-container {
-        padding: 0 1rem;
-    }
-    
-    .citas-actions {
-        flex-direction: column;
-    }
-    
-    .citas-btn {
-        padding: 0.7rem 1.5rem;
-        min-width: 100px;
-    }
-}
-
-/* Ajuste adicional para botones dentro de form-group */
-.citas-form-group > .citas-btn {
-    width: auto;
-    margin-top: 1rem;
-}
+.citas-error { color: #dc3545; }
+.citas-success { color: #28a745; }

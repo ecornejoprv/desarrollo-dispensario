@@ -1,2 +1,13 @@
-node_modules
-node_modules
+# # Backend (Node.js) #
+**/node_modules
+.env
+
+# # Frontend (Vite + React) #
+frontend/dist
+frontend/.vite
+frontend/.env.local
+frontend/.env.*.local
+
+# # Archivos del sistema operativo y logs #
+.DS_Store
+*.log

@@ -51,3 +51,18 @@ export const buscarProcedimientos = async (query) => {
   const { rows } = await db.query(searchQuery, [`%${query}%`]);
   return rows;
 };
+
+export const obtenerTodosProcedimientos = async () => {
+  const query = `
+    SELECT 
+      pro10_cod_pro10,
+      pro10_ide_pro10,
+      pro10_nom_pro10
+    FROM dispensario.dmpro10
+    WHERE pro10_cod_catpr = 1 -- Filtro para Medicina General
+    ORDER BY pro10_nom_pro10;
+  `;
+
+  const { rows } = await db.query(query);
+  return rows;
+};

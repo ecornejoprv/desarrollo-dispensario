@@ -40,9 +40,10 @@ export const crearAntecedenteGineco = async (data) => {
       angi_nab_angi, 
       angi_nvi_angi, 
       angi_nmu_angi, 
-      angi_ase_angi
+      angi_ase_angi,
+      angi_man_angi
     ) 
-    VALUES ($1, CURRENT_DATE, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+    VALUES ($1, CURRENT_DATE, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11,$12)
     RETURNING *;
   `;
   const { rows } = await db.query(query, [
@@ -56,7 +57,8 @@ export const crearAntecedenteGineco = async (data) => {
     data.numAbortos,
     data.numHijosVivos,
     data.numHijosMuertos,
-    data.actividadSexual
+    data.actividadSexual,
+    data.metodoanticonceptivo
   ]);
   return rows[0];
 };
@@ -97,12 +99,12 @@ export const crearAntecedenteTrabajo = async (data) => {
     data.puesto,
     data.actividad,
     data.tiempo,
-    data.riesgoFisico || false,
-    data.riesgoMedico || false,
-    data.riesgoQuimico || false,
-    data.riesgoBiologico || false,
-    data.riesgoErgonomico || false,
-    data.riesgoPsicosocial || false
+    data.riesgoFisico ? 1 : 0,  
+    data.riesgoMecanico ? 1 : 0,
+    data.riesgoQuimico ? 1 : 0,
+    data.riesgoBiologico ? 1 : 0,
+    data.riesgoErgonomico ? 1 : 0,
+    data.riesgoPsicosocial ? 1 : 0
   ]);
   return rows[0];
 };
@@ -134,14 +136,14 @@ export const crearHistorialToxico = async (data) => {
     RETURNING *;
   `;
   const { rows } = await db.query(query, [
-    data.pacienteId,
-    data.detalleConsumo,
-    data.tiempoConsumo,
-    data.cantidadConsumo,
-    data.tiempoAbstinencia,
-    data.descripcionEstiloVida,
-    data.tiempoPractica,
-    data.tiempoEstiloVida
+    data.pacienteId ,
+    data.detalleConsumo || null,
+    data.tiempoConsumo || null,
+    data.cantidadConsumo || null,
+    data.tiempoAbstinencia || null,
+    data.descripcionEstiloVida || null,
+    data.tiempoPractica || null,
+    data.tiempoEstiloVida || null
   ]);
   return rows[0];
 };
@@ -170,9 +172,9 @@ export const crearAccidenteEnfermedad = async (data) => {
   `;
   const { rows } = await db.query(query, [
     data.pacienteId,
-    data.descripcion,
-    data.registradoIess || false,
-    data.detalle
+    data.descripcion || null,
+    data.registradoIess ? 1 : 0,
+    data.detalle || null
   ]);
   return rows[0];
 };
@@ -212,4 +214,209 @@ export const obtenerActividadesExtralaborales = async (pacienteId) => {
   `;
   const { rows } = await db.query(query, [pacienteId]);
   return rows;
+};
+// Antecedentes Personales - UPDATE
+export const actualizarAntecedentePersonal = async (id, observacion) => {
+  const query = `
+    UPDATE dispensario.dmanper 
+    SET anper_obs_anper = $1
+    WHERE anper_cod_anper = $2
+    RETURNING *;
+  `;
+  const { rows } = await db.query(query, [observacion,id]);
+  return rows[0];
+};
+
+// Antecedentes Gineco-Obstétricos - UPDATE
+export const actualizarAntecedenteGineco = async (id, data) => {
+  const query = `
+    UPDATE dispensario.dmangin 
+    SET 
+      angin_nci_angin = $1,
+      angi_tie_ciclos = $2,
+      angi_fum_angi = $3,
+      angi_nge_angi = $4,
+      angi_npa_angi = $5,
+      angi_nce_angi = $6,
+      angi_nab_angi = $7,
+      angi_nvi_angi = $8,
+      angi_nmu_angi = $9,
+      angi_ase_angi = $10,
+      angi_man_angi = $11
+    WHERE angin_cod_angin = $12
+    RETURNING *;
+  `;
+  const { rows } = await db.query(query, [
+    data.numCiclos,
+    data.tiempoCiclos,
+    data.fum,
+    data.numGestas,
+    data.numPartos,
+    data.numCesareas,
+    data.numAbortos,
+    data.numHijosVivos,
+    data.numHijosMuertos,
+    data.actividadSexual,
+    data.metodoanticonceptivo,
+    id
+  ]);
+  return rows[0];
+};
+
+// Antecedentes de Trabajo - UPDATE
+export const actualizarAntecedenteTrabajo = async (id, data) => {
+  const query = `
+    UPDATE dispensario.dmantra 
+    SET
+      antra_empr_antra = $1,
+      antra_pue_antra = $2,
+      antra_act_antra = $3,
+      antra_tie_antra = $4,
+      antra_rfi_antra = $5,
+      antra_rme_antra = $6,
+      antra_rqui_antra = $7,
+      antra_rbi_antra = $8,
+      antra_rer_antra = $9,
+      antra_rps_antra = $10
+    WHERE antra_cod_antra = $11
+    RETURNING *;
+  `;
+  const { rows } = await db.query(query, [
+    data.empresa,
+    data.puesto,
+    data.actividad,
+    data.tiempo,
+    data.riesgoFisico ? 1 : 0,
+    data.riesgoMecanico ? 1 : 0,
+    data.riesgoQuimico ? 1 : 0,
+    data.riesgoBiologico ? 1 : 0,
+    data.riesgoErgonomico ? 1 : 0,
+    data.riesgoPsicosocial ? 1 : 0,
+    id
+  ]);
+  return rows[0];
+};
+
+// Historial Tóxico y Estilo de Vida - UPDATE
+export const actualizarHistorialToxico = async (id, data) => {
+  const query = `
+    UPDATE dispensario.dmhtev 
+    SET
+      htev_dco_htev = $1,
+      htev_tco_htev = $2,
+      htev_cco_htev = $3,
+      htev_tab_htev = $4,
+      htev_dev_htev = $5,
+      htev_tes_htev = $6
+    WHERE htev_cod_htev = $7
+    RETURNING *;
+  `;
+  const { rows } = await db.query(query, [
+    data.detalleConsumo || null,
+    data.tiempoConsumo || null,
+    data.cantidadConsumo || null,
+    data.tiempoAbstinencia || null,
+    data.descripcionEstiloVida || null,
+    data.tiempoPractica || null,
+    id
+  ]);
+  return rows[0];
+};
+
+// Accidentes y Enfermedades - UPDATE
+export const actualizarAccidenteEnfermedad = async (id, data) => {
+  const query = `
+    UPDATE dispensario.dmaccep 
+    SET
+      accep_des_accep = $1,
+      accep_iess_accep = $2,
+      accep_dae_accep = $3
+    WHERE accep_cod_accep = $4
+    RETURNING *;
+  `;
+  const { rows } = await db.query(query, [
+    data.descripcion || null,
+    data.registradoIess ? 1 : 0,
+    data.detalle || null,
+    id
+  ]);
+  return rows[0];
+};
+
+// Actividades Extralaborales - UPDATE
+export const actualizarActividadExtralaboral = async (id, descripcion) => {
+  const query = `
+    UPDATE dispensario.dmaexla 
+    SET aexla_des_aexla = $1
+    WHERE aexla_cod_aexla = $2
+    RETURNING *;
+  `;
+  const { rows } = await db.query(query, [descripcion, id]);
+  return rows[0];
+};
+
+// Antecedentes Personales - DELETE
+export const eliminarAntecedentePersonal = async (id) => {
+  const query = `
+    DELETE FROM dispensario.dmanper 
+    WHERE anper_cod_anper = $1
+    RETURNING *;
+  `;
+  const { rows } = await db.query(query, [id]);
+  return rows[0];
+};
+
+// Antecedentes Gineco-Obstétricos - DELETE
+export const eliminarAntecedenteGineco = async (id) => {
+  const query = `
+    DELETE FROM dispensario.dmangin 
+    WHERE angin_cod_angin = $1
+    RETURNING *;
+  `;
+  const { rows } = await db.query(query, [id]);
+  return rows[0];
+};
+
+// Antecedentes de Trabajo - DELETE
+export const eliminarAntecedenteTrabajo = async (id) => {
+  const query = `
+    DELETE FROM dispensario.dmantra 
+    WHERE antra_cod_antra = $1
+    RETURNING *;
+  `;
+  const { rows } = await db.query(query, [id]);
+  return rows[0];
+};
+
+// Historial Tóxico y Estilo de Vida - DELETE
+export const eliminarHistorialToxico = async (id) => {
+  const query = `
+    DELETE FROM dispensario.dmhtev 
+    WHERE htev_cod_htev = $1
+    RETURNING *;
+  `;
+  const { rows } = await db.query(query, [id]);
+  return rows[0];
+};
+
+// Accidentes y Enfermedades - DELETE
+export const eliminarAccidenteEnfermedad = async (id) => {
+  const query = `
+    DELETE FROM dispensario.dmaccep 
+    WHERE accep_cod_accep = $1
+    RETURNING *;
+  `;
+  const { rows } = await db.query(query, [id]);
+  return rows[0];
+};
+
+// Actividades Extralaborales - DELETE
+export const eliminarActividadExtralaboral = async (id) => {
+  const query = `
+    DELETE FROM dispensario.dmaexla 
+    WHERE aexla_cod_aexla = $1
+    RETURNING *;
+  `;
+  const { rows } = await db.query(query, [id]);
+  return rows[0];
 };

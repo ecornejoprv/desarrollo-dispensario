@@ -3,7 +3,9 @@ import {
     getTriajeById,
     createTriaje,
     updateTriaje,
-    deleteTriaje
+    deleteTriaje,
+    getPrescripcionesByCitaId, 
+    getDetallesCompletosByCitaId
   } from '../models/triaje.model.js';
   
   // Obtener todos los triajes de una cita
@@ -70,6 +72,27 @@ import {
       } else {
         res.status(404).json({ error: 'Triaje no encontrado' });
       }
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  };
+
+  
+  export const obtenerPrescripciones = async (req, res) => {
+    try {
+      const { citaId } = req.params;
+      const prescripciones = await getPrescripcionesByCitaId(citaId);
+      res.json(prescripciones);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  };
+  
+  export const obtenerDetallesCita = async (req, res) => {
+    try {
+      const { citaId } = req.params;
+      const detalles = await getDetallesCompletosByCitaId(citaId);
+      res.json(detalles);
     } catch (error) {
       res.status(500).json({ error: error.message });
     }

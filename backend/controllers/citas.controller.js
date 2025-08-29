@@ -17,6 +17,7 @@ import {
     getMedicoByCodigo,
     getEstadisticasAtenciones, // Reporte dmpost
     getAtenciones, // Reporte dmpost
+    getEnfermeriaStaff,
 } from '../models/citas.model.js';
 import { getPacienteById } from '../models/pacientes.model.js'; // Necesario para validar paciente en el controlador
 
@@ -527,4 +528,15 @@ export const obtenerEstadisticasAtenciones = async (req, res) => {
             error: error.message
         });
     }
+};
+
+
+export const obtenerEnfermeriaStaff = async (req, res) => {
+  try {
+    const { userCompanies } = req;
+    const staff = await getEnfermeriaStaff(userCompanies);
+    res.status(200).json({ success: true, data: staff });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Error al obtener personal de enfermería' });
+  }
 };

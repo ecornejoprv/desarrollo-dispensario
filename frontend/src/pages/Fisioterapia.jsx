@@ -1,45 +1,17 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
-  Container,
-  Typography,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  Button,
-  Modal,
-  Box,
-  TextField,
-  Snackbar,
-  Alert,
-  IconButton,
-  Autocomplete,
-  Grid,
-  Chip,
-  FormControlLabel,
-  Checkbox,
-  Collapse,
-  Switch,
-  RadioGroup,
-  Radio,
+  Select, MenuItem, FormControl, InputLabel, Container, Typography, Table, TableBody,
+  TableCell, TableContainer, TableHead, TableRow, Paper, Button, Modal, Box, TextField,
+  Snackbar, Alert, IconButton, Autocomplete, Grid, Chip, FormControlLabel, Checkbox, Collapse, RadioGroup, Radio,
 } from "@mui/material";
 import { Popper } from "@mui/material";
 import {
-  Add,
-  Delete,
-  Search,
-  Close,
-  Print as PrintIcon,
-  AssignmentInd,
-  MedicalServices,
+  Add, Delete, Search, Close, Print as PrintIcon, AssignmentInd, MedicalServices,
+  Favorite as FavoriteIcon, Air as AirIcon, Speed as SpeedIcon, Thermostat as ThermostatIcon,
+  MonitorWeight as MonitorWeightIcon, Height as HeightIcon, Calculate as CalculateIcon,
+  LocalHospital as LocalHospitalIcon,
+  AccessibilityNew as AccessibilityNewIcon, 
 } from "@mui/icons-material";
 import api from "../api";
 import styles from "./styles/Fisioterapia.module.css";
@@ -47,14 +19,6 @@ import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import CardHeader from "@mui/material/CardHeader";
 import AtencionList from "../components/AtencionList";
-import FavoriteIcon from "@mui/icons-material/Favorite";
-import AirIcon from "@mui/icons-material/Air";
-import SpeedIcon from "@mui/icons-material/Speed";
-import ThermostatIcon from "@mui/icons-material/Thermostat";
-import MonitorWeightIcon from "@mui/icons-material/MonitorWeight";
-import HeightIcon from "@mui/icons-material/Height";
-import CalculateIcon from "@mui/icons-material/Calculate";
-import LocalHospitalIcon from "@mui/icons-material/LocalHospital";
 import AntecedentesCompletos from "../components/Antecedentes";
 import EvaluacionOsteomuscularModal from "../components/EvaluacionOsteomuscularModal";
 import { formatDateDDMMYYYY } from "../components/utils/formatters.js";
@@ -187,33 +151,30 @@ const Fisioterapia = () => {
   );
   const [atencionGuardadaId, setAtencionGuardadaId] = useState(null);
   const [imprimiendoReceta, setImprimiendoReceta] = useState(false);
+  const [isGeneratingReceta, setIsGeneratingReceta] = useState(false);
+
   const cie10SearchRef = useRef(null);
 
+  const fetchCitasPendientes = useCallback(async () => {
+    if (!user?.especialista) return;
+    setLoading(true);
+    try {
+      const response = await api.get(`/api/v1/atenciones/citas-pendientes/${user.especialista}`);
+      setCitasPendientes(response.data);
+    } catch (error) {
+      setError("Error al obtener las citas pendientes.");
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+
+  // Se llama a fetchCitasPendientes al cargar el componente.
   useEffect(() => {
-    const fetchCitasPendientes = async () => {
-      if (authLoading) return;
-      if (!user?.especialista) {
-        setError(
-          "No se pudo obtener el ID del especialista del perfil de usuario."
-        );
-        setLoading(false);
-        return;
-      }
-      try {
-        setLoading(true);
-        const response = await api.get(
-          `/api/v1/atenciones/citas-pendientes/${user.especialista}`
-        );
-        setCitasPendientes(response.data);
-      } catch (error) {
-        setError("Error al obtener las citas pendientes.");
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchCitasPendientes();
-  }, [user, authLoading]);
+    if (!authLoading && user) {
+      fetchCitasPendientes();
+    }
+  }, [user, authLoading, fetchCitasPendientes]);
 
   const obtenerDatosEmpleado = async () => {
     if (!paciente?.pacie_ced_pacie) return;
@@ -363,6 +324,7 @@ const Fisioterapia = () => {
     setSignosAlarma([]);
     setNumeroSesion(1);
     setHoraAtencion(new Date().toTimeString().split(" ")[0].substring(0, 5));
+    fetchCitasPendientes();
   };
 
   const agregarDiagnostico = () => {
@@ -432,19 +394,8 @@ const Fisioterapia = () => {
 
   const handleGuardarAtencion = async () => {
     if (!selectedCita || !validarCampos()) return;
-
     try {
-      const secuencialResponse = await api.post("/api/v1/secuencias/receta", {
-        locationId: selectedCita.cita_cod_sucu,
-      });
-      if (!secuencialResponse.data.success) {
-        throw new Error(
-          secuencialResponse.data.message ||
-            "No se pudo generar el secuencial de la receta."
-        );
-      }
-      const numeroReceta = secuencialResponse.data.secuencial;
-
+      // Se construye el objeto de la atención SIN el número de receta.
       const atencionData = {
         aten_cod_paci: selectedCita.cita_cod_pacie,
         aten_cod_cita: selectedCita.cita_cod_cita,
@@ -457,11 +408,11 @@ const Fisioterapia = () => {
         aten_enf_actu: enfermedadActual,
         aten_obs_ate: observaciones,
         aten_tip_aten: tipoAtencion,
-        aten_num_sesi:
-          tipoSesion === "numero" ? numeroSesion.toString() : "PROGRAMADA",
-        aten_num_receta: numeroReceta,
+        aten_num_sesi: tipoSesion === "numero" ? numeroSesion.toString() : "PROGRAMADA",
+        // La propiedad 'aten_num_receta' ya no se envía al crear la atención.
       };
 
+      // Se envía la petición para registrar la atención.
       const response = await api.post("/api/v1/atenciones/registrar-atencion", {
         atencionData,
         diagnosticos,
@@ -471,36 +422,66 @@ const Fisioterapia = () => {
         signosAlarma,
       });
 
+      // Se maneja la respuesta exitosa.
       if (response.data) {
         const atencionCreada = response.data.atencion;
         setSnackbarMessage("Atención registrada correctamente.");
         setSnackbarSeverity("success");
         setSnackbarOpen(true);
-        setAtencionGuardadaId(atencionCreada.aten_cod_aten);
-        const responseCitas = await api.get(
-          `/api/v1/atenciones/citas-pendientes/${user.especialista}`
-        );
-        setCitasPendientes(responseCitas.data);
+        setAtencionGuardadaId(atencionCreada.aten_cod_aten); // Se guarda el ID de la atención.
       }
     } catch (error) {
       console.error("Error completo al guardar la atención:", error);
-      const errorMessage =
-        error.response?.data?.error ||
-        error.message ||
-        "Error al guardar la atención";
+      const errorMessage = error.response?.data?.error || error.message || "Error al guardar la atención";
       setSnackbarMessage(errorMessage);
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
     }
   };
 
-  const handlePrintReceta = () => {
-    if (atencionGuardadaId) {
-      setImprimiendoReceta(true);
-    } else {
+  const handlePrintReceta = async () => {
+    // Seguro para evitar dobles clics.
+    if (isGeneratingReceta) return;
+    if (!atencionGuardadaId) {
       setSnackbarMessage("Debe guardar la atención antes de imprimir.");
       setSnackbarSeverity("warning");
       setSnackbarOpen(true);
+      return;
+    }
+
+    try {
+      // Se activa el bloqueo para prevenir más clics.
+      setIsGeneratingReceta(true);
+
+      // Se obtienen los datos actuales de la atención para verificar si ya tiene receta.
+      const response = await api.get(`/api/v1/atenciones/${atencionGuardadaId}`);
+      const atencionActual = response.data;
+      let numeroReceta = atencionActual.aten_num_receta;
+
+      // Si NO tiene un número de receta, se genera uno nuevo.
+      if (!numeroReceta) {
+        const secuencialResponse = await api.post("/api/v1/secuencias/receta", {
+          locationId: selectedCita.cita_cod_sucu,
+        });
+        numeroReceta = secuencialResponse.data.secuencial;
+
+        // Se actualiza la atención en la base de datos con el nuevo número.
+        await api.patch(`/api/v1/atenciones/${atencionGuardadaId}/asignar-receta`, {
+          numeroReceta,
+        });
+      }
+
+      // Una vez que se tiene el número (nuevo o existente), se procede a imprimir.
+      setImprimiendoReceta(true);
+
+    } catch (error) {
+      console.error("Error en el proceso de impresión de receta:", error);
+      setSnackbarMessage("Error al generar o asignar el número de receta.");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+    } finally {
+      // Se libera el bloqueo al final del proceso.
+      setIsGeneratingReceta(false);
     }
   };
 
@@ -885,7 +866,18 @@ const Fisioterapia = () => {
 
                   {/* --- CAMBIO PRINCIPAL: Los botones se mueven aquí --- */}
                   {/* Usamos un Box para agrupar los botones y darles espaciado. */}
-                  <Box sx={{ mt: 3, display: "flex", gap: 2 }}>
+                  <Box sx={{ mt: 3, display: "flex", gap: 2, flexWrap: 'wrap' }}>
+                    {/* Botón para abrir la Evaluación Osteomuscular */}
+                    <Button
+                      variant="contained"
+                      color="secondary"
+                      onClick={() => setOpenEvalOsteoModal(true)}
+                      startIcon={<AccessibilityNewIcon />}
+                    >
+                      Eval. Osteomuscular
+                    </Button>
+                    
+                    {/* Botón existente para la Historia Clínica */}
                     <Button
                       variant="contained"
                       color="primary"
@@ -2058,8 +2050,11 @@ const Fisioterapia = () => {
                   color="secondary"
                   onClick={handlePrintReceta}
                   startIcon={<PrintIcon />}
+                  // Se deshabilita el botón mientras se genera la receta.
+                  disabled={isGeneratingReceta}
                 >
-                  Imprimir Receta
+                  {/* El texto del botón cambia para dar feedback al usuario. */}
+                  {isGeneratingReceta ? "Generando..." : "Imprimir Receta"}
                 </Button>
                 <Button
                   variant="contained"

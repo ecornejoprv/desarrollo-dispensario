@@ -5,6 +5,7 @@ import {
   getTotalAtencionesByPacienteIdAndEspecialidad,
   validarCitaPendienteConTriaje,
   registrarAtencion,
+  asignarNumeroReceta,
   getCitasPendientesPorMedico,
   actualizarEstadoCita,
   getAtencionesByMedicoAndDates,  // ¡Esta es la función que falta!
@@ -17,8 +18,10 @@ import {
   getAtencionesPorFechas,
   countAtencionesPorFechas,
   getIndicacionesByAtencionId,
+  getSignosAlarmaByAtencionId,
   getReferenciasByAtencionId,
   getTriajeByAtencionId,
+  getReporteEnfermeria 
 } from "../models/atencion.model.js";
 import { getPacienteById } from "../models/pacientes.model.js";
 import { registrarDiagnostico } from "../models/diagnostico.model.js"; // Importación agregada
@@ -220,6 +223,22 @@ export const registrarAtencionController = async (req, res) => {
   }
 };
 
+export const asignarNumeroRecetaController = async (req, res) => {
+  try {
+    const { atencionId } = req.params;
+    const { numeroReceta } = req.body;
+
+    if (!numeroReceta) {
+      return res.status(400).json({ error: "El número de receta es requerido." });
+    }
+
+    const atencionActualizada = await asignarNumeroReceta(atencionId, numeroReceta);
+    res.status(200).json({ success: true, data: atencionActualizada });
+  } catch (error) {
+    res.status(500).json({ error: "Error al asignar el número de receta." });
+  }
+};
+
 // Obtener citas pendientes por médico
 export const obtenerCitasPendientesPorMedico = async (req, res) => {
   const { medicoId } = req.params;
@@ -372,6 +391,16 @@ export const obtenerIndicacionesPorAtencion = async (req, res) => {
   }
 };
 
+export const obtenerSignosAlarmaPorAtencion = async (req, res) => {
+  try {
+    const { atencionId } = req.params;
+    const response = await getSignosAlarmaByAtencionId(atencionId);
+    res.status(200).json(response || []);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 export const obtenerReferenciasPorAtencion = async (req, res) => {
   try {
     const { atencionId } = req.params;
@@ -395,6 +424,44 @@ export const obtenerTriajePorAtencion = async (req, res) => {
     res.status(500).json({ 
       error: "Error al obtener datos de triaje", 
       details: error.message 
+    });
+  }
+};
+
+export const generarReporteEnfermeria = async (req, res) => {
+  try {
+    const { fechaDesde, fechaHasta, medicoId, page, limit } = req.query;
+    const { userCompanies } = req;
+
+    const filtros = {
+      fechaDesde,
+      fechaHasta,
+      medicoId,
+      page: parseInt(page) || 1,
+      limit: parseInt(limit) || 15,
+    };
+    
+    // El modelo ahora devuelve un objeto con los datos y todos los totales.
+    const { reporteData, total, totalPostConsulta, totalGeneral } = await getReporteEnfermeria(filtros, userCompanies);
+    
+    // Se construye el objeto de paginación con todos los datos necesarios.
+    res.status(200).json({
+      success: true,
+      data: reporteData,
+      pagination: {
+        totalItems: total,
+        totalPostConsulta: totalPostConsulta, // Se añade el total de post-consulta
+        totalGeneral: totalGeneral,         // Se añade el total de generales
+        totalPages: Math.ceil(total / filtros.limit),
+        currentPage: filtros.page,
+      }
+    });
+  } catch (error) {
+    console.error('Error en el controlador del reporte de enfermería:', error.message);
+    res.status(500).json({
+      success: false,
+      message: 'Error al generar el reporte de enfermería',
+      error: error.message
     });
   }
 };

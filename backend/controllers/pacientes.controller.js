@@ -85,62 +85,73 @@ export const obtenerPaciente = async (req, res) => {
 
 // Crear un nuevo paciente
 export const crearPaciente = async (req, res) => {
+  // Se inicia un bloque try...catch para manejar cualquier error inesperado.
   try {
-    //  console.log("Datos recibidos para crear paciente:", req.body);
+    // Se extraen los permisos de empresa del objeto 'req' (inyectado por el middleware 'protect').
     const userCompanies = req.userCompanies;
-    let { pacie_cod_empr, pacie_ced_pacie, pacie_nom_pacie, pacie_ape_pacie } =
-      req.body; // Desestructuramos
+    
+    // Se desestructuran los campos necesarios del cuerpo de la petición (req.body).
+    let { pacie_cod_empr, pacie_ced_pacie, pacie_nom_pacie, pacie_ape_pacie } = req.body;
 
-    // CONVERTIR pacie_cod_empr a número para la validación
-    pacie_cod_empr = parseInt(pacie_cod_empr); // ¡CRÍTICO! Convertir a número
+    // --- VALIDACIÓN Y PREPARACIÓN DE DATOS ---
 
-    if (
-      !pacie_ced_pacie ||
-      !pacie_nom_pacie ||
-      !pacie_ape_pacie ||
-      !pacie_cod_empr
-    ) {
+    // 1. Se asegura que el código de la empresa sea un número para las validaciones.
+    pacie_cod_empr = parseInt(pacie_cod_empr);
+
+    // 2. Se verifica que los campos obligatorios no estén vacíos.
+    if (!pacie_ced_pacie || !pacie_nom_pacie || !pacie_ape_pacie || !pacie_cod_empr) {
+      // Si falta algún campo, se devuelve un error 400 (Bad Request) al cliente.
       return res.status(400).json({
-        message:
-          "Cédula, nombre, apellido y código de empresa son campos requeridos",
+        message: "Cédula, nombre, apellido y código de empresa son campos requeridos",
       });
     }
 
-    // VALIDACIÓN DE PERMISO: Ahora la comparación de tipos será correcta
+    // 3. Se verifica que el usuario tenga permiso para crear pacientes en la empresa seleccionada.
     if (!userCompanies || !userCompanies.includes(pacie_cod_empr)) {
-      console.warn(
-        `DEBUG CONTROLLER (crearPaciente): Intento de creación de paciente en empresa no autorizada: ${pacie_cod_empr} por usuario con acceso a ${userCompanies}`
-      );
+      // Si no tiene permiso, se devuelve un error 403 (Forbidden).
       return res.status(403).json({
-        message:
-          "No tiene permiso para crear pacientes en la empresa especificada.",
+        message: "No tiene permiso para crear pacientes en la empresa especificada.",
       });
     }
 
+    // 4. Se verifica que la cédula del nuevo paciente no exista ya en la base de datos.
     const cedulaExiste = await verificarCedulaExistente(pacie_ced_pacie);
     if (cedulaExiste) {
+      // Si la cédula ya existe, se devuelve un error 400 (Bad Request).
       return res.status(400).json({
         message: "Esta cédula ya está registrada para otro paciente",
       });
     }
 
-    // Resto de la lógica, actualizamos req.body.pacie_cod_empr si se modificó
+    // --- FORMATEO DE DATOS ANTES DE ENVIAR AL MODELO ---
+
+    // Se actualiza el código de empresa en el cuerpo de la petición (ya convertido a número).
     req.body.pacie_cod_empr = pacie_cod_empr;
 
+    // Se asegura que la fecha de nacimiento esté en formato YYYY-MM-DD.
     if (req.body.pacie_fec_nac) {
-      req.body.pacie_fec_nac = new Date(req.body.pacie_fec_nac)
-        .toISOString()
-        .split("T")[0];
+      req.body.pacie_fec_nac = new Date(req.body.pacie_fec_nac).toISOString().split("T")[0];
     }
 
+    // Se asegura que los campos de tipo checkbox se guarden como 0 o 1.
     req.body.pacie_cod_disc = Number(req.body.pacie_cod_disc) || 0;
     req.body.pacie_enf_catas = Number(req.body.pacie_enf_catas) || 0;
+    // Se asegura que el porcentaje de discapacidad sea un número.
     req.body.pacie_por_disc = Number(req.body.pacie_por_disc) || 0;
 
+    // --- LLAMADA AL MODELO ---
+    // Se llama a la función del modelo para que inserte el nuevo paciente en la base de datos.
     const nuevoPaciente = await createPaciente(req.body);
+    
+    // --- RESPUESTA EXITOSA ---
+    // Se devuelve el paciente recién creado con un código de estado 201 (Created).
     res.status(201).json(nuevoPaciente);
+
   } catch (error) {
+    // --- MANEJO DE ERRORES ---
+    // Si ocurre cualquier error en el proceso, se registra en la consola del servidor.
     console.error("Error detallado al crear paciente:", error);
+    // Se envía una respuesta de error 500 (Internal Server Error) al cliente.
     res.status(500).json({
       message: "Error al crear el paciente",
       error: error.message,

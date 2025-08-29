@@ -14,7 +14,7 @@ import SessionExpiredModal from "./components/SessionExpiredModal";
 import React from "react";
 
 const api = axios.create({
-  baseURL: "http://localhost:5000",
+  baseURL: "http://172.20.4.65:5000", // URL de tu backend
   headers: {
     "Content-Type": "application/json",
   },

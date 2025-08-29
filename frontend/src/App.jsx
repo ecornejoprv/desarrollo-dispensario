@@ -27,6 +27,7 @@ import ReporteDiagnosticosGenero from "./pages/Reportecie10";
 import Reporteprevencion from "./pages/ReportePrevencion";
 import ReporteMorbilidad from "./pages/MorbiReport";
 import GestionUsuarios from "./pages/GestionUsuarios"; 
+import ReporteEnfermeria from './pages/ReporteEnfermeria';
 
 // Importa componentes de estructura y protección.
 import Layout from "./components/Layout";
@@ -58,7 +59,7 @@ function App() {
               <Route path="/atencita" element={<PrivateRoute requiredRoles={["1", "5"]}><Atencita /></PrivateRoute>} />
               <Route path="/medicina-general" element={<PrivateRoute requiredRoles={["1", "2"]}><MedicinaGeneral /></PrivateRoute>} />
               <Route path="/enfermeria" element={<PrivateRoute requiredRoles={["1", "5"]}><Enfermeria /></PrivateRoute>} />
-              <Route path="/enfermreport" element={<PrivateRoute requiredRoles={["1", "5"]}><ReporteActividades /></PrivateRoute>} />
+              <Route path="/reporte-enfermeria" element={<PrivateRoute requiredRoles={["1", "5"]}><ReporteEnfermeria /></PrivateRoute>} />
               <Route path="/cie10report" element={<PrivateRoute requiredRoles={["1", "5", "2"]}><ReporteDiagnosticosGenero /></PrivateRoute>} />
               <Route path="/prevencionreport" element={<PrivateRoute requiredRoles={["1", "5", "2"]}><Reporteprevencion /></PrivateRoute>} />
               <Route path="/morbireport" element={<PrivateRoute requiredRoles={["1", "5", "2"]}><ReporteMorbilidad /></PrivateRoute>} />

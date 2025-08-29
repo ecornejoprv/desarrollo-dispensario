@@ -7,7 +7,8 @@
 //           Todo el código está presente, sin ninguna omisión.
 // ==============================================================================
 
-import { useState, useEffect, useRef } from "react";
+import React from 'react';
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Select,
@@ -55,6 +56,7 @@ import {
   Calculate as CalculateIcon,
   LocalHospital as LocalHospitalIcon,
   Print as PrintIcon,
+  AccessibilityNew,
 } from "@mui/icons-material";
 import api from "../api";
 import styles from "./styles/medicinaGeneral.module.css";
@@ -69,6 +71,7 @@ import AntecedentesCompletos from "../components/Antecedentes";
 import { formatDateDDMMYYYY } from "../components/utils/formatters.js";
 import { useAuth } from "../components/context/AuthContext";
 import { RecetaMedicaPrint } from "../components/RecetaMedicaPrint";
+import EvaluacionOsteomuscularModal from "../components/EvaluacionOsteomuscularModal";
 
 const especialidades = [
   "Todas",
@@ -79,7 +82,7 @@ const especialidades = [
 ];
 
 const MedicinaGeneral = () => {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, activeLocation } = useAuth();
   const navigate = useNavigate();
 
   const [citasPendientes, setCitasPendientes] = useState([]);
@@ -139,8 +142,9 @@ const MedicinaGeneral = () => {
   const [citaParaCancelarId, setCitaParaCancelarId] = useState(null);
   const [signosAlarma, setSignosAlarma] = useState([]);
   const [imprimiendoReceta, setImprimiendoReceta] = useState(false);
-  const [datosParaImprimir, setDatosParaImprimir] = useState(null);
   const [atencionGuardadaId, setAtencionGuardadaId] = useState(null);
+  const [isGeneratingReceta, setIsGeneratingReceta] = useState(false);
+  const [openEvalOsteoModal, setOpenEvalOsteoModal] = useState(false);
 
   const opcionesPreventiva = [
     "Evaluación Preocupacional",
@@ -188,38 +192,33 @@ const MedicinaGeneral = () => {
     "INCIDENTE DE TRABAJO",
   ];
 
-  useEffect(() => {
-    const fetchCitasPendientes = async () => {
-      try {
-        const medicoId = user ? user.especialista : null;
-        if (!medicoId) {
-          setError(
-            "No se pudo obtener el ID del especialista desde el perfil de usuario."
-          );
-          setLoading(false);
-          return;
-        }
-        const response = await api.get(
-          `/api/v1/atenciones/citas-pendientes/${medicoId}`
-        );
-        setCitasPendientes(response.data);
-      } catch (error) {
-        setError("Error al obtener las citas pendientes.");
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    if (authLoading) {
+  const fetchCitasPendientes = useCallback(async () => {
+    if (!user?.especialista) {
+      setError("No se pudo obtener el ID del especialista.");
+      setLoading(false);
       return;
     }
-    if (user) {
-      fetchCitasPendientes();
-    } else {
-      setError("No se ha podido cargar la información del usuario.");
+    setLoading(true);
+    try {
+      const response = await api.get(
+        `/api/v1/atenciones/citas-pendientes/${user.especialista}`
+      );
+      setCitasPendientes(response.data);
+    } catch (error) {
+      setError("Error al obtener las citas pendientes.");
+      console.error(error);
+    } finally {
       setLoading(false);
     }
-  }, [user, authLoading]);
+  }, [user]); // Depende del 'user'
+
+  // 2. El useEffect original se simplifica. Su única tarea ahora es llamar
+  //    a la función cuando el componente se carga.
+  useEffect(() => {
+    if (!authLoading && user) {
+      fetchCitasPendientes();
+    }
+  }, [user, authLoading, fetchCitasPendientes]);
 
   const obtenerDatosEmpleado = async () => {
     if (!paciente?.pacie_ced_pacie) return;
@@ -386,6 +385,7 @@ const MedicinaGeneral = () => {
     setSistemasAfectados([]);
     setTiposAccidente([]);
     setCertificadoLaboral(false);
+    fetchCitasPendientes();
   };
 
   const agregarDiagnostico = () => {
@@ -404,23 +404,7 @@ const MedicinaGeneral = () => {
   const eliminarDiagnostico = (index) => {
     setDiagnosticos(diagnosticos.filter((_, i) => i !== index));
   };
-  const agregarProcedimiento = (indexDiagnostico) => {
-    const nuevosDiagnosticos = [...diagnosticos];
-    nuevosDiagnosticos[indexDiagnostico].procedimientos.push({
-      proc_cod_cie10: 99,
-      pro10_ide_pro10: "M0001",
-      pro10_nom_pro10: "PROCEDIMINETOS DE MEDICINA INTERNA",
-      proc_obs_proc: "",
-    });
-    setDiagnosticos(nuevosDiagnosticos);
-  };
-  const eliminarProcedimiento = (indexDiagnostico, indexProcedimiento) => {
-    const nuevosDiagnosticos = [...diagnosticos];
-    nuevosDiagnosticos[indexDiagnostico].procedimientos = nuevosDiagnosticos[
-      indexDiagnostico
-    ].procedimientos.filter((_, i) => i !== indexProcedimiento);
-    setDiagnosticos(nuevosDiagnosticos);
-  };
+
   const buscarCie10 = async (query) => {
     try {
       const response = await api.get(`/api/v1/cie10/buscar?query=${query}`);
@@ -429,6 +413,7 @@ const MedicinaGeneral = () => {
       console.error("Error al buscar códigos CIE10:", error);
     }
   };
+
   const handleSelectCie10 = (cie10) => {
     const nuevosDiagnosticos = [...diagnosticos];
     nuevosDiagnosticos[selectedDiagnosticoIndex].diag_cod_cie10 =
@@ -495,14 +480,6 @@ const MedicinaGeneral = () => {
     }
 
     try {
-      const secuencialResponse = await api.post("/api/v1/secuencias/receta", {
-        locationId: selectedCita.cita_cod_sucu,
-      });
-      if (!secuencialResponse.data.success) {
-        throw new Error(secuencialResponse.data.message);
-      }
-      const numeroReceta = secuencialResponse.data.secuencial;
-
       // Se validan y formatean las prescripciones.
       const prescripcionesValidadas = prescripciones.map((p, index) => {
         if (p.pres_tip_pres === "Empresa" && !p.pres_cod_prod) {
@@ -575,7 +552,6 @@ const MedicinaGeneral = () => {
         aten_obs_ate: observaciones,
         aten_tip_aten: tipoAtencion,
         aten_cert_aten: certificadoLaboral,
-        aten_num_receta: numeroReceta, // Se incluye el secuencial obtenido.
       };
 
       // --- PASO 3: Registrar la atención completa CON el secuencial ---
@@ -599,7 +575,6 @@ const MedicinaGeneral = () => {
         setSnackbarMessage("Atención registrada correctamente.");
         setSnackbarSeverity("success");
         setSnackbarOpen(true);
-        // --- SE GUARDA EL ID DE LA ATENCIÓN CREADA ---
         setAtencionGuardadaId(atencionCreada.aten_cod_aten);
       }
     } catch (error) {
@@ -616,6 +591,7 @@ const MedicinaGeneral = () => {
       setSnackbarOpen(true);
     }
   };
+
   const agregarSignoAlarma = () => {
     setSignosAlarma([...signosAlarma, { signa_des_signa: "" }]);
   };
@@ -825,13 +801,63 @@ const MedicinaGeneral = () => {
   };
 
   // Maneja la impresión de la receta médica
-  const handlePrintReceta = () => {
-    if (atencionGuardadaId) {
-      setImprimiendoReceta(true);
-    } else {
+  const handlePrintReceta = async () => {
+    // --- 1. SEGURO ANTI-DOBLE CLIC ---
+    // Si ya se está generando una receta (el seguro está activo), la función se detiene aquí.
+    if (isGeneratingReceta) return;
+
+    // Validación para asegurar que haya una atención guardada.
+    if (!atencionGuardadaId) {
       setSnackbarMessage("Debe guardar la atención antes de imprimir.");
       setSnackbarSeverity("warning");
       setSnackbarOpen(true);
+      return;
+    }
+
+    try {
+      setIsGeneratingReceta(true);
+
+      // 1. Se obtiene la respuesta de la API.
+      const response = await api.get(
+        `/api/v1/atenciones/${atencionGuardadaId}`
+      );
+
+      // 2. Se accede al objeto de datos directamente desde la respuesta.
+      const atencionActual = response.data;
+
+      // 3. Se lee la propiedad 'aten_num_receta' del objeto correcto.
+      let numeroReceta = atencionActual.aten_num_receta;
+
+      // Si la atención aún NO tiene un número de receta...
+      if (!numeroReceta) {
+        console.log("Generando nuevo número de receta...");
+        // a. Se pide un nuevo secuencial al backend.
+        const secuencialResponse = await api.post("/api/v1/secuencias/receta", {
+          locationId: selectedCita.cita_cod_sucu,
+        });
+        numeroReceta = secuencialResponse.data.secuencial;
+
+        // b. Se actualiza la atención en la base de datos con el nuevo número.
+        await api.patch(
+          `/api/v1/atenciones/${atencionGuardadaId}/asignar-receta`,
+          {
+            numeroReceta,
+          }
+        );
+      }
+
+      // 3. Una vez que tenemos el número, se procede con la impresión.
+      setImprimiendoReceta(true);
+    } catch (error) {
+      // Manejo de errores.
+      console.error("Error en el proceso de impresión de receta:", error);
+      setSnackbarMessage("Error al generar o asignar el número de receta.");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+    } finally {
+      // --- 4. SE LIBERA EL BLOQUEO ---
+      // Al final del proceso (ya sea con éxito o error), se desactiva el seguro.
+      setIsGeneratingReceta(false);
     }
   };
 
@@ -1021,16 +1047,29 @@ const MedicinaGeneral = () => {
 
                   {/* --- CAMBIO PRINCIPAL: El botón se mueve aquí --- */}
                   {/* Se coloca el botón directamente en la columna izquierda, después de la cuadrícula de datos. */}
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={() => setOpenHistoriaClinicaModal(true)}
-                    startIcon={<MedicalServices />}
-                    // Se añade un margen superior para separarlo de los datos.
-                    sx={{ mt: 3 }}
-                  >
-                    Historia Clínica
-                  </Button>
+                  <Box sx={{ mt: 2, display: "flex", gap: 2 }}>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={() => setOpenHistoriaClinicaModal(true)}
+                    >
+                      Historia Clínica
+                    </Button>
+
+                    {/* --- CAMBIO 5: Lógica de renderizado condicional para el botón --- */}
+                    {/* Justificación: Se verifica si la ubicación activa es 3 (Procongelados). */}
+                    {/* Si es así, se renderiza el botón. En caso contrario, no se muestra nada. */}
+                    {activeLocation === 3 && (
+                      <Button
+                        variant="contained"
+                        color="secondary"
+                        onClick={() => setOpenEvalOsteoModal(true)}
+                        startIcon={<AccessibilityNew />}
+                      >
+                        Evaluación Osteomuscular
+                      </Button>
+                    )}
+                  </Box>
                 </div>
 
                 {/* --- COLUMNA DERECHA (sin cambios) --- */}
@@ -1040,7 +1079,7 @@ const MedicinaGeneral = () => {
                     <span>
                       {datosEmpleado?.departamento || "No disponible"}
                     </span>
-                  </div>                  
+                  </div>
                   <div className={styles.infoItem}>
                     <strong>Sección:</strong>
                     <span>{datosEmpleado?.seccion || "No disponible"}</span>
@@ -2476,51 +2515,29 @@ const MedicinaGeneral = () => {
           </Button>
 
           {/* Botones de acción (Guardar y Cancelar) */}
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "flex-end",
-              gap: 2,
-              marginTop: "20px",
-            }}
-          >
+          <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 2, marginTop: "20px" }}>
             {atencionGuardadaId ? (
               // VISTA POST-GUARDADO
-              <>
-                <Button
-                  variant="outlined"
-                  color="secondary"
-                  onClick={handlePrintReceta}
-                  startIcon={<PrintIcon />}
-                >
-                  Imprimir Receta
+              // Se envuelve en un Fragment con una 'key' única y estable.
+              <React.Fragment key="post-save-buttons">
+                <Button variant="outlined" color="secondary" onClick={handlePrintReceta} startIcon={<PrintIcon />} disabled={isGeneratingReceta}>
+                  {isGeneratingReceta ? "Generando..." : "Imprimir Receta"}
                 </Button>
-                <Button
-                  variant="contained"
-                  color="success"
-                  onClick={handleCloseModal}
-                >
+                <Button variant="contained" color="success" onClick={handleCloseModal}>
                   Finalizar
                 </Button>
-              </>
+              </React.Fragment>
             ) : (
               // VISTA ANTES DE GUARDAR
-              <>
-                <Button
-                  variant="contained"
-                  color="error"
-                  onClick={handleConfirmCancel}
-                >
+              // Se envuelve en un Fragment con una 'key' única y estable diferente.
+              <React.Fragment key="pre-save-buttons">
+                <Button variant="contained" color="error" onClick={handleConfirmCancel}>
                   Cancelar
                 </Button>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={handleGuardarAtencion}
-                >
+                <Button variant="contained" color="primary" onClick={handleGuardarAtencion}>
                   Guardar Atención
                 </Button>
-              </>
+              </React.Fragment>
             )}
           </Box>
         </Box>
@@ -2958,6 +2975,14 @@ const MedicinaGeneral = () => {
           </Box>
         </Box>
       </Modal>
+      {openEvalOsteoModal && (
+        <EvaluacionOsteomuscularModal
+          open={openEvalOsteoModal}
+          onClose={() => setOpenEvalOsteoModal(false)}
+          pacienteId={selectedCita?.cita_cod_pacie}
+          pacienteData={paciente}
+        />
+      )}
 
       {/* Snackbar para mostrar mensajes */}
       <Snackbar

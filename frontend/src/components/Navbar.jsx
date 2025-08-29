@@ -117,7 +117,7 @@ export default function Navbar({ open, setOpen }) {
               <div className={`submenu ${openSubmenu === 'reportes' ? 'open' : ''}`}>
                 <div className="submenu-content">
                   <NavLink to="/reporte-atenciones" onClick={handleLinkClick}><FileText size={16} /><span>Atenciones</span></NavLink>
-                  <NavLink to="/enfermreport" onClick={handleLinkClick}><HeartPulse size={16} /><span>Atenciones Enfermería</span></NavLink>
+                  <NavLink to="/reporte-enfermeria" onClick={handleLinkClick}><HeartPulse size={16} /><span>Reporte Enfermería</span></NavLink>
                   <NavLink to="/cie10report" onClick={handleLinkClick}><Activity size={16} /><span>Reporte CIE10</span></NavLink>
                   <NavLink to="/prevencionreport" onClick={handleLinkClick}><ShieldCheck size={16} /><span>Reporte Prevención</span></NavLink>
                   <NavLink to="/morbireport" onClick={handleLinkClick}><BriefcaseMedical size={16} /><span>Reporte Morbilidad</span></NavLink>

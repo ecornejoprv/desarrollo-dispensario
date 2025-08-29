@@ -48,6 +48,21 @@ const numeroALetras = (num) => {
 
 const formatDate = () => new Date().toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" });
 
+const getLocationSpecificData = (locationId) => {
+    // Si la ubicación es 3 (Procongelados)
+    if (locationId === 3) {
+        return {
+            city: 'Machachi',
+            formCode: 'RDM027'
+        };
+    }
+    // Por defecto, se usan los datos de Provefrut / Nintanga
+    return {
+        city: 'Guaytacama',
+        formCode: 'Form: FJS-PV0012'
+    };
+};
+
 // --- SUB-COMPONENTE PARA LA CABECERA DINÁMICA ---
 const RecetaHeader = ({ locationId, numeroReceta }) => {
     // Si la ubicación es 3 (Procongelados)
@@ -131,6 +146,7 @@ export const RecetaMedicaPrint = ({ atencionId, onPrintFinish }) => {
         signos_alarma, alergias, aten_num_receta, aten_cod_disu 
     } = datos;
 
+    const { city, formCode } = getLocationSpecificData(aten_cod_disu);
     const prescripcionesEmpresa = prescripciones?.filter(p => p.pres_tip_pres === "Empresa") || [];
     const prescripcionesExterna = prescripciones?.filter(p => p.pres_tip_pres === "Externa") || [];
 
@@ -138,7 +154,7 @@ export const RecetaMedicaPrint = ({ atencionId, onPrintFinish }) => {
       <div className="column">
         <RecetaHeader locationId={aten_cod_disu} numeroReceta={aten_num_receta} />
         
-        <div className="date">Guaytacama, {formatDate()}</div>
+        <div className="date">{city}, {formatDate()}</div>
         
         <div className="section-title">Datos del Paciente</div>
         <div className="patient-data">
@@ -147,35 +163,37 @@ export const RecetaMedicaPrint = ({ atencionId, onPrintFinish }) => {
             <span><strong>Edad:</strong> {calcularEdad(pacie_fec_nac)} años</span>
         </div>
         
-        <div className="section-title">Alergias Conocidas</div>
-        <div className="patient-data">
-            {alergias?.length > 0 ? (
-                <span style={{color: 'red', fontWeight: 'bold'}}>
-                    {alergias.map(a => capitalize(a.aler_nom_aler)).join(', ')}
-                </span>
-            ) : (
-                <span>N/A</span>
-            )}
-        </div>
+        {type === 'receta' && (
+          <>
+            <div className="section-title">Alergias</div>
+            <div className="patient-data">
+                {alergias?.length > 0 ? (
+                    <span style={{color: 'red', fontWeight: 'bold'}}>{alergias.map(a => capitalize(a.aler_nom_aler)).join(', ')}</span>
+                ) : (
+                    <span>N/A</span>
+                )}
+            </div>
+          </>
+        )}
         
         {type === 'receta' && (
           <>
             {diagnosticos?.length > 0 && (
                 <>
-                    <div className="section-title">Diagnóstico(s) (CIE-10)</div>
+                    <div className="section-title">Diagnóstico(s) (CIE-10):</div>
                     <ul className="list">{diagnosticos.map((d, i) => <li key={i}>{d.cie10_id_cie10} - {d.cie10_nom_cie10}</li>)}</ul>
                 </>
             )}
-            <div className="section-title">Rp. (Receta)</div>
+            <div className="section-title">Rp.</div>
             {prescripcionesEmpresa.length > 0 && (
                 <>
-                    <div className="med-group-title">Medicación Interna</div>
+                    <div className="med-group-title">Medicación Interna:</div>
                     <div className="prescripciones-list">{prescripcionesEmpresa.map((p, i) => <div key={i} className="prescripcion-item">{i + 1}. {capitalize(p.pres_nom_prod)} - #{p.pres_can_pres} ({numeroALetras(p.pres_can_pres)}) {p._siglas_unid || "UN"}</div>)}</div>
                 </>
             )}
             {prescripcionesExterna.length > 0 && (
                 <>
-                    <div className="med-group-title">Medicación Externa</div>
+                    <div className="med-group-title">Medicación Externa:</div>
                     <div className="prescripciones-list">{prescripcionesExterna.map((p, i) => <div key={i} className="prescripcion-item">{i + 1}. {capitalize(p.pres_nom_prod)} - #{p.pres_can_pres} ({numeroALetras(p.pres_can_pres)}) {p._siglas_unid || "UN"}</div>)}</div>
                 </>
             )}
@@ -185,7 +203,7 @@ export const RecetaMedicaPrint = ({ atencionId, onPrintFinish }) => {
           <>
             {prescripciones?.length > 0 && (
                 <>
-                    <div className="section-title">Indicaciones Farmacológicas</div>
+                    <div className="section-title">Indicaciones Farmacológicas:</div>
                     {prescripciones.map((p, i) => (
                         <div key={i} className="indicacion-farmacologica">
                             <div className="med-name">{i + 1}. {capitalize(p.pres_nom_prod)}</div>
@@ -195,18 +213,24 @@ export const RecetaMedicaPrint = ({ atencionId, onPrintFinish }) => {
                     ))}
                 </>
             )}
-            {indicaciones_generales?.length > 0 && (
-                <>
-                    <div className="section-title">Indicaciones no Farmacológicas</div>
-                    <ul className="list">{indicaciones_generales.map((ind, i) => <li key={i}>{ind.indi_des_indi}</li>)}</ul>
-                </>
-            )}
-            {signos_alarma?.length > 0 && (
-                <>
-                    <div className="section-title">Signos de Alarma</div>
-                    <ul className="list">{signos_alarma.map((s, i) => <li key={i}>{s.signa_des_signa}</li>)}</ul>
-                </>
-            )}
+            <>
+              <div className="section-title">Indicaciones no Farmacológicas:</div>
+              <ul className="list">
+                {indicaciones_generales?.length > 0 
+                  ? indicaciones_generales.map((ind, i) => <li key={i}>{ind.indi_des_indi}</li>)
+                  : null
+                }
+              </ul>
+            </>
+            <>
+              <div className="section-title">Signos de Alarma:</div>
+              <ul className="list">
+                {signos_alarma?.length > 0
+                  ? signos_alarma.map((s, i) => <li key={i}>{s.signa_des_signa}</li>)
+                  : null
+                }
+              </ul>
+            </>
           </>
         )}
         <div className="signature">
@@ -214,7 +238,7 @@ export const RecetaMedicaPrint = ({ atencionId, onPrintFinish }) => {
             <span>{medico_nombre || 'MÉDICO'}</span>
         </div>
         <div className="form-code">
-            Form: FJS-PV0012
+            <div className="form-code">{formCode}</div>
         </div>
       </div>
     );

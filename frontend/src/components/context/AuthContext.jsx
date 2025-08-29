@@ -1,4 +1,3 @@
-// src/context/AuthContext.jsx (Código Absolutamente Completo y Corregido)
 // ==============================================================================
 // @summary: Se actualiza la función 'login' para establecer una ubicación activa
 //           predeterminada inmediatamente después de iniciar sesión. Esto mejora

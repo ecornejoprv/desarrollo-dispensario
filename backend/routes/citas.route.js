@@ -19,6 +19,7 @@ import {
     actualizarEstadoCita,
     obtenerAtenciones,
     obtenerEstadisticasAtenciones,
+    obtenerEnfermeriaStaff,
 } from '../controllers/citas.controller.js';
 
 const router = express.Router();
@@ -35,6 +36,7 @@ router.get('/medicos/:codigo', obtenerMedicoPorCodigo);
 router.get('/tiposactividades', obtenerActividades);
 router.get('/atenciones', obtenerAtenciones);
 router.get('/atenciones/estadisticas', obtenerEstadisticasAtenciones);
+router.get('/staff/enfermeria', obtenerEnfermeriaStaff);
 
 // Rutas para acciones específicas
 router.post('/actividades/registrar', registrarActividadesAdmin);

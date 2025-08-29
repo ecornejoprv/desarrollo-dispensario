@@ -404,67 +404,85 @@ ORDER BY acti_nom_acti ASC`;
 
 // Registrar actividades en postconsulta
 export const registrarActividadesPost = async (medicoId, actividades, citaId = null, pacienteId = null, observaciones = '', userCompanies = []) => {
-    const client = await db.connect();
-    try {
-        await client.query('BEGIN');
+  // Se inicia la conexión a la base de datos para poder usar transacciones.
+  const client = await db.connect();
+  try {
+    // Se inicia una transacción. Si algo falla, se revierte todo.
+    await client.query('BEGIN');
 
-        // VALIDACIÓN DE PERMISOS para paciente/cita si están relacionados
-        if (pacienteId) {
-            const pacienteResult = await client.query(`SELECT pacie_cod_empr FROM dispensario.dmpacie WHERE pacie_cod_pacie = $1`, [pacienteId]);
-            if (!pacienteResult.rows[0] || !userCompanies.includes(pacienteResult.rows[0].pacie_cod_empr)) {
-                throw new Error("No tiene permiso para registrar actividades para este paciente o el paciente no existe.");
-            }
-        }
-        if (citaId) {
-            const cita = await getCitaById(citaId, userCompanies); // Reutiliza getCitaById con userCompanies
-            if (!cita) {
-                throw new Error("No tiene permiso para registrar actividades para esta cita o la cita no existe.");
-            }
-        }
-
-        const fechaActual = new Date().toISOString();
-
-        if (!Array.isArray(actividades)) {
-            throw new Error('El parámetro actividades debe ser un array');
-        }
-
-        const actividadesRegistradas = [];
-        for (const acti_cod_acti of actividades) {
-            const result = await client.query(
-                `INSERT INTO dispensario.dmpost (
-                    post_cod_pacie,
-                    post_cod_medi,
-                    post_cod_acti,
-                    post_cod_cita,
-                    post_fec_post,
-                    post_obs_post
-                ) VALUES ($1, $2, $3, $4, $5, $6)
-                RETURNING post_cod_post, post_cod_acti`,
-                [
-                    pacienteId,
-                    medicoId,
-                    acti_cod_acti,
-                    citaId,
-                    fechaActual,
-                    observaciones || null
-                ]
-            );
-            actividadesRegistradas.push(result.rows[0]);
-        }
-
-        await client.query('COMMIT');
-        return {
-            success: true,
-            message: `${actividades.length} actividades registradas correctamente`,
-            data: actividadesRegistradas
-        };
-    } catch (error) {
-        await client.query('ROLLBACK');
-        console.error('Error al registrar actividades:', error.message);
-        throw new Error(`Error al registrar actividades: ${error.message}`);
-    } finally {
-        client.release();
+    // Se realizan las validaciones de permisos para asegurar que el usuario puede actuar sobre el paciente.
+    if (pacienteId) {
+      const pacienteResult = await client.query(`SELECT pacie_cod_empr FROM dispensario.dmpacie WHERE pacie_cod_pacie = $1`, [pacienteId]);
+      if (!pacienteResult.rows[0] || !userCompanies.includes(pacienteResult.rows[0].pacie_cod_empr)) {
+        throw new Error("No tiene permiso para registrar actividades para este paciente o el paciente no existe.");
+      }
     }
+    if (citaId) {
+      const cita = await getCitaById(citaId, userCompanies);
+      if (!cita) {
+        throw new Error("No tiene permiso para registrar actividades para esta cita o la cita no existe.");
+      }
+    }
+
+    // --- CORRECCIÓN CLAVE ---
+    // Se elimina la generación de la fecha en JavaScript que causaba el problema de zona horaria.
+    // const fechaActual = new Date().toISOString(); // <-- LÍNEA ELIMINADA
+
+    // Se prepara la consulta SQL para insertar en la tabla dmpost.
+    const query = `
+      INSERT INTO dispensario.dmpost (
+        post_cod_pacie,
+        post_cod_medi,
+        post_cod_acti,
+        post_cod_cita,
+        post_fec_post,      -- Esta columna ahora será manejada por PostgreSQL
+        post_obs_post
+      ) VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP, $5) -- Se usa la función CURRENT_TIMESTAMP de SQL.
+      RETURNING post_cod_post, post_cod_acti
+    `;
+
+    // Se valida que 'actividades' sea un array.
+    if (!Array.isArray(actividades)) {
+      throw new Error('El parámetro actividades debe ser un array');
+    }
+
+    // Se itera sobre cada actividad seleccionada para realizar la inserción en la base de datos.
+    const actividadesRegistradas = [];
+    for (const acti_cod_acti of actividades) {
+      // Se definen los valores para los parámetros de la consulta.
+      // Nótese que la fecha ya no se pasa aquí, pues la maneja directamente la base de datos.
+      const values = [
+        pacienteId,
+        medicoId,
+        acti_cod_acti,
+        citaId,
+        observaciones || null
+      ];
+
+      // Se ejecuta la consulta de inserción. PostgreSQL se encargará de poner la fecha y hora correctas.
+      const result = await client.query(query, values);
+      actividadesRegistradas.push(result.rows[0]);
+    }
+
+    // Si todas las inserciones fueron exitosas, se confirma la transacción.
+    await client.query('COMMIT');
+    
+    // Se devuelve una respuesta de éxito.
+    return {
+      success: true,
+      message: `${actividades.length} actividades registradas correctamente`,
+      data: actividadesRegistradas
+    };
+  } catch (error) {
+    // Si ocurre cualquier error durante el proceso, se revierte la transacción.
+    await client.query('ROLLBACK');
+    console.error('Error al registrar actividades:', error.message);
+    // Se lanza el error para que el controlador lo capture.
+    throw new Error(`Error al registrar actividades: ${error.message}`);
+  } finally {
+    // Se libera la conexión con la base de datos, sin importar si hubo éxito o error.
+    client.release();
+  }
 };
 
 // Obtener médico por username (datos maestros)
@@ -665,4 +683,33 @@ ORDER BY total_atenciones DESC`;
         console.error('Error en getEstadisticasAtenciones (dmpost):', error.message);
         throw new Error(`Error al obtener estadísticas: ${error.message}`);
     }
+};
+
+export const getEnfermeriaStaff = async (userCompanies = []) => {
+  let query = `
+    SELECT m.medic_cod_medic, m.medic_nom_medic
+    FROM dispensario.dmmedic m
+    JOIN dispensario.dmespec e ON m.medic_cod_espe = e.espe_cod_espe
+    WHERE e.espe_nom_espe = 'Enfermeria' AND m.medic_est_medic = 'AC'
+  `;
+
+  // Este filtro es opcional, pero es una buena práctica si el personal de enfermería
+  // también está asignado a empresas específicas. Si no es el caso, puedes eliminarlo.
+  const params = [];
+  let paramIndex = 1;
+  if (userCompanies && userCompanies.length > 0) {
+    // Asumiendo que existe una tabla de relación medico-empresa
+    // Si no, esta parte se puede ajustar o eliminar.
+    // Por ahora, asumimos que todos los enfermeros son visibles si tienes acceso a alguna empresa.
+  }
+
+  query += ` ORDER BY m.medic_nom_medic ASC;`;
+
+  try {
+    const { rows } = await db.query(query, params);
+    return rows;
+  } catch (error) {
+    console.error('Error al obtener personal de enfermería:', error.message);
+    throw new Error('Error al obtener personal de enfermería');
+  }
 };

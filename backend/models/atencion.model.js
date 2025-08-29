@@ -112,8 +112,7 @@ export const registrarAtencion = async (atencionData) => {
     aten_obs_ate,
     aten_cert_aten,
     aten_num_sesi,
-    aten_tip_aten,
-    aten_num_receta,
+    aten_tip_aten
   } = atencionData;
 
   // Insertar la atención
@@ -131,9 +130,8 @@ export const registrarAtencion = async (atencionData) => {
       aten_obs_ate,
       aten_tip_aten,      
       aten_cert_aten,
-      aten_num_sesi,
-      aten_num_receta
-    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+      aten_num_sesi
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
     RETURNING *;
   `;
 
@@ -151,10 +149,20 @@ export const registrarAtencion = async (atencionData) => {
     aten_tip_aten,
     aten_cert_aten,
     aten_num_sesi,
-    aten_num_receta,
   ]);
 
   return atencionRows[0]; // Devuelve la atención registrada
+};
+
+export const asignarNumeroReceta = async (atencionId, numeroReceta) => {
+  const query = `
+    UPDATE dispensario.dmatenc
+    SET aten_num_receta = $1
+    WHERE aten_cod_aten = $2
+    RETURNING *;
+  `;
+  const { rows } = await db.query(query, [numeroReceta, atencionId]);
+  return rows[0];
 };
 
 // 4. Funciones adicionales (opcional)
@@ -374,16 +382,36 @@ export const getVigilanciasByAtencionId = async (atencionId) => {
 };
 
 export const getMorbilidadByAtencionId = async (atencionId) => {
+  // --- CONSULTA SQL CORREGIDA Y DEFINITIVA ---
   const query = `
-    SELECT m.*, 
-      (SELECT array_agg(sist_nom_sist) 
-       FROM dispensario.dmsiste s 
-       WHERE s.sist_cod_morb = m.morb_cod_morb) as sistemas_afectados
-    FROM dispensario.dmmorbi m
-    WHERE m.morb_cod_aten = $1;
+    SELECT
+      m.morb_tip_morb,
+      -- CORRECCIÓN CLAVE: Se usa 'text[]' que es un tipo de dato estándar
+      -- en lugar del tipo personalizado 'dispensario.sistema_tipo[]'.
+      COALESCE(
+        ARRAY_AGG(s.sist_nom_sist) FILTER (WHERE s.sist_nom_sist IS NOT NULL),
+        '{}'::text[] 
+      ) AS sistemas_afectados
+    FROM 
+      dispensario.dmmorbi m
+    LEFT JOIN
+      dispensario.dmsiste s ON m.morb_cod_morb = s.sist_cod_morb 
+    WHERE 
+      m.morb_cod_aten = $1
+    GROUP BY
+      m.morb_cod_morb, m.morb_tip_morb;
   `;
-  const { rows } = await db.query(query, [atencionId]);
-  return rows[0] || null;
+  try {
+    // Se ejecuta la consulta con el ID de la atención.
+    const { rows } = await db.query(query, [atencionId]);
+    
+    // Se devuelve el primer resultado encontrado o null.
+    return rows[0] || null;
+  } catch (error) {
+    // Se captura y muestra cualquier error de la base de datos.
+    console.error('ERROR DETALLADO DEL BACKEND en getMorbilidadByAtencionId:', error);
+    throw new Error('Error en la base de datos al obtener datos de morbilidad.');
+  }
 };
 
 export const getPrescripcionesByAtencionId = async (atencionId) => {
@@ -401,6 +429,16 @@ export const getIndicacionesByAtencionId = async (atencionId) => {
     SELECT * FROM dispensario.dmindic 
     WHERE indi_cod_aten = $1
     ORDER BY indi_cod_indi;
+  `;
+  const { rows } = await db.query(query, [atencionId]);
+  return rows;
+};
+
+export const getSignosAlarmaByAtencionId = async (atencionId) => {
+  const query = `
+    SELECT * FROM dispensario.dmsigna 
+    WHERE signa_cod_aten = $1
+    ORDER BY signa_cod_signa;
   `;
   const { rows } = await db.query(query, [atencionId]);
   return rows;
@@ -427,4 +465,92 @@ export const getTriajeByAtencionId = async (atencionId) => {
   `;
   const { rows } = await db.query(query, [atencionId]);
   return rows[0] || null; // Devuelve el objeto de triaje o null si no se encuentra
+};
+
+export const getReporteEnfermeria = async (filters = {}, userCompanies = []) => {
+  // Se desestructuran todos los posibles filtros.
+  const { fechaDesde, fechaHasta, medicoId, page = 1, limit = 10 } = filters;
+  const offset = (page - 1) * limit;
+
+  // Se prepara la base de la consulta WHERE que será común para todas las queries.
+  let whereClause = ` WHERE act.acti_tip_acti IN ('POSTCONSULTA', 'ADMINISTRATIVAS') `;
+  const params = [];
+  let paramIndex = 1;
+
+  // Se añaden los filtros dinámicos a la cláusula WHERE y al array de parámetros.
+  if (userCompanies && userCompanies.length > 0) {
+    whereClause += ` AND pac.pacie_cod_empr = ANY($${paramIndex}::integer[])`;
+    params.push(userCompanies);
+    paramIndex++;
+  } else {
+    return { reporteData: [], total: 0, totalPostConsulta: 0, totalGeneral: 0 }; // Devuelve ceros si no hay empresas
+  }
+  if (fechaDesde) {
+    whereClause += ` AND p.post_fec_post::date >= $${paramIndex}::date`;
+    params.push(fechaDesde);
+    paramIndex++;
+  }
+  if (fechaHasta) {
+    whereClause += ` AND p.post_fec_post::date <= $${paramIndex}::date`;
+    params.push(fechaHasta);
+    paramIndex++;
+  }
+  if (medicoId) {
+    whereClause += ` AND p.post_cod_medi = $${paramIndex}`;
+    params.push(medicoId);
+    paramIndex++;
+  }
+  
+  // --- NUEVA CONSULTA DE CONTEO AVANZADA ---
+  // Esta única consulta calcula los 3 totales que necesitamos usando filtros condicionales.
+  const countQuery = `
+    SELECT
+        COUNT(*) AS total,
+        COUNT(*) FILTER (WHERE p.post_cod_cita IS NOT NULL) AS post_consulta_count,
+        COUNT(*) FILTER (WHERE p.post_cod_cita IS NULL) AS general_count
+    FROM dispensario.dmpost p
+    LEFT JOIN dispensario.dmpacie pac ON p.post_cod_pacie = pac.pacie_cod_pacie
+    LEFT JOIN dispensario.dmacti act ON p.post_cod_acti = act.acti_cod_acti
+    ${whereClause}
+  `;
+  
+  // La consulta de datos paginados sigue siendo la misma, pero reutiliza la cláusula WHERE.
+  const dataQuery = `
+    SELECT
+      p.post_cod_post, p.post_fec_post,
+      pac.pacie_nom_pacie || ' ' || pac.pacie_ape_pacie AS paciente_nombre_completo,
+      med.medic_nom_medic AS profesional_nombre,
+      act.acti_nom_acti AS actividad_nombre,
+      p.post_obs_post AS observaciones,
+      CASE WHEN p.post_cod_cita IS NOT NULL THEN 'Post-Consulta (Cita)' ELSE 'Actividad General' END AS tipo_registro
+    FROM 
+      dispensario.dmpost p
+      LEFT JOIN dispensario.dmpacie pac ON p.post_cod_pacie = pac.pacie_cod_pacie
+      LEFT JOIN dispensario.dmmedic med ON p.post_cod_medi = med.medic_cod_medic
+      LEFT JOIN dispensario.dmacti act ON p.post_cod_acti = act.acti_cod_acti
+    ${whereClause}
+    ORDER BY p.post_fec_post DESC
+    LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
+  `;
+  const dataParams = [...params, limit, offset];
+  
+  try {
+    // Se ejecutan ambas consultas en paralelo.
+    const [totalResult, dataResult] = await Promise.all([
+      db.query(countQuery, params),
+      db.query(dataQuery, dataParams)
+    ]);
+
+    // Se extraen los resultados y se devuelven en un objeto estructurado.
+    const totals = totalResult.rows[0];
+    return { 
+      reporteData: dataResult.rows, 
+      total: parseInt(totals.total, 10),
+      totalPostConsulta: parseInt(totals.post_consulta_count, 10),
+      totalGeneral: parseInt(totals.general_count, 10)
+    };
+  } catch (error) {
+    console.error('Error en la consulta del reporte de enfermería:', error.message);
+    throw new Error(`Error al generar el reporte de enfermería: ${error.message}`);
+  }
 };

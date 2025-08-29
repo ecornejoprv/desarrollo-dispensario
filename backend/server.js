@@ -35,6 +35,8 @@ import reportesSistemasRoutes from './routes/morbi.route.js';
 import secuenciasRoutes from './routes/secuencias.route.js';
 import recetaRoutes from './routes/receta.route.js';
 import medicoRoutes from './routes/medico.route.js';
+import reporteEnfermeriaRoutes from './routes/reporteEnfermeria.route.js';
+
 
 // --- 2. IMPORTACIÓN DE MIDDLEWARES DE SEGURIDAD ---
 // Middleware principal que verifica el token y carga los permisos TOTALES del usuario.
@@ -78,6 +80,7 @@ app.use('/api/v1/reportes/cie10', protect, filterByActiveCompany, reporteRoutes)
 app.use('/api/v1/reportes/combinado', protect, filterByActiveCompany, reportecombinadoroute);
 app.use('/api/v1/reportes/prevencion', protect, filterByActiveCompany, prevencionRoutes);
 app.use('/api/v1/reportes/morbilidad', protect, filterByActiveCompany, reportesSistemasRoutes);
+app.use('/api/v1/reportes/enfermeria', protect, reporteEnfermeriaRoutes); // <-- AÑADE ESTA LÍNEA
 app.use('/api/v1/secuencias', secuenciasRoutes);
 
 // Módulos que solo necesitan autenticación pero son globales (no dependen de la empresa activa)

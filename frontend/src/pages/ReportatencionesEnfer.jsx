@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api'; 
 import * as XLSX from 'xlsx';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import styles from './styles/reporteActividades.module.css';
@@ -23,26 +23,34 @@ const ReporteActividades = () => {
   });
 
   const fetchActividades = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const params = {
-        fechaDesde: filters.fechaDesde || undefined,
-        fechaHasta: filters.fechaHasta || undefined,
-        tipoActividad: 'POSTCONSULTA'
-      };
+        setLoading(true);
+        setError(null);
+        try {
+            const params = {
+                fechaDesde: filters.fechaDesde || undefined,
+                fechaHasta: filters.fechaHasta || undefined,
+                tipoActividad: 'POSTCONSULTA'
+            };
 
-      Object.keys(params).forEach(key => params[key] === undefined && delete params[key]);
+            Object.keys(params).forEach(key => params[key] === undefined && delete params[key]);
 
-      const { data } = await axios.get('/api/v1/atenciones', { params });
-      setActividades(data.data || data);
-    } catch (err) {
-      console.error('Error al filtrar:', err);
-      setError('Error al cargar actividades');
-    } finally {
-      setLoading(false);
-    }
-  };
+            // --- CORRECCIÓN 3: Se usa 'api' en lugar de 'axios'. ---
+            // 'api' ya está configurado para enviar el token de autenticación en cada petición.
+            const { data } = await api.get('/api/v1/citas/atenciones', { params });
+            
+            setActividades(data.data || data);
+        } catch (err) {
+            console.error('Error al filtrar:', err);
+            // Se mejora el mensaje de error para ser más específico.
+            if (err.response && err.response.status === 401) {
+                setError('No estás autorizado para ver este reporte. Por favor, inicia sesión de nuevo.');
+            } else {
+                setError('Error al cargar actividades.');
+            }
+        } finally {
+            setLoading(false);
+        }
+    };
 
   // Función para agrupar actividades por paciente, fecha y hora exactas
   const getActividadesAgrupadas = () => {

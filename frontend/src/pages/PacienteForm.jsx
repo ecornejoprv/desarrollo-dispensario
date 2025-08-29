@@ -90,7 +90,7 @@ export default function PacienteForm({ guardarPaciente, pacienteEditando, userAl
         try {
             setVerificandoCedula(true);
             // CAMBIO CRÍTICO: Usar /api/v1 para la ruta de verificación
-            let url = `/api/v1/verificar-cedula?cedula=${cedula}`; 
+            let url = `/api/v1/pacientes/verificar-cedula?cedula=${cedula}`;  
             
             if (pacienteEditando && pacienteEditando.pacie_cod_pacie) { 
                 url += `&id=${pacienteEditando.pacie_cod_pacie}`;

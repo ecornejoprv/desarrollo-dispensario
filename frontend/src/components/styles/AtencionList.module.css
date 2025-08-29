@@ -1,0 +1,393 @@
+/* ==============================================================================
+ * @file: AtencionList.css
+ * @summary: Hoja de estilos COMPLETA y DEFINITIVA para el componente AtencionList.
+ * @version: 10.0.0 (Final Unificada)
+ * @description: Contiene todos los estilos necesarios, tanto para la TABLA
+ * principal de la lista de atenciones como para el MODAL de detalles
+ * con su diseño de "dashboard clínico". Este archivo es la única
+ * fuente de verdad para los estilos de este componente.
+ * ============================================================================== */
+
+/* --- 1. SISTEMA DE DISEÑO (VARIABLES GLOBALES) --- */
+/*
+ * Se definen variables para toda la hoja de estilos. Esto asegura que
+ * todos los elementos (tablas, modales, fuentes, bordes) se vean consistentes.
+*/
+:root {
+  /* Paleta de Colores */
+  --color-primary-text: #0d6efd;      /* Azul principal para títulos y enlaces */
+  --color-dark-text: #212529;      /* Texto principal, casi negro */
+  --color-body-text: #495057;      /* Texto secundario, gris oscuro */
+  --color-muted-text: #6c757d;      /* Texto de etiquetas, gris claro */
+  --color-border: #dee2e6;        /* Borde sutil y claro */
+  --color-background-light: #f8f9fa;/* Fondo para secciones resaltadas */
+  --color-background-white: #ffffff;
+  
+  /* Tipografía */
+  --font-family-base: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-size-base: 0.9rem;      /* 14.4px (Tamaño base ajustado) */
+  --font-size-sm: 0.8rem;      /* 12.8px */
+  --font-size-xs: 0.75rem;     /* 12px (Para etiquetas) */
+  
+  /* Bordes y Sombras */
+  --border-radius: 8px;
+  --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+/* --- 2. ESTILOS PARA LA LISTA PRINCIPAL DE ATENCIONES --- */
+/*
+ * Estilos para la tabla que se muestra en la página de Historia Clínica.
+*/
+
+/* Contenedor principal para la lista de atenciones. */
+.atencion-list {
+  /* Define un margen superior para separar la lista de los elementos de arriba. */
+  margin-top: 1.5rem;
+  /* Permite el desplazamiento horizontal si la tabla es demasiado ancha. */
+  overflow-x: auto;
+}
+
+/* Estilo para la tabla de atenciones. */
+.tabla-atenciones {
+  /* La tabla ocupará todo el ancho de su contenedor. */
+  width: 100%;
+  /* Colapsa los bordes de las celdas. */
+  border-collapse: collapse;
+  /* Tamaño de fuente base para la tabla. */
+  font-size: var(--font-size-base);
+  /* Fondo blanco para la tabla. */
+  background-color: var(--color-background-white);
+  /* Bordes redondeados. */
+  border-radius: var(--border-radius);
+  /* Sombra sutil para darle profundidad. */
+  box-shadow: var(--box-shadow);
+  /* Oculta el contenido que se salga de los bordes redondeados. */
+  overflow: hidden;
+  /* Crucial para que los anchos de columna definidos se respeten. */
+  table-layout: fixed;
+}
+
+/* Estilo para las celdas de cabecera (th) y de datos (td). */
+.tabla-atenciones th,
+.tabla-atenciones td {
+  /* Espaciado interno para dar aire al contenido. */
+  padding: 14px 16px;
+  /* Alineación del texto a la izquierda. */
+  text-align: left;
+  /* Línea divisoria sutil entre las filas. */
+  border-bottom: 1px solid #e9ecef;
+  /* Centra el contenido verticalmente. */
+  vertical-align: middle;
+  /* Evita que el texto se parta en varias líneas. */
+  white-space: nowrap;
+}
+
+/* Estilo específico para las celdas de la cabecera. */
+.tabla-atenciones th {
+  /* Fondo gris oscuro para asegurar visibilidad. */
+  background-color: #f1f3f5;
+  /* Texto en negrita. */
+  font-weight: 600;
+  /* Color de texto gris oscuro. */
+  color: var(--color-body-text);
+  /* Tamaño de fuente ligeramente más pequeño. */
+  font-size: var(--font-size-sm);
+  /* Convierte el texto a mayúsculas. */
+  text-transform: uppercase;
+  /* Añade un ligero espaciado entre letras. */
+  letter-spacing: 0.5px;
+}
+
+/* Elimina el borde inferior de la última fila de la tabla. */
+.tabla-atenciones tr:last-child td {
+  border-bottom: none;
+}
+
+/* Efecto de resaltado al pasar el cursor sobre una fila. */
+.tabla-atenciones tr:hover {
+  background-color: #f1f7ff;
+}
+
+/* --- Control de Ancho Específico de Columnas --- */
+.col-fecha { width: 20%; }
+.col-motivo { width: 95%; }
+.col-especialidad { width: 15%; }
+.col-especialista { width: 30%; }
+
+/* Estilo para el motivo de la consulta, para truncar texto largo. */
+.motivo-truncado {
+  /* Cambia el cursor para indicar interactividad. */
+  cursor: pointer;
+  /* Color azul para resaltar que es un enlace. */
+  color: var(--color-primary-text);
+  /* Texto ligeramente en negrita. */
+  font-weight: 500;
+  /* Se convierte en bloque para que las propiedades de overflow funcionen. */
+  display: block;
+  /* Evita que el texto baje a la siguiente línea. */
+  white-space: nowrap;
+  /* Oculta el texto que se desborda. */
+  overflow: hidden;
+  /* Muestra "..." al final del texto cortado. */
+  text-overflow: ellipsis;
+}
+.motivo-truncado:hover {
+  text-decoration: underline;
+}
+
+/* --- 3. ESTILOS GENERALES PARA EL MODAL DE DETALLES --- */
+
+/* Contenedor principal de todos los detalles dentro del modal. */
+.details-section {
+  /* Se establece la fuente base para todo el modal. */
+  font-family: var(--font-family-base);
+  /* Se establece el color de texto base. */
+  color: var(--color-body-text);
+  /* Se establece el tamaño de fuente base. */
+  font-size: var(--font-size-base);
+  /* Un pequeño padding lateral. */
+  padding: 0 8px;
+}
+
+/* Estilo unificado para todos los títulos de sección (H4). */
+.details-section h4 {
+  /* Tamaño de fuente para los títulos. */
+  font-size: 1.1rem;
+  /* Peso de la fuente para que destaque. */
+  font-weight: 700;
+  /* Color de acento para los títulos. */
+  color: var(--color-primary-text);
+  /* Margen superior e inferior para separar las secciones. */
+  margin: 2rem 0 1.5rem 0;
+  /* Espaciado inferior interno. */
+  padding-bottom: 0.5rem;
+  /* Línea de acento debajo del título. */
+  border-bottom: 2px solid var(--color-primary-text);
+  /* Hace que el borde se ajuste al ancho del texto. */
+  display: inline-block;
+}
+
+/* --- 4. SECCIONES DE INFORMACIÓN EN EL MODAL --- */
+
+/* Estilo base para las tarjetas de información. */
+.atencion-info-basica,
+.additional-info-grid {
+  /* Se define un layout de cuadrícula. */
+  display: grid;
+  /* Las columnas se ajustan automáticamente. */
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  /* Espacio entre las celdas de la cuadrícula. */
+  gap: 1.5rem;
+  /* Espaciado interno. */
+  padding: 1.5rem;
+  /* Fondo claro. */
+  background-color: var(--color-background-light);
+  /* Bordes redondeados. */
+  border-radius: var(--border-radius);
+  /* Borde sutil. */
+  border: 1px solid var(--color-border);
+}
+
+/* Estilo para cada celda de la cuadrícula (par etiqueta-valor). */
+.info-item {
+  /* La etiqueta se pondrá encima del valor. */
+  display: flex;
+  flex-direction: column;
+}
+
+/* Estilo para los items que deben ocupar todo el ancho. */
+.item-full-width {
+  grid-column: 1 / -1;
+}
+
+/* Estilo para las ETIQUETAS (ej. "Fecha", "Tipo Morbilidad"). */
+.info-item strong {
+  /* Letra más pequeña. */
+  font-size: var(--font-size-xs);
+  /* Texto en negrita. */
+  font-weight: 700;
+  /* Color azul para la etiqueta. */
+  color: var(--color-primary-text);
+  /* Margen inferior para separar del valor. */
+  margin-bottom: 4px;
+  /* MAYÚSCULAS para un look de "dashboard". */
+  text-transform: uppercase;
+  /* Espaciado entre letras. */
+  letter-spacing: 0.5px;
+}
+
+/* Estilo para los VALORES (ej. "13/08/2025"). */
+.info-item span {
+  /* Tamaño de fuente base. */
+  font-size: var(--font-size-base);
+  /* Color de texto oscuro para el valor. */
+  color: var(--color-dark-text);
+  /* Peso normal para diferenciar de la etiqueta. */
+  font-weight: 400;
+  /* Espaciado de línea para textos largos. */
+  line-height: 1.4;
+}
+
+/* Estilos para las listas con viñetas. */
+.info-item ul {
+  /* Se resetean los estilos por defecto. */
+  list-style: none;
+  padding-left: 0;
+  /* Margen superior. */
+  margin-top: 4px;
+}
+
+.info-item li {
+  /* Se añade padding para hacer espacio para la viñeta. */
+  padding-left: 1.2em;
+  /* Se posiciona relativamente para la viñeta. */
+  position: relative;
+  /* Color y tamaño del valor. */
+  color: var(--color-dark-text);
+  font-size: var(--font-size-base);
+  /* Espacio entre cada item de la lista. */
+  margin-bottom: 0.5rem;
+}
+
+/* Se crea una viñeta personalizada (bullet) con el color de acento. */
+.info-item li::before {
+  /* Se define el contenido (el bullet). */
+  content: '•';
+  /* Se le da el color azul primario. */
+  color: var(--color-primary-text);
+  /* Se pone en negrita. */
+  font-weight: bold;
+  /* Se posiciona de forma absoluta a la izquierda. */
+  position: absolute;
+  left: 0;
+}
+
+/* --- 5. OTRAS SECCIONES DEL MODAL (Triaje, Diagnósticos, etc.) --- */
+/*
+ * El resto de los estilos para las demás secciones del modal se mantienen,
+ * pero aquí se incluyen para que el archivo esté completo.
+*/
+.triaje-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+.triaje-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background-color: #fff;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.triaje-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+}
+.triaje-icon { font-size: 1.8rem !important; }
+.triaje-item span { font-size: 0.9rem; }
+.triaje-item span strong {
+  display: block;
+  color: #6c757d;
+  font-size: 0.75rem;
+  margin-bottom: 2px;
+}
+.triaje-observaciones {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background-color: #fffbeb;
+  border-left: 5px solid #f59e0b;
+  border-radius: 0 8px 8px 0;
+  font-style: italic;
+}
+.triaje-observaciones strong {
+  font-style: normal;
+  color: #b45309;
+}
+.diagnostico-card {
+  background-color: #fff;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+}
+.diagnostico-header {
+  padding: 1rem 1.5rem;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 1rem 2rem;
+}
+.diagnostico-header-item strong {
+  display: block;
+  font-size: 0.75rem;
+  color: #6c757d;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+}
+.diagnostico-header-item span {
+  font-weight: 500;
+}
+.procedimiento-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.procedimiento-table th, .procedimiento-table td {
+  padding: 10px 1.5rem;
+  text-align: left;
+  border-bottom: 1px solid #e9ecef;
+}
+.procedimiento-table tr:last-child td {
+  border-bottom: none;
+}
+.procedimiento-table th {
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+.terapia-row {
+  background-color: #f1f3f5;
+}
+.prescripciones-table,
+.indicaciones-table,
+.referencias-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.prescripciones-table th, .prescripciones-table td,
+.indicaciones-table td, .referencias-table td {
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid #e9ecef;
+  font-size: var(--font-size-md);
+}
+.prescripciones-table tr:last-child td,
+.indicaciones-table tr:last-child td,
+.referencias-table tr:last-child td {
+  border-bottom: none;
+}
+.prescripciones-table thead {
+  background-color: #f8f9fa;
+}
+.prescripciones-table th {
+  font-weight: 600;
+  font-size: var(--font-size-sm);
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+}
+.no-data-message {
+  padding: 2rem;
+  text-align: center;
+  color: var(--color-text-secondary);
+  background-color: var(--color-background-light);
+  border-radius: var(--border-radius);
+  margin-top: 1rem;
+  font-style: italic;
+}

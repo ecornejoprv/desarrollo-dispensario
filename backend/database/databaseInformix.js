@@ -2,7 +2,7 @@ import 'dotenv/config';
 import odbc from 'odbc';
 
 const connectionString = `
-  DRIVER={IBM INFORMIX ODBC DRIVER};
+  DRIVER={IBM INFORMIX ODBC DRIVER (64-bit)};
   SERVER=${process.env.INFORMIX_SERVER};
   DATABASE=${process.env.INFORMIX_DATABASE};
   HOST=${process.env.INFORMIX_HOST};

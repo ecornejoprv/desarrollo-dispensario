@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useCallback  } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Select,
@@ -125,10 +125,9 @@ const Odontologia = () => {
     loading: true,
     error: null,
   });
-
-  // --- ESTADOS PARA GUARDADO E IMPRESIÓN ---
   const [atencionGuardadaId, setAtencionGuardadaId] = useState(null);
   const [imprimiendoReceta, setImprimiendoReceta] = useState(false);
+  const [isGeneratingReceta, setIsGeneratingReceta] = useState(false);
 
   // --- NUEVO useEffect PARA CARGAR DATOS DEL ODONTOGRAMA ---
   // Este efecto se ejecuta solo una vez cuando el componente Odontologia se monta.
@@ -238,32 +237,29 @@ const Odontologia = () => {
     }
   };
 
-  useEffect(() => {
-    const fetchCitasPendientes = async () => {
-      if (authLoading) return;
-      if (!user?.especialista) {
-        setError(
-          "No se pudo obtener el ID del especialista del perfil de usuario."
-        );
-        setLoading(false);
-        return;
-      }
-      try {
-        setLoading(true);
-        const response = await api.get(
-          `/api/v1/atenciones/citas-pendientes/${user.especialista}`
-        );
-        setCitasPendientes(response.data);
-      } catch (error) {
-        setError("Error al obtener las citas pendientes.");
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchCitasPendientes();
-  }, [user, authLoading]);
+  const fetchCitasPendientes = useCallback(async () => {
+    if (!user?.especialista) {
+      setError("No se pudo obtener el ID del especialista.");
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    try {
+      const response = await api.get(`/api/v1/atenciones/citas-pendientes/${user.especialista}`);
+      setCitasPendientes(response.data);
+    } catch (error) {
+      setError("Error al obtener las citas pendientes.");
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
 
+  useEffect(() => {
+    if (!authLoading && user) {
+      fetchCitasPendientes();
+    }
+  }, [user, authLoading, fetchCitasPendientes]);
   const obtenerDatosPaciente = async (pacienteId) => {
     try {
       const pacienteResponse = await api.get(`/api/v1/pacientes/${pacienteId}`);
@@ -359,6 +355,7 @@ const Odontologia = () => {
     setReferencias([]);
     setIndicacionesGenerales([]);
     setSignosAlarma([]);
+    fetchCitasPendientes();
   };
 
   const agregarDiagnostico = () => {
@@ -476,23 +473,8 @@ const Odontologia = () => {
   };
 
   const handleGuardarAtencion = async () => {
-    // 1. Validaciones
     if (!selectedCita || !validarCampos()) return;
-
     try {
-      // 2. Generar secuencial de receta
-      const secuencialResponse = await api.post("/api/v1/secuencias/receta", {
-        locationId: selectedCita.cita_cod_sucu,
-      });
-      if (!secuencialResponse.data.success) {
-        throw new Error(
-          secuencialResponse.data.message ||
-            "No se pudo generar el secuencial de la receta."
-        );
-      }
-      const numeroReceta = secuencialResponse.data.secuencial;
-
-      // 3. Preparar datos
       const atencionData = {
         aten_cod_paci: selectedCita.cita_cod_pacie,
         aten_cod_cita: selectedCita.cita_cod_cita,
@@ -505,10 +487,8 @@ const Odontologia = () => {
         aten_enf_actu: enfermedadActual,
         aten_obs_ate: observaciones,
         aten_tip_aten: tipoAtencion,
-        aten_num_receta: numeroReceta,
       };
 
-      // 4. Guardar Atención
       const response = await api.post("/api/v1/atenciones/registrar-atencion", {
         atencionData,
         diagnosticos,
@@ -524,19 +504,10 @@ const Odontologia = () => {
         setSnackbarSeverity("success");
         setSnackbarOpen(true);
         setAtencionGuardadaId(atencionCreada.aten_cod_aten);
-
-        // Actualizar lista de citas pendientes
-        const responseCitas = await api.get(
-          `/api/v1/atenciones/citas-pendientes/${user.especialista}`
-        );
-        setCitasPendientes(responseCitas.data);
       }
     } catch (error) {
       console.error("Error completo al guardar la atención:", error);
-      const errorMessage =
-        error.response?.data?.error ||
-        error.message ||
-        "Error al guardar la atención";
+      const errorMessage = error.response?.data?.error || error.message || "Error al guardar la atención";
       setSnackbarMessage(errorMessage);
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
@@ -761,15 +732,58 @@ const Odontologia = () => {
   };
 
   // Maneja la impresión de la receta médica
-  const handlePrintReceta = () => {
-    if (atencionGuardadaId) {
-      setImprimiendoReceta(true);
-    } else {
-      setSnackbarMessage(
-        "Debe guardar la atención antes de imprimir la receta."
-      );
+const handlePrintReceta = async () => {
+    // 1. Seguro anti-doble clic: si ya se está generando una receta, no hace nada.
+    if (isGeneratingReceta) return;
+    // 2. Validación para asegurar que haya una atención guardada.
+    if (!atencionGuardadaId) {
+      setSnackbarMessage("Debe guardar la atención antes de imprimir.");
       setSnackbarSeverity("warning");
       setSnackbarOpen(true);
+      return;
+    }
+
+    try {
+      // 3. Se activa el bloqueo para prevenir más clics.
+      setIsGeneratingReceta(true);
+
+      // 4. Se obtienen los datos actuales de la atención desde la API.
+      const response = await api.get(`/api/v1/atenciones/${atencionGuardadaId}`);
+      
+      // --- CORRECCIÓN CLAVE ---
+      // Se accede al objeto de datos directamente desde la propiedad 'data' de la respuesta de Axios.
+      const atencionActual = response.data;
+      
+      // Se extrae el número de receta. Puede ser un número o null.
+      let numeroReceta = atencionActual.aten_num_receta;
+
+      // 5. Si la atención aún NO tiene un número de receta...
+      if (!numeroReceta) {
+        // ...se genera uno nuevo.
+        console.log("Generando nuevo número de receta para Odontología...");
+        const secuencialResponse = await api.post("/api/v1/secuencias/receta", {
+          locationId: selectedCita.cita_cod_sucu,
+        });
+        numeroReceta = secuencialResponse.data.secuencial;
+
+        // Y se actualiza la atención en la base de datos con el nuevo número.
+        await api.patch(`/api/v1/atenciones/${atencionGuardadaId}/asignar-receta`, {
+          numeroReceta,
+        });
+      }
+
+      // 6. Una vez que se tiene el número (nuevo o existente), se procede con la impresión.
+      setImprimiendoReceta(true);
+
+    } catch (error) {
+      // 7. Manejo de errores.
+      console.error("Error en el proceso de impresión de receta:", error);
+      setSnackbarMessage("Error al generar o asignar el número de receta.");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+    } finally {
+      // 8. Se libera el bloqueo al final del proceso, sin importar si hubo éxito o error.
+      setIsGeneratingReceta(false);
     }
   };
 
@@ -2231,8 +2245,11 @@ const Odontologia = () => {
                   color="secondary"
                   onClick={handlePrintReceta}
                   startIcon={<PrintIcon />}
+                  // El botón se deshabilita si 'isGeneratingReceta' es true.
+                  disabled={isGeneratingReceta}
                 >
-                  Imprimir Receta
+                  {/* El texto del botón cambia para dar feedback al usuario. */}
+                  {isGeneratingReceta ? "Generando..." : "Imprimir Receta"}
                 </Button>
                 <Button
                   variant="contained"
